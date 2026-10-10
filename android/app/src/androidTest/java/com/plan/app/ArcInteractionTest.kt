@@ -153,7 +153,7 @@ class ArcInteractionTest {
             }
         }
         val actions = rule.onNodeWithTag("swipe-progress")
-            .fetchSemanticsNode().config[SemanticsProperties.CustomActions]
+            .fetchSemanticsNode().config[SemanticsActions.CustomActions]
         assertEquals(listOf("İşlendi", "İşaretini kaldır"), actions.map { it.label })
         rule.onNodeWithTag("swipe-progress").performTouchInput { swipeLeft() }
         rule.onNodeWithText("Tamamlandı").assertExists()
