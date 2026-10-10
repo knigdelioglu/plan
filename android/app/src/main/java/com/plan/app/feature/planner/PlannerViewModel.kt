@@ -38,6 +38,7 @@ class PlannerViewModel @JvmOverloads constructor(
     val activeWeekNumber: StateFlow<Int> = teacherRepository.activeWeekNumber
     val viewMode: StateFlow<PlannerViewMode> = teacherRepository.viewMode
     val progressList: StateFlow<List<LessonProgress>> = teacherRepository.progressList
+    val notesList: StateFlow<List<TeacherNote>> = teacherRepository.notesList
 
     private val _isDarkMode = MutableStateFlow(false)
     val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
@@ -218,8 +219,8 @@ class PlannerViewModel @JvmOverloads constructor(
             ),
             ComparisonRow(
                 feature = "Doğrulanmış Saatler",
-                anadoluValue = "${a?.metadata?.totalAnnualHoursVerified ?: 180} Saat",
-                fenValue = "${f?.metadata?.totalAnnualHoursVerified ?: 180} Saat"
+                anadoluValue = a?.metadata?.totalAnnualHoursVerified?.let { "$it Saat" } ?: "Belirtilmemiş",
+                fenValue = f?.metadata?.totalAnnualHoursVerified?.let { "$it Saat" } ?: "Belirtilmemiş"
             ),
             ComparisonRow(
                 feature = "3+2 Saat Dağılımı",
@@ -252,8 +253,10 @@ class PlannerViewModel @JvmOverloads constructor(
                         JsonNode("grade_level", plan.metadata.gradeLevel.toString()),
                         JsonNode("course_name", plan.metadata.courseName),
                         JsonNode("school_type", plan.metadata.schoolType),
-                        JsonNode("verified_lesson_hours", plan.metadata.verifiedLessonHours.toString()),
-                        JsonNode("assumed_lesson_hours", plan.metadata.assumedLessonHours.toString())
+                        JsonNode("verified_lesson_hours", plan.metadata.verifiedLessonHours?.toString() ?: "Kaynakta yok"),
+                        JsonNode("assumed_lesson_hours", plan.metadata.assumedLessonHours?.toString() ?: "Kaynakta yok"),
+                        JsonNode("total_annual_hours", (plan.metadata.totalAnnualHoursAssumed
+                            ?: plan.metadata.totalAnnualHours)?.toString() ?: "Kaynakta yok")
                     )
                 ),
                 JsonNode(
