@@ -8,7 +8,7 @@ plugins {
 
 android {
     namespace = "com.plan.app"
-    compileSdk = 37
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.plan.app"
