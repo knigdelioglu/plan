@@ -58,6 +58,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -223,6 +226,8 @@ fun ArcSwipeActions(
     onSwipeLeft: () -> Unit,
     onSwipeRight: () -> Unit,
     modifier: Modifier = Modifier,
+    onSwipeLeftLabel: String = "Sola kaydırma eylemi",
+    onSwipeRightLabel: String = "Sağa kaydırma eylemi",
     content: @Composable () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
@@ -241,6 +246,18 @@ fun ArcSwipeActions(
     Box(
         modifier = modifier
             .fillMaxWidth()
+            .semantics {
+                customActions = listOf(
+                    CustomAccessibilityAction(onSwipeLeftLabel) {
+                        onSwipeLeft()
+                        true
+                    },
+                    CustomAccessibilityAction(onSwipeRightLabel) {
+                        onSwipeRight()
+                        true
+                    }
+                )
+            }
             .pointerInput(onSwipeLeft, onSwipeRight, triggerPx) {
                 detectHorizontalDragGestures(
                     onDragStart = { offsetX = 0f },
