@@ -7,7 +7,7 @@ Bu çalışma alanı (`android/**`), `plan` deposundaki yıllık ders planların
 1. **Veri İzolasyonu:**
    - `plans/**` dizini salt okunurdur. Kaynak JSON, şema, doğrulama ve inceleme dosyaları ASLA değiştirilmez.
    - Veri okuma katmanı (`PlanRepository` / `PlanAssetDataSource`), `plans/**` içeriğini doğrudan okur veya asset olarak kullanır.
-   - Öğretmenin kişisel notları, sınıf ilerlemeleri ve tercihleri Room veritabanı ve DataStore üzerinde yerel saklanır.
+   - Öğretmenin sınıf, not, ilerleme ve tercihlerine ait yerel durum tek bir atomik `teacher-state.json` anlık görüntüsünde tutulur. Eski `classrooms.json`, `progress.json`, `notes.json` kayıtları kayıpsız içe aktarılır ve silinmez. Depolama değişikliği yapılırken geçiş testleri zorunludur.
 
 2. **Arc Tasarım Sistemi Sadakati:**
    - Arc Library (`arc-foundation`, `arc-motion-tokens`, 70 bileşen ve 9 blok) Jetpack Compose ile yerel olarak uygulanır.
