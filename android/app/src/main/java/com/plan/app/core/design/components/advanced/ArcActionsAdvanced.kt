@@ -12,6 +12,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.platform.LocalDensity
 import kotlin.math.roundToInt
@@ -279,7 +280,7 @@ fun ArcExpandingSearch(
     Row(
         modifier = modifier.animateContentSize(
             animationSpec = ArcMotionTokens.respectMotionPreference(
-                reducedMotion, ArcMotionTokens.Springs.morph()
+                reducedMotion, ArcMotionTokens.Springs.morph<IntSize>()
             )
         ),
         verticalAlignment = Alignment.CenterVertically
