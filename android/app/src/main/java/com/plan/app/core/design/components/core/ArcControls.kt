@@ -403,7 +403,8 @@ fun ArcCheckbox(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    label: String? = null
 ) {
     val colors = ArcTheme.colors
     val reducedMotion = LocalReducedMotion.current
@@ -418,6 +419,7 @@ fun ArcCheckbox(
     Box(
         modifier = modifier
             .size(48.dp)
+            .then(if (label != null) Modifier.semantics { contentDescription = label } else Modifier)
             .toggleable(
                 value = checked,
                 enabled = enabled,
