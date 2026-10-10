@@ -5,6 +5,7 @@ import com.plan.app.core.data.TeacherRepository
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -35,6 +36,12 @@ class PlanRepositoryTest {
         // 2. 45 ders bölümü
         val totalLessons = plan.weeks.sumOf { it.lessons.size }
         assertEquals(45, totalLessons)
+
+        // Process details must survive nested JSON decoding.
+        val process = plan.weeks.first().lessons.first().processComponents.first()
+        assertEquals("TDE2.1", process.mainCode)
+        assertEquals("TDE2.1.1", process.subComponents.first().code)
+        assertTrue(process.subComponents.first().items.isNotEmpty())
 
         // 3. Çok bölümlü haftalar (3+2 dağılımı olan 8 hafta)
         val multiWeeks = plan.weeks.filter { it.lessons.size > 1 }
@@ -91,13 +98,18 @@ class PlanRepositoryTest {
         val multiWeeks = plan.weeks.filter { it.lessons.size > 1 }
         assertEquals(8, multiWeeks.size)
 
-        // 4. Doğrulanmış ve varsayılan saatler
-        assertEquals(180, plan.metadata.verifiedLessonHours)
-        assertEquals(5, plan.metadata.assumedLessonHours)
-        assertEquals(185, plan.metadata.totalAnnualHoursAssumed)
+        // Fen source states 185 total but does not contain an independently
+        // verified 180+5 split. Unknown data must remain unknown.
+        assertNull(plan.metadata.verifiedLessonHours)
+        assertNull(plan.metadata.assumedLessonHours)
+        assertNull(plan.metadata.totalAnnualHoursAssumed)
+        assertEquals(185, plan.metadata.totalAnnualHours)
 
         // 5. Okul türü
         assertEquals("Fen Lisesi", plan.metadata.schoolType)
+        assertEquals("15 Temmuz Demokrasi ve Millî Birlik Günü",
+            plan.weeks.first().specialDaysAndWeeks?.text)
+        assertEquals("TDE2.1", plan.weeks.first().lessons.first().processComponents.first().mainCode)
     }
 
     @Test

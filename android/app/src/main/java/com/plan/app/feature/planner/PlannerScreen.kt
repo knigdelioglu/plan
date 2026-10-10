@@ -119,7 +119,6 @@ import com.plan.app.core.design.components.extended.ArcJsonViewer
 import com.plan.app.core.design.components.extended.ArcLineChart
 import com.plan.app.core.design.components.extended.ArcPagination
 import com.plan.app.core.design.components.extended.ArcRichTextEditor
-import com.plan.app.core.design.components.extended.ArcSignaturePad
 import com.plan.app.core.design.components.extended.ArcSortableDataTable
 import com.plan.app.core.design.components.extended.ArcTextMorph
 import com.plan.app.core.design.components.extended.ArcTextReveal
@@ -349,8 +348,8 @@ private fun LeftSidebar(
                     viewModel.selectWeek(it)
                     viewModel.selectViewMode(PlannerViewMode.WEEK)
                 },
-                weeksWithEvents = setOf(1, 7, 9, 16, 18, 25, 27, 34, 36),
-                weeksWithBreaks = setOf(10, 19, 23)
+                planWeeks = currentPlan?.weeks ?: emptyList(),
+                academicBreaks = currentPlan?.academicCalendarBreaks ?: emptyList()
             )
 
             // Tree View (Themes & Weeks)
@@ -477,9 +476,12 @@ private fun CenterWorkspace(
         // Stats Band (Block 8)
         ArcStatsBand(
             totalWeeks = currentPlan?.metadata?.totalTeachingWeeks ?: 37,
-            totalLessons = 45,
-            verifiedHours = currentPlan?.metadata?.verifiedLessonHours ?: 180,
-            assumedHours = currentPlan?.metadata?.totalAnnualHoursAssumed ?: 185,
+            totalLessons = currentPlan?.weeks?.sumOf { it.lessons.size } ?: 0,
+            verifiedHours = currentPlan?.metadata?.verifiedLessonHours,
+            assumedHours = currentPlan?.metadata?.assumedLessonHours,
+            annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
+                ?: currentPlan?.metadata?.totalAnnualHours
+                ?: currentPlan?.weeks?.sumOf { it.totalHours } ?: 0,
             completedHours = viewModel.getCompletedHours(),
             currentWeekNumber = activeWeekNumber
         )
@@ -593,9 +595,10 @@ private fun WeeklyLessonPlanView(
         if (activeWeek.specialDaysAndWeeks?.present == true) {
             val specialDay = activeWeek.specialDaysAndWeeks
             ArcAlert(
-                title = "Özel Gün ve Hafta: ${specialDay.raw ?: ""}",
+                title = "Özel Gün ve Hafta: ${specialDay.raw ?: specialDay.text ?: specialDay.events.joinToString(", ") { it.name }}",
                 message = specialDay.schedulingNote
-                    ?: "Resmî anma takvimi ile okuldaki yıllık plan uygulaması eşleştirilmiştir.",
+                    ?: specialDay.events.firstOrNull()?.calendarNote
+                    ?: "Kaynak yıllık planda bu hafta için belirtilmiştir.",
                 variant = ArcAlertVariant.INFO
             )
         }
@@ -705,14 +708,35 @@ private fun WeeklyLessonPlanView(
                                 color = colors.textSecondary,
                                 fontWeight = FontWeight.SemiBold
                             )
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .horizontalScroll(rememberScrollState()),
-                                horizontalArrangement = Arrangement.spacedBy(6.dp)
-                            ) {
-                                lesson.processComponents.forEach { comp ->
-                                    ArcBadge(text = comp.code, variant = ArcBadgeVariant.NEUTRAL)
+                            lesson.processComponents.forEach { component ->
+                                ArcExpandableCard(
+                                    title = component.title.ifBlank { component.mainCode },
+                                    subtitle = component.mainCode
+                                ) {
+                                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                        component.subComponents.forEach { sub ->
+                                            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                                                ArcBadge(
+                                                    text = sub.code.ifBlank { sub.subCode },
+                                                    variant = ArcBadgeVariant.NEUTRAL
+                                                )
+                                                Column {
+                                                    Text(
+                                                        sub.title,
+                                                        style = ArcTheme.typography.bodySmall,
+                                                        color = colors.foreground
+                                                    )
+                                                    sub.items.forEach { item ->
+                                                        Text(
+                                                            "• " + item,
+                                                            style = ArcTheme.typography.bodySmall,
+                                                            color = colors.textSecondary
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -732,8 +756,15 @@ private fun TeacherNotesAndPedagogicalSection(
     activeWeek: PlanWeek
 ) {
     val colors = ArcTheme.colors
-    val existingNote = viewModel.getActiveTeacherNote()
-    var noteText by remember(activeWeek.weekNumber) { mutableStateOf(existingNote?.text ?: "") }
+    val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val notes by viewModel.notesList.collectAsState()
+    val existingNote = notes.firstOrNull {
+        it.classroomId == activeClassroomId && it.weekNumber == activeWeek.weekNumber && it.lessonIndex == null
+    }
+    // Never reuse a note editor state between two classrooms at the same week.
+    var noteText by remember(activeClassroomId, activeWeek.weekNumber) {
+        mutableStateOf(existingNote?.text ?: "")
+    }
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space3)) {
         Text(
@@ -788,13 +819,7 @@ private fun TeacherNotesAndPedagogicalSection(
             }
         )
 
-        // Signature / Stylus Pad
-        ArcSignaturePad(
-            initialStrokes = existingNote?.drawingPoints ?: emptyList(),
-            onStrokesChanged = { strokes ->
-                viewModel.saveTeacherNote(noteText, NoteType.DRAWING, strokes)
-            }
-        )
+        // Signature UI intentionally removed for this personal weekly planner.
     }
 }
 
@@ -944,34 +969,42 @@ private fun AnalyticsAndChartsView(
     currentPlan: com.plan.app.core.model.AnnualPlan?
 ) {
     val completedHours = viewModel.getCompletedHours()
-    val verifiedHours = currentPlan?.metadata?.verifiedLessonHours ?: 180
-    val assumedHours = currentPlan?.metadata?.totalAnnualHoursAssumed ?: 185
+    val verifiedHours = currentPlan?.metadata?.verifiedLessonHours
+    val assumedHours = currentPlan?.metadata?.assumedLessonHours
+    val annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
+        ?: currentPlan?.metadata?.totalAnnualHours
+        ?: currentPlan?.weeks?.sumOf { it.totalHours } ?: 0
 
-    val themeSlices = listOf(
-        DonutSlice("1. Tema: Bir Diyeceğim Var!", 45f, Color(0xFF6366F1)),
-        DonutSlice("2. Tema: Kültür Yolculuğu", 45f, Color(0xFFEC4899)),
-        DonutSlice("3. Tema: Yaşamın İzinde", 45f, Color(0xFF10B981)),
-        DonutSlice("4. Tema: Sanatın Gücü", 45f, Color(0xFFF59E0B)),
-        DonutSlice("Sosyal Etkinlik (Varsayılan)", 5f, Color(0xFF8B5CF6))
+    // Never display hardcoded curriculum statistics or a fabricated verification split.
+    val chartColors = listOf(
+        Color(0xFF6366F1), Color(0xFFEC4899), Color(0xFF10B981),
+        Color(0xFFF59E0B), Color(0xFF8B5CF6)
     )
+    val themes = currentPlan?.themes.orEmpty()
+    val remainingHours = (annualHours - themes.sumOf { it.totalHours }).coerceAtLeast(0)
+    val themeSlices = themes.mapIndexed { index, theme ->
+        DonutSlice(theme.themeName, theme.totalHours.toFloat(), chartColors[index % chartColors.size])
+    } + if (remainingHours > 0) listOf(
+        DonutSlice("Diğer / Sosyal Etkinlik", remainingHours.toFloat(), chartColors[4])
+    ) else emptyList()
 
-    val barItems = listOf(
-        BarChartItem("1. Tema", 45f, Color(0xFF6366F1)),
-        BarChartItem("2. Tema", 45f, Color(0xFFEC4899)),
-        BarChartItem("3. Tema", 45f, Color(0xFF10B981)),
-        BarChartItem("4. Tema", 45f, Color(0xFFF59E0B)),
-        BarChartItem("Etkinlik", 5f, Color(0xFF8B5CF6))
-    )
+    val barItems = themes.mapIndexed { index, theme ->
+        BarChartItem(theme.themeCode, theme.totalHours.toFloat(), chartColors[index % chartColors.size])
+    } + if (remainingHours > 0) listOf(
+        BarChartItem("Diğer", remainingHours.toFloat(), chartColors[4])
+    ) else emptyList()
 
-    val cumulativePoints = listOf(
-        5f, 10f, 15f, 20f, 25f, 30f, 35f, 40f, 45f, 50f, 60f, 75f, 90f, 110f, 130f, 150f, 180f, 185f
-    )
+    val cumulativePoints = currentPlan?.weeks.orEmpty()
+        .runningFold(0) { total, week -> total + week.totalHours }
+        .drop(1)
+        .map { it.toFloat() }
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
         ArcUsageMeter(
             completedHours = completedHours,
             verifiedHours = verifiedHours,
-            assumedHours = assumedHours
+            assumedHours = assumedHours,
+            annualHours = annualHours
         )
 
         Row(
