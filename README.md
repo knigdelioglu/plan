@@ -11,14 +11,25 @@ plans/
 └── 2026-2027/
     └── turk-dili-ve-edebiyati/
         ├── 9/
+        │   ├── anadolu-lisesi/
+        │   ├── fen-lisesi/
+        │   └── sosyal-bilimler-lisesi/
         ├── 10/
+        │   ├── anadolu-lisesi/
+        │   ├── fen-lisesi/
+        │   └── sosyal-bilimler-lisesi/
         ├── 11/
-        │   └── fen-lisesi/
-        │       ├── annual-plan.json
-        │       ├── annual-plan.schema.json
-        │       ├── validation-report.md
-        │       └── review-queue.json
+        │   ├── anadolu-lisesi/
+        │   ├── fen-lisesi/
+        │   │   ├── annual-plan.json
+        │   │   ├── annual-plan.schema.json
+        │   │   ├── validation-report.md
+        │   │   └── review-queue.json
+        │   └── sosyal-bilimler-lisesi/
         └── 12/
+            ├── anadolu-lisesi/
+            ├── fen-lisesi/
+            └── sosyal-bilimler-lisesi/
 ```
 
 **Dizin kuralı:** `plans/<YYYY-YYYY>/<ders-kodu>/<sinif>/<okul-turu>/`
@@ -26,10 +37,10 @@ plans/
 - **Öğretim yılı:** Başlangıç ve bitiş yılı; ör. `2026-2027`.
 - **Ders:** Türkçe karakter içermeyen, küçük harfli, kısa çizgili ad; ör. `turk-dili-ve-edebiyati`.
 - **Sınıf:** Sayısal düzey; ör. `9`, `10`, `11`, `12`.
-- **Okul türü:** Planın geçerli olduğu tür; ör. `fen-lisesi`, `anadolu-lisesi`. Birbirinden farklı planlar **ayrı klasörlerde** tutulur.
+- **Okul türü:** Planın geçerli olduğu tür; `anadolu-lisesi`, `fen-lisesi`, `sosyal-bilimler-lisesi`. Birbirinden farklı planlar **ayrı klasörlerde** tutulur.
 - Aynı düzey için farklı sürümler gerektiğinde planların üzerine yazmak yerine ayrı ve açıkça tanımlanmış varyantlar kullanılmalıdır.
 
-Şimdilik sadece **Türk Dili ve Edebiyatı** dersi için 9–12. sınıf dizinleri açılmıştır. 9, 10 ve 12. sınıflarda henüz plan verisi yoktur; bu klasörlerin varlığı içerik yayımlandığı anlamına gelmez.
+Şimdilik **2026-2027 Türk Dili ve Edebiyatı** dersi için 9–12. sınıfların her birinde **Anadolu Lisesi, Fen Lisesi ve Sosyal Bilimler Lisesi** klasörleri açılmıştır (toplam 12 okul türü/sınıf kombinasyonu). Yalnızca **11. sınıf Fen Lisesi** için plan ve doğrulama dosyaları vardır. Diğer klasörlerdeki `.gitkeep` dosyaları dizinleri Git'te korumak içindir; **yıllık plan verisi içermez**.
 
 ## Mevcut plan
 
