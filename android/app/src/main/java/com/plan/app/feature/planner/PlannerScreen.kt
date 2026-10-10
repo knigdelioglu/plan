@@ -156,7 +156,6 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     val isNotificationCenterOpen by viewModel.isNotificationCenterOpen.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
     val notifications by viewModel.notifications.collectAsState()
-    val changelogEntries by viewModel.changelogEntries.collectAsState()
     val filter by viewModel.filter.collectAsState()
 
     val currentClass = classrooms.firstOrNull { it.id == activeClassroomId } ?: classrooms.firstOrNull()
