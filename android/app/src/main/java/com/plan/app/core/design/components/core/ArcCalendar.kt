@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -22,8 +21,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,126 +33,126 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.plan.app.core.model.AcademicCalendar
+import com.plan.app.core.model.AcademicCalendarBreak
+import com.plan.app.core.model.PlanWeek
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
-/**
- * Arc Calendar Component (30 / 70)
- * Native tablet-friendly calendar grid with week jumping and event dots.
- */
-data class CalendarDay(
-    val dayOfMonth: Int,
-    val weekNumber: Int?,
-    val isCurrentMonth: Boolean = true,
-    val isToday: Boolean = false,
-    val hasSpecialEvent: Boolean = false,
-    val isAcademicBreak: Boolean = false,
-    val isCompleted: Boolean = false
-)
-
+/** Real month grid with teaching weeks and school breaks from the annual-plan JSON. */
 @Composable
 fun ArcCalendar(
     selectedWeek: Int?,
     onSelectWeek: (Int) -> Unit,
-    modifier: Modifier = Modifier,
-    monthTitle: String = "Eylül 2026",
-    onPrevMonth: () -> Unit = {},
-    onNextMonth: () -> Unit = {},
-    weeksWithEvents: Set<Int> = emptySet(),
-    weeksWithBreaks: Set<Int> = emptySet()
+    planWeeks: List<PlanWeek>,
+    academicBreaks: List<AcademicCalendarBreak>,
+    modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
-    val daysOfWeek = listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz")
+    val firstDate = remember(planWeeks) {
+        planWeeks.firstOrNull()?.startDate?.let(LocalDate::parse)
+    }
+    val lastDate = remember(planWeeks) {
+        planWeeks.lastOrNull()?.endDate?.let(LocalDate::parse)
+    }
+    val selectedStart = remember(planWeeks, selectedWeek) {
+        planWeeks.firstOrNull { it.weekNumber == selectedWeek }?.startDate?.let(LocalDate::parse)
+    }
+    var displayedMonth by remember(firstDate) {
+        mutableStateOf(YearMonth.from(firstDate ?: LocalDate.now()))
+    }
+    LaunchedEffect(selectedStart) {
+        if (selectedStart != null) displayedMonth = YearMonth.from(selectedStart)
+    }
+    val earliestMonth = firstDate?.let(YearMonth::from)
+    val latestMonth = lastDate?.let(YearMonth::from)
+    val days = remember(displayedMonth, planWeeks, academicBreaks) {
+        AcademicCalendar.monthDays(displayedMonth, planWeeks, academicBreaks)
+    }
+    val monthTitle = displayedMonth.format(
+        DateTimeFormatter.ofPattern("LLLL yyyy", Locale.forLanguageTag("tr-TR"))
+    ).replaceFirstChar { it.uppercase() }
 
     ArcCard(modifier = modifier) {
-        Column(modifier = Modifier.padding(ArcSpacing.space4)) {
-            // Header
+        Column(modifier = Modifier.padding(ArcSpacing.space3)) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = monthTitle,
-                    style = ArcTheme.typography.titleMedium,
-                    color = colors.foreground
-                )
+                Text(monthTitle, style = ArcTheme.typography.titleMedium, color = colors.foreground)
                 Row {
-                    IconButton(onClick = onPrevMonth, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki", tint = colors.textSecondary)
+                    IconButton(
+                        onClick = { displayedMonth = displayedMonth.minusMonths(1) },
+                        enabled = earliestMonth != null && displayedMonth > earliestMonth,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki ay")
                     }
-                    IconButton(onClick = onNextMonth, modifier = Modifier.size(32.dp)) {
-                        Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki", tint = colors.textSecondary)
+                    IconButton(
+                        onClick = { displayedMonth = displayedMonth.plusMonths(1) },
+                        enabled = latestMonth != null && displayedMonth < latestMonth,
+                        modifier = Modifier.size(36.dp)
+                    ) {
+                        Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki ay")
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.height(ArcSpacing.space2))
-
-            // Day names row
+            Spacer(Modifier.height(ArcSpacing.space2))
             Row(modifier = Modifier.fillMaxWidth()) {
-                daysOfWeek.forEach { dayName ->
+                listOf("Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz").forEach { name ->
                     Text(
-                        text = dayName,
-                        style = ArcTheme.typography.labelSmall,
-                        color = colors.textMuted,
+                        name,
+                        modifier = Modifier.weight(1f),
                         textAlign = TextAlign.Center,
-                        modifier = Modifier.weight(1f)
+                        style = ArcTheme.typography.labelSmall,
+                        color = colors.textSecondary
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(ArcSpacing.space2))
-
-            // 5 Weeks Grid Sample
-            for (weekIndex in 1..5) {
-                val weekNum = weekIndex
-                val isSelectedWeek = selectedWeek == weekNum
-                val hasEvent = weeksWithEvents.contains(weekNum)
-                val hasBreak = weeksWithBreaks.contains(weekNum)
-
-                Surface(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 2.dp)
-                        .clickable { onSelectWeek(weekNum) },
-                    shape = ArcRadius.sm,
-                    color = if (isSelectedWeek) colors.surfaceMuted else Color.Transparent,
-                    border = if (isSelectedWeek) BorderStroke(1.dp, colors.accent) else null
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        for (d in 1..7) {
-                            val dayNumber = (weekIndex - 1) * 7 + d
-                            val isSchoolDay = d <= 5
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .aspectRatio(1f),
-                                contentAlignment = Alignment.Center
+            days.chunked(7).forEach { weekDays ->
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    weekDays.forEach { day ->
+                        val enabled = day.inDisplayedMonth && day.teachingWeekNumber != null
+                        val selected = enabled && selectedWeek == day.teachingWeekNumber
+                        Surface(
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(1.dp)
+                                .clickable(enabled = enabled) {
+                                    day.teachingWeekNumber?.let(onSelectWeek)
+                                },
+                            shape = ArcRadius.sm,
+                            color = if (selected) colors.surfaceMuted else Color.Transparent,
+                            border = if (selected) BorderStroke(1.dp, colors.accent) else null
+                        ) {
+                            Column(
+                                modifier = Modifier.height(42.dp),
+                                verticalArrangement = Arrangement.Center,
+                                horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = if (dayNumber <= 31) dayNumber.toString() else "",
-                                        style = ArcTheme.typography.bodySmall,
-                                        color = if (isSchoolDay) colors.foreground else colors.textMuted,
-                                        fontWeight = if (isSelectedWeek) FontWeight.Bold else FontWeight.Normal
+                                Text(
+                                    text = day.date.dayOfMonth.toString(),
+                                    style = ArcTheme.typography.bodySmall,
+                                    color = when {
+                                        !day.inDisplayedMonth -> colors.textMuted.copy(alpha = 0.4f)
+                                        day.isAcademicBreak -> colors.warning
+                                        enabled -> colors.foreground
+                                        else -> colors.textMuted
+                                    },
+                                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                )
+                                if (day.hasSpecialEvent || day.isAcademicBreak) {
+                                    Box(
+                                        modifier = Modifier.size(4.dp)
+                                            .clip(CircleShape)
+                                            .background(if (day.isAcademicBreak) colors.warning else colors.accent)
                                     )
-                                    if (isSchoolDay && (hasEvent || hasBreak)) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(4.dp)
-                                                .clip(CircleShape)
-                                                .background(if (hasBreak) colors.warning else colors.accent)
-                                        )
-                                    }
                                 }
                             }
                         }
