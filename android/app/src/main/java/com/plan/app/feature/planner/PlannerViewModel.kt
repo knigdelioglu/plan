@@ -40,8 +40,10 @@ class PlannerViewModel @JvmOverloads constructor(
     val progressList: StateFlow<List<LessonProgress>> = teacherRepository.progressList
     val notesList: StateFlow<List<TeacherNote>> = teacherRepository.notesList
 
-    private val _isDarkMode = MutableStateFlow(false)
-    val isDarkMode: StateFlow<Boolean> = _isDarkMode.asStateFlow()
+    val isDarkMode: StateFlow<Boolean> = teacherRepository.darkMode
+    val storageError: StateFlow<String?> = teacherRepository.storageError
+    val availablePlans: List<PlanRepository.PlanRef>
+        get() = planRepository.availablePlans()
 
     private val _filter = MutableStateFlow(PlanFilter())
     val filter: StateFlow<PlanFilter> = _filter.asStateFlow()
@@ -113,7 +115,7 @@ class PlannerViewModel @JvmOverloads constructor(
     }
 
     fun toggleDarkMode() {
-        _isDarkMode.value = !_isDarkMode.value
+        teacherRepository.setDarkMode(!isDarkMode.value)
     }
 
     fun setCommandPaletteOpen(open: Boolean) {
@@ -130,7 +132,8 @@ class PlannerViewModel @JvmOverloads constructor(
     }
 
     fun selectWeek(weekNumber: Int) {
-        teacherRepository.selectWeek(weekNumber.coerceIn(1, 37))
+        val maxWeek = _currentPlan.value?.weeks?.maxOfOrNull { it.weekNumber } ?: 1
+        teacherRepository.selectWeek(weekNumber.coerceIn(1, maxWeek))
     }
 
     fun selectViewMode(mode: PlannerViewMode) {
@@ -197,8 +200,10 @@ class PlannerViewModel @JvmOverloads constructor(
         _notifications.value = emptyList()
     }
 
-    fun addClassroom(name: String, schoolType: String): Classroom {
-        val newClass = teacherRepository.addClassroom(name, schoolType, 11)
+    fun addClassroom(name: String, planRef: PlanRepository.PlanRef): Classroom {
+        val newClass = teacherRepository.addClassroom(
+            name, planRef.schoolType, planRef.gradeLevel, planRef.academicYear, planRef.courseName
+        )
         selectClassroom(newClass.id)
         return newClass
     }
@@ -294,15 +299,17 @@ class PlannerViewModel @JvmOverloads constructor(
     private fun loadActivePlan() {
         val currentClass = classrooms.value.firstOrNull { it.id == activeClassroomId.value }
             ?: classrooms.value.firstOrNull()
-        val schoolType = currentClass?.schoolType ?: "Anadolu Lisesi"
-
         try {
-            _currentPlan.value = planRepository.loadAnnualPlan(schoolType)
-            _fenPlan.value = planRepository.loadAnnualPlan("Fen Lisesi")
-            _rawPlanJson.value = planRepository.getRawPlanJson(schoolType)
-            _validationReport.value = planRepository.loadValidationReport(schoolType)
+            _currentPlan.value = currentClass?.let(planRepository::loadAnnualPlan)
+            _fenPlan.value = runCatching { planRepository.loadAnnualPlan("Fen Lisesi") }.getOrNull()
+            val sourceType = currentClass?.schoolType ?: ""
+            _rawPlanJson.value = runCatching { planRepository.getRawPlanJson(sourceType) }.getOrDefault("")
+            _validationReport.value = planRepository.loadValidationReport(sourceType)
         } catch (e: Exception) {
-            // handle error
+            // Missing plan must display an empty state; never display the previous class's plan.
+            _currentPlan.value = null
+            _rawPlanJson.value = ""
+            _validationReport.value = "Seçilen sınıfın planı bulunamadı: ${e.message}"
         }
     }
 }

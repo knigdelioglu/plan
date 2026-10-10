@@ -37,6 +37,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -199,11 +201,18 @@ fun ArcResizablePanels(
     firstPanel: @Composable () -> Unit,
     secondPanel: @Composable () -> Unit
 ) {
-    var splitRatio by remember { mutableFloatStateOf(initialSplitRatio.coerceIn(0.2f, 0.6f)) }
+    var splitRatio by rememberSaveable { mutableFloatStateOf(initialSplitRatio.coerceIn(0f, 1f)) }
+    val density = LocalDensity.current
+    val dividerWidth = 8.dp
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
-        val totalWidth = maxWidth
-        val firstPanelWidth = (totalWidth * splitRatio).coerceIn(minFirstPanelWidth, totalWidth - minSecondPanelWidth)
+        val usableWidth = (maxWidth - dividerWidth).coerceAtLeast(1.dp)
+        val minimumFirst = minFirstPanelWidth.coerceAtMost(usableWidth)
+        val maximumFirst = (usableWidth - minSecondPanelWidth).coerceAtLeast(minimumFirst)
+            .coerceAtMost(usableWidth)
+        val firstPanelWidth = (usableWidth * splitRatio).coerceIn(minimumFirst, maximumFirst)
+        val minimumRatio = minimumFirst.value / usableWidth.value
+        val maximumRatio = maximumFirst.value / usableWidth.value
 
         Row(modifier = Modifier.fillMaxSize()) {
             Box(
@@ -222,8 +231,9 @@ fun ArcResizablePanels(
                     .draggable(
                         orientation = Orientation.Horizontal,
                         state = rememberDraggableState { delta ->
-                            val newRatio = (firstPanelWidth.value + delta) / totalWidth.value
-                            splitRatio = newRatio.coerceIn(0.2f, 0.6f)
+                            val deltaDp = with(density) { delta.toDp().value }
+                            val nextDp = firstPanelWidth.value + deltaDp
+                            splitRatio = (nextDp / usableWidth.value).coerceIn(minimumRatio, maximumRatio)
                         }
                     ),
                 contentAlignment = Alignment.Center

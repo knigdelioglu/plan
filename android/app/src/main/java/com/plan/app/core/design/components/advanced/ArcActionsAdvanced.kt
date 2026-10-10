@@ -11,6 +11,10 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.platform.LocalDensity
+import kotlin.math.roundToInt
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -217,17 +221,34 @@ fun ArcSwipeActions(
     content: @Composable () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
+    val density = LocalDensity.current
+    val triggerPx = with(density) { 72.dp.toPx() }
+    val maxOffset = triggerPx * 1.5f
+    val animatedOffset by animateFloatAsState(targetValue = offsetX, label = "ArcSwipeOffset")
 
     Box(
         modifier = modifier
             .fillMaxWidth()
-            .pointerInput(Unit) {
-                detectTapGestures(
-                    onDoubleTap = { onSwipeRight() }
+            .pointerInput(onSwipeLeft, onSwipeRight, triggerPx) {
+                detectHorizontalDragGestures(
+                    onDragStart = { offsetX = 0f },
+                    onHorizontalDrag = { change, amount ->
+                        change.consume()
+                        offsetX = (offsetX + amount).coerceIn(-maxOffset, maxOffset)
+                    },
+                    onDragEnd = {
+                        val result = offsetX
+                        offsetX = 0f
+                        if (result <= -triggerPx) onSwipeLeft()
+                        else if (result >= triggerPx) onSwipeRight()
+                    },
+                    onDragCancel = { offsetX = 0f }
                 )
             }
     ) {
-        content()
+        Box(modifier = Modifier.offset { IntOffset(animatedOffset.roundToInt(), 0) }) {
+            content()
+        }
     }
 }
 

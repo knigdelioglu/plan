@@ -2,23 +2,19 @@ package com.plan.app.core.data
 
 import android.content.Context
 import com.plan.app.core.model.AnnualPlan
+import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.ReviewQueue
 import kotlinx.serialization.json.Json
 import java.io.File
-import java.io.InputStream
 
+/** Discovers real annual-plan.json files; never redirects a missing school to a different plan. */
 class PlanRepository(
     private val context: Context? = null,
     private val plansBaseDir: File? = null
 ) {
-    private val json = Json {
-        ignoreUnknownKeys = true
-        isLenient = true
-        coerceInputValues = true
-    }
-
-    private val planCache = mutableMapOf<String, AnnualPlan>()
-    private val rawJsonCache = mutableMapOf<String, String>()
+    private val json = Json { ignoreUnknownKeys = true; isLenient = true; coerceInputValues = true }
+    private val cache = mutableMapOf<String, AnnualPlan>()
+    private val rawCache = mutableMapOf<String, String>()
 
     data class PlanRef(
         val academicYear: String,
@@ -26,106 +22,97 @@ class PlanRepository(
         val gradeLevel: Int,
         val schoolType: String,
         val pathSegment: String,
-        val isAvailable: Boolean
+        val isAvailable: Boolean = true
     )
 
-    val supportedPlansCatalog = listOf(
-        PlanRef("2026-2027", "Türk Dili ve Edebiyatı", 11, "Anadolu Lisesi", "2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi", true),
-        PlanRef("2026-2027", "Türk Dili ve Edebiyatı", 11, "Fen Lisesi", "2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi", true),
-        PlanRef("2026-2027", "Türk Dili ve Edebiyatı", 11, "Sosyal Bilimler Lisesi", "2026-2027/turk-dili-ve-edebiyati/11/sosyal-bilimler-lisesi", false),
-        PlanRef("2026-2027", "Türk Dili ve Edebiyatı", 9, "Anadolu Lisesi", "2026-2027/turk-dili-ve-edebiyati/9/anadolu-lisesi", false),
-        PlanRef("2026-2027", "Türk Dili ve Edebiyatı", 10, "Anadolu Lisesi", "2026-2027/turk-dili-ve-edebiyati/10/anadolu-lisesi", false),
-        PlanRef("2026-2027", "Türk Dili ve Edebiyatı", 12, "Anadolu Lisesi", "2026-2027/turk-dili-ve-edebiyati/12/anadolu-lisesi", false)
-    )
+    val supportedPlansCatalog: List<PlanRef>
+        get() = availablePlans()
 
-    fun loadAnnualPlan(schoolType: String): AnnualPlan {
-        val segment = if (schoolType.contains("Fen", ignoreCase = true)) {
-            "2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi"
-        } else {
-            "2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi"
-        }
+    fun availablePlans(): List<PlanRef> = discoverPaths()
+        .mapNotNull { path -> runCatching {
+            val meta = decode(path).metadata
+            PlanRef(meta.academicYear, meta.courseName, meta.gradeLevel,
+                meta.schoolType, path.removeSuffix("/annual-plan.json"))
+        }.getOrNull() }
+        .distinctBy { it.pathSegment }
+        .sortedWith(compareBy<PlanRef> { it.academicYear }.thenBy { it.gradeLevel }.thenBy { it.schoolType })
 
-        planCache[segment]?.let { return it }
+    fun loadAnnualPlan(classroom: Classroom): AnnualPlan =
+        loadAnnualPlan(classroom.schoolType, classroom.gradeLevel, classroom.academicYear, classroom.courseName)
 
-        val filePath = "$segment/annual-plan.json"
-        val content = readContent(filePath)
-        rawJsonCache[segment] = content
-        val plan = json.decodeFromString<AnnualPlan>(content)
-        planCache[segment] = plan
-        return plan
-    }
+    fun loadAnnualPlan(
+        schoolType: String,
+        gradeLevel: Int = 11,
+        academicYear: String = "2026-2027",
+        courseName: String = "Türk Dili ve Edebiyatı"
+    ): AnnualPlan = decode("${resolve(schoolType, gradeLevel, academicYear, courseName).pathSegment}/annual-plan.json")
 
     fun getRawPlanJson(schoolType: String): String {
-        val segment = if (schoolType.contains("Fen", ignoreCase = true)) {
-            "2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi"
-        } else {
-            "2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi"
-        }
-        return rawJsonCache[segment] ?: readContent("$segment/annual-plan.json").also {
-            rawJsonCache[segment] = it
-        }
+        val path = "${resolve(schoolType, 11, "2026-2027", "Türk Dili ve Edebiyatı").pathSegment}/annual-plan.json"
+        return rawCache[path] ?: readContent(path).also { rawCache[path] = it }
     }
 
     fun loadReviewQueue(schoolType: String): ReviewQueue? {
-        val segment = if (schoolType.contains("Fen", ignoreCase = true)) {
-            "2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi"
-        } else {
-            "2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi"
-        }
-        return try {
-            val content = readContent("$segment/review-queue.json")
-            json.decodeFromString<ReviewQueue>(content)
-        } catch (e: Exception) {
-            null
-        }
+        val ref = runCatching { resolve(schoolType, 11, "2026-2027", "Türk Dili ve Edebiyatı") }.getOrNull()
+            ?: return null
+        return runCatching {
+            json.decodeFromString<ReviewQueue>(readContent("${ref.pathSegment}/review-queue.json"))
+        }.getOrNull()
     }
 
     fun loadValidationReport(schoolType: String): String {
-        val segment = if (schoolType.contains("Fen", ignoreCase = true)) {
-            "2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi"
-        } else {
-            "2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi"
-        }
-        return try {
-            readContent("$segment/validation-report.md")
-        } catch (e: Exception) {
-            "Doğrulama raporu bulunamadı."
+        val ref = runCatching { resolve(schoolType, 11, "2026-2027", "Türk Dili ve Edebiyatı") }.getOrNull()
+            ?: return "Plan bulunamadı."
+        return runCatching { readContent("${ref.pathSegment}/validation-report.md") }
+            .getOrDefault("Doğrulama raporu bulunamadı.")
+    }
+
+    private fun resolve(schoolType: String, grade: Int, year: String, course: String): PlanRef =
+        availablePlans().firstOrNull {
+            it.schoolType.equals(schoolType, ignoreCase = true) &&
+                it.gradeLevel == grade && it.academicYear == year &&
+                it.courseName.equals(course, ignoreCase = true)
+        } ?: throw IllegalStateException("Plan bulunamadı: $year / $course / $grade / $schoolType")
+
+    private fun decode(path: String): AnnualPlan {
+        cache[path]?.let { return it }
+        val raw = readContent(path)
+        return json.decodeFromString<AnnualPlan>(raw).also {
+            cache[path] = it
+            rawCache[path] = raw
         }
     }
 
-    private fun readContent(relativePath: String): String {
-        // Priority 1: Direct File System (JVM Unit Tests or direct dev path)
-        if (plansBaseDir != null) {
-            val file = File(plansBaseDir, relativePath)
-            if (file.exists()) return file.readText(Charsets.UTF_8)
-        }
+    private fun dataRoot(): File? = plansBaseDir ?: if (context == null) {
+        listOf(File("../../plans"), File("../plans"), File("plans")).firstOrNull { it.isDirectory }
+    } else null
 
-        // Check common relative paths in local testing
-        val testPaths = listOf(
-            File("../../plans", relativePath),
-            File("../plans", relativePath),
-            File("plans", relativePath),
-            File("/Volumes/Lacie/MacBook Klasörleri/plan/plans", relativePath)
-        )
-        for (f in testPaths) {
-            if (f.exists()) return f.readText(Charsets.UTF_8)
+    private fun discoverPaths(): List<String> {
+        dataRoot()?.let { root ->
+            return root.walkTopDown()
+                .filter { it.isFile && it.name == "annual-plan.json" }
+                .map { it.relativeTo(root).invariantSeparatorsPath }
+                .toList().sorted()
         }
-
-        // Priority 2: Android Assets
-        if (context != null) {
-            try {
-                // In assets, path may be prefixed with plans/ or directly 2026-2027/...
-                val stream: InputStream = try {
-                    context.assets.open(relativePath)
-                } catch (e: Exception) {
-                    context.assets.open("plans/$relativePath")
-                }
-                return stream.bufferedReader(Charsets.UTF_8).use { it.readText() }
-            } catch (e: Exception) {
-                // fallthrough
+        val assets = context?.assets ?: return emptyList()
+        fun collect(dir: String): List<String> =
+            assets.list(dir).orEmpty().flatMap { child ->
+                val path = if (dir.isEmpty()) child else "$dir/$child"
+                if (child == "annual-plan.json") listOf(path) else collect(path)
             }
-        }
+        return (collect("") + collect("plans"))
+            .filter { it.endsWith("/annual-plan.json") }
+            .map { it.removePrefix("plans/") }.distinct().sorted()
+    }
 
-        throw IllegalStateException("Kaynak plan verisi bulunamadı: $relativePath")
+    private fun readContent(path: String): String {
+        dataRoot()?.let {
+            val file = File(it, path)
+            require(file.isFile) { "Plan verisi bulunamadı: $path" }
+            return file.readText(Charsets.UTF_8)
+        }
+        val assets = checkNotNull(context) { "Plan dizini bulunamadı" }.assets
+        return runCatching { assets.open(path) }.recoverCatching { assets.open("plans/$path") }
+            .getOrThrow().bufferedReader(Charsets.UTF_8).use { it.readText() }
     }
 }

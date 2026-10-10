@@ -2,6 +2,7 @@ package com.plan.app.feature.planner
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -47,6 +48,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -157,7 +165,10 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
 
     var showNewClassDialog by remember { mutableStateOf(false) }
     var newClassName by remember { mutableStateOf("") }
-    var newClassSchoolType by remember { mutableStateOf("Anadolu Lisesi") }
+    val availablePlans = viewModel.availablePlans
+    var selectedPlanPath by remember { mutableStateOf<String?>(null) }
+    val selectedPlan = availablePlans.firstOrNull { it.pathSegment == selectedPlanPath }
+        ?: availablePlans.firstOrNull()
 
     // Build command palette items
     val commandItems = remember(currentPlan) {
@@ -185,7 +196,18 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
         )
     }
 
-    BoxWithConstraints(modifier = Modifier.fillMaxSize().background(colors.background)) {
+    BoxWithConstraints(
+        modifier = Modifier.fillMaxSize().background(colors.background)
+            .onPreviewKeyEvent { event ->
+                if (event.type == KeyEventType.KeyDown &&
+                    (event.isCtrlPressed || event.isMetaPressed) && event.key == Key.K
+                ) {
+                    viewModel.setCommandPaletteOpen(true)
+                    true
+                } else false
+            }
+            .focusable()
+    ) {
         val isTabletLandscape = maxWidth >= 840.dp
 
         if (isTabletLandscape) {
@@ -258,8 +280,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                 title = "Yeni Sınıf Ekle",
                 confirmButton = {
                     ArcButton(onClick = {
-                        if (newClassName.isNotBlank()) {
-                            viewModel.addClassroom(newClassName, newClassSchoolType)
+                        if (newClassName.isNotBlank() && selectedPlan != null) {
+                            viewModel.addClassroom(newClassName, selectedPlan)
                             newClassName = ""
                             showNewClassDialog = false
                         }
@@ -280,12 +302,13 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                         label = "Sınıf Adı",
                         placeholder = "örn: 11-C veya 11-Fen B"
                     )
-                    Text(text = "Okul Türü", style = ArcTheme.typography.labelSmall, color = colors.textSecondary)
+                    Text(text = "Yıllık Plan", style = ArcTheme.typography.labelSmall, color = colors.textSecondary)
                     ArcSelect(
-                        selectedItem = newClassSchoolType,
-                        items = listOf("Anadolu Lisesi", "Fen Lisesi"),
-                        onSelect = { newClassSchoolType = it },
-                        itemLabel = { it }
+                        selectedItem = selectedPlan,
+                        items = availablePlans,
+                        onSelect = { selectedPlanPath = it.pathSegment },
+                        itemLabel = { "${it.academicYear} · ${it.gradeLevel}. sınıf · ${it.schoolType}" },
+                        placeholder = "Mevcut plan bulunamadı"
                     )
                 }
             }
@@ -435,6 +458,17 @@ private fun CenterWorkspace(
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
+    val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val progress by viewModel.progressList.collectAsState()
+    val completedHours = currentPlan?.weeks.orEmpty().sumOf { week ->
+        week.lessons.filter { lesson ->
+            progress.any {
+                it.classroomId == activeClassroomId &&
+                    it.weekNumber == week.weekNumber &&
+                    it.lessonIndex == lesson.lessonIndex && it.isCompleted
+            }
+        }.sumOf { it.hours }
+    }
 
     Column(
         modifier = Modifier
@@ -482,7 +516,7 @@ private fun CenterWorkspace(
             annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
                 ?: currentPlan?.metadata?.totalAnnualHours
                 ?: currentPlan?.weeks?.sumOf { it.totalHours } ?: 0,
-            completedHours = viewModel.getCompletedHours(),
+            completedHours = completedHours,
             currentWeekNumber = activeWeekNumber
         )
 
@@ -536,9 +570,13 @@ private fun WeeklyLessonPlanView(
     activeWeekNumber: Int
 ) {
     val colors = ArcTheme.colors
+    val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val progress by viewModel.progressList.collectAsState()
 
     if (activeWeek == null) {
-        ArcEmptyStatesBlock.PlanNotAvailable(11, "Türk Dili ve Edebiyatı", {})
+        val plan = viewModel.classrooms.collectAsState().value
+            .firstOrNull { it.id == activeClassroomId }
+        ArcEmptyStatesBlock.PlanNotAvailable(plan?.gradeLevel ?: 11, plan?.courseName ?: "Türk Dili ve Edebiyatı", {})
         return
     }
 
@@ -611,7 +649,11 @@ private fun WeeklyLessonPlanView(
         )
 
         activeWeek.lessons.forEach { lesson ->
-            val isCompleted = viewModel.isLessonCompleted(activeWeek.weekNumber, lesson.lessonIndex)
+            val isCompleted = progress.any {
+                it.classroomId == activeClassroomId &&
+                    it.weekNumber == activeWeek.weekNumber &&
+                    it.lessonIndex == lesson.lessonIndex && it.isCompleted
+            }
 
             ArcSwipeActions(
                 onSwipeLeft = { viewModel.toggleLessonProgress(activeWeek.weekNumber, lesson.lessonIndex) },
@@ -930,22 +972,32 @@ private fun YearlyTimelineView(
 ) {
     val weeks = currentPlan?.weeks ?: emptyList()
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
+    val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val progress by viewModel.progressList.collectAsState()
+    val completedWeeks = weeks.filter { week ->
+        week.lessons.isNotEmpty() && week.lessons.all { lesson ->
+            progress.any {
+                it.classroomId == activeClassroomId && it.weekNumber == week.weekNumber &&
+                    it.lessonIndex == lesson.lessonIndex && it.isCompleted
+            }
+        }
+    }.map { it.weekNumber }.toSet()
 
     val milestones = weeks.map { w ->
         TimelineMilestone(
             weekNumber = w.weekNumber,
             title = "${w.theme?.themeCode ?: ""} — ${w.lessons.firstOrNull()?.learningArea ?: "Ders"}",
             dateText = "${w.dateRangeRaw} (${w.month})",
-            isBreak = w.weekNumber in listOf(10, 19, 23),
-            isPassed = w.weekNumber < activeWeekNumber,
+            isBreak = false,
+            isPassed = w.weekNumber in completedWeeks,
             isCurrent = w.weekNumber == activeWeekNumber
         )
     }
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
         ArcActivityHeatmap(
-            totalWeeks = 37,
-            completedWeeks = setOf(1, 2, 3, 4, 5),
+            totalWeeks = weeks.size,
+            completedWeeks = completedWeeks,
             currentWeek = activeWeekNumber,
             onSelectWeek = {
                 viewModel.selectWeek(it)
@@ -968,7 +1020,16 @@ private fun AnalyticsAndChartsView(
     viewModel: PlannerViewModel,
     currentPlan: com.plan.app.core.model.AnnualPlan?
 ) {
-    val completedHours = viewModel.getCompletedHours()
+    val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val progress by viewModel.progressList.collectAsState()
+    val completedHours = currentPlan?.weeks.orEmpty().sumOf { w ->
+        w.lessons.filter { l ->
+            progress.any {
+                it.classroomId == activeClassroomId && it.weekNumber == w.weekNumber &&
+                    it.lessonIndex == l.lessonIndex && it.isCompleted
+            }
+        }.sumOf { it.hours }
+    }
     val verifiedHours = currentPlan?.metadata?.verifiedLessonHours
     val assumedHours = currentPlan?.metadata?.assumedLessonHours
     val annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
@@ -995,9 +1056,14 @@ private fun AnalyticsAndChartsView(
     ) else emptyList()
 
     val cumulativePoints = currentPlan?.weeks.orEmpty()
-        .runningFold(0) { total, week -> total + week.totalHours }
-        .drop(1)
-        .map { it.toFloat() }
+        .runningFold(0) { total, week ->
+            total + week.lessons.filter { lesson ->
+                progress.any {
+                    it.classroomId == activeClassroomId && it.weekNumber == week.weekNumber &&
+                        it.lessonIndex == lesson.lessonIndex && it.isCompleted
+                }
+            }.sumOf { it.hours }
+        }.drop(1).map { it.toFloat() }
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
         ArcUsageMeter(
