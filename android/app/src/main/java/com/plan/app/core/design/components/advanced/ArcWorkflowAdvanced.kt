@@ -8,11 +8,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -35,6 +37,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -259,50 +264,59 @@ fun ArcActivityHeatmap(
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(ArcSpacing.space4)) {
             Text(
-                text = "Yıllık İlerleme Isı Haritası (37 Hafta)",
+                text = "Haftalara göre ilerleme (${totalWeeks} hafta)",
                 style = ArcTheme.typography.titleMedium,
                 color = colors.foreground
             )
             Spacer(modifier = Modifier.height(ArcSpacing.space3))
 
-            // Render 4 rows of ~10 weeks each
-            for (row in 0..3) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    for (col in 1..10) {
-                        val weekNum = row * 10 + col
-                        if (weekNum <= totalWeeks) {
-                            val isCompleted = completedWeeks.contains(weekNum)
-                            val isCurrent = weekNum == currentWeek
-
-                            val cellColor = when {
-                                isCompleted -> colors.success
-                                isCurrent -> colors.accent
-                                weekNum < currentWeek -> colors.warningSubtle
-                                else -> colors.surfaceMuted
+            BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                // Five columns on narrow screens preserve minimum 48dp targets.
+                val columns = if (maxWidth < 520.dp) 5 else 10
+                val rows = (totalWeeks + columns - 1) / columns
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    for (row in 0 until rows) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
+                            for (col in 0 until columns) {
+                                val number = row * columns + col + 1
+                                if (number > totalWeeks) {
+                                    Spacer(modifier = Modifier.weight(1f))
+                                } else {
+                                    val done = number in completedWeeks
+                                    val selected = number == currentWeek
+                                    val cellColor = when {
+                                        done -> colors.success
+                                        selected -> colors.accent
+                                        number < currentWeek -> colors.warningSubtle
+                                        else -> colors.surfaceMuted
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .heightIn(min = 48.dp)
+                                            .clip(ArcRadius.xs)
+                                            .background(cellColor)
+                                            .semantics {
+                                                contentDescription = "${number}. hafta, " +
+                                                    if (done) "tamamlandı"
+                                                    else if (selected) "seçili"
+                                                    else "tamamlanmadı"
+                                            }
+                                            .clickable(role = Role.Button) { onSelectWeek(number) },
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            text = number.toString(),
+                                            style = ArcTheme.typography.labelSmall,
+                                            color = if (done || selected) Color.White else colors.textSecondary,
+                                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    }
+                                }
                             }
-
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(28.dp)
-                                    .clip(ArcRadius.xs)
-                                    .background(cellColor)
-                                    .clickable { onSelectWeek(weekNum) },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = weekNum.toString(),
-                                    style = ArcTheme.typography.labelSmall,
-                                    fontSize = 10.sp,
-                                    color = if (isCompleted || isCurrent) Color.White else colors.textSecondary,
-                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
-                                )
-                            }
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f))
                         }
                     }
                 }
