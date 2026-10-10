@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "description": "Aynı depodaki kaynak yıllık planlar ve haftalık plan PWA'sı için ayrı yazma kapsamları.",
+  "version": 2,
+  "description": "Yıllık plan arşivi ile React Native + Expo mobil uygulaması arasında ayrı yazma kapsamları.",
   "scopes": {
     "data": {
       "write": [
@@ -10,22 +10,22 @@
         "plans/**"
       ],
       "deny_write": [
-        "pwa/**"
+        "mobile/**"
       ],
       "agent_file": "plans/AGENTS.md"
     },
-    "pwa": {
+    "mobile": {
       "write": [
-        "pwa/**"
+        "mobile/**"
       ],
       "read": [
-        "pwa/**",
+        "mobile/**",
         "plans/**"
       ],
       "deny_write": [
         "plans/**"
       ],
-      "agent_file": "pwa/AGENTS.md"
+      "agent_file": "mobile/AGENTS.md"
     },
     "shared": {
       "write_policy": "explicit-user-request-only",

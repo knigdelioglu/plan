@@ -1,19 +1,19 @@
 # Depo Kapsamı (Scope) ve Çalışma Sınırları
 
-Bu depo iki ayrı çalışma alanını barındırır. Görevin kapsamını işe başlamadan belirle; karşı alanı sadece gerekli olduğunda **salt okunur** incele.
+Bu depoda kaynak yıllık plan arşivi ile React Native + Expo uygulaması iki **ayrı çalışma alanıdır**. Bir görev başlamadan önce kapsamı belirle; diğer alanı gerekirse yalnızca **salt okunur** incele.
 
 | Görev kapsamı | Yazılabilir konum | Salt okunur konum | Yasak değişiklik |
 | --- | --- | --- | --- |
-| `data` / yıllık plan ve JSON aktarımı | `plans/**` | `plans/**` | `pwa/**` |
-| `pwa` / uygulama geliştirme | `pwa/**` | `plans/**` | `plans/**` |
+| `data` / yıllık plan, kaynak Excel/PDF ve JSON aktarımı | `plans/**` | `plans/**` | `mobile/**` |
+| `mobile` / React Native + Expo uygulaması | `mobile/**` | `plans/**` | `plans/**` |
 
-- Kullanıcı **yalnızca veri** çalışması istiyorsa PWA kaynak koduna, yapılandırmasına, testlerine veya derlenmiş çıktılarına dokunma.
-- Kullanıcı **yalnızca PWA** çalışması istiyorsa yıllık plan JSON'larını, şemalarını, doğrulama raporlarını ve inceleme kuyruklarını **asla değiştirme**. Gerekirse veriyi salt okunur kullan ve dönüşümü `pwa/**` altında yap.
-- Kök `AGENTS.md`, `README.md`, `SCOPES.md`, `.scope.json` ve `.github/**` paylaşılan yönetişim dosyalarıdır. Bunları ancak kullanıcı açıkça istediğinde değiştir.
-- Bir görev iki alanı da gerektiriyorsa kapsamları **ayrı değişiklik kümelerine / ayrı PR'lara** böl. Kullanıcının açık kapsam genişletmesi olmadan başka alana yazma.
-- Depo genelinde biçimlendirme, dosya taşıma veya otomatik düzeltme yaparken diğer kapsamda değişiklik üretme; teslimden önce değişen yolları kontrol et.
-- Ek yerel kurallar için `plans/AGENTS.md` ve `pwa/AGENTS.md` dosyalarını oku. Bu sınırlar alt klasörler için de geçerlidir.
-- Kapsam tanımları: [SCOPES.md](SCOPES.md) ve [`.scope.json`](.scope.json). CI, PR'da veri ve PWA uygulama değişikliklerinin karışmasını reddeder.
+- **Veri görevi:** Yalnızca `plans/**` içindeki kaynak arşiv üzerinde çalış. Expo uygulamasını, bağımlılıklarını, testlerini ve yapılandırmasını değiştirme.
+- **Expo uygulaması görevi:** Yalnızca `mobile/**` altında çalış. `plans/**` içindeki JSON'ları, şemaları, doğrulama raporlarını ve inceleme kuyruklarını hiçbir gerekçeyle yeniden yazma, biçimlendirme, silme veya taşıma. Gerekli kaynakları salt okunur kullan; türetilmiş katalogları ve dönüştürme kodunu uygulama alanında tut.
+- Kişisel öğretmen/şube/ilerleme kayıtları ortak plan arşivine yazılamaz; uygulamanın kendi depolama katmanında tutulur.
+- Kök `AGENTS.md`, `README.md`, `SCOPES.md`, `.scope.json` ve `.github/**` ortak yönetişim dosyalarıdır. Kullanıcı açıkça istemedikçe değiştirme.
+- Her iki alanın değiştirilmesi istenirse işi ayrı değişiklik kümeleri / ayrı PR'lar hâlinde yürüt. Bir alan için görev verilmesi diğer alana yazma izni oluşturmaz.
+- Repo genelinde otomatik biçimlendirme, taşıma, temizleme veya kod üretimi yaparken diğer kapsamı değiştirme; teslimde değişen dosya yollarını doğrula.
+- Yerel kurallar: `plans/AGENTS.md`, `mobile/AGENTS.md`. Makine tarafından okunabilir sınırlar: `.scope.json`. Genel politika: `SCOPES.md`. CI, plan verisi ile mobil uygulama değişikliklerinin aynı PR'da karışmasını denetler.
 
 ---
 

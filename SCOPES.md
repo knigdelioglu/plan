@@ -1,19 +1,20 @@
 # Çalışma Alanı Sınırları
 
-Aynı GitHub deposunda iki bağımsız çalışma alanı vardır:
+`knigdelioglu/plan` iki bağımsız çalışma alanı içerir:
 
-| Scope | Konum | Sahip olduğu içerik |
+| Scope | Konum | İçerik |
 | --- | --- | --- |
-| **data** | `plans/**` | Yıllık plan kaynak JSON'ları, şemalar, doğrulama raporları ve inceleme kayıtları |
-| **pwa** | `pwa/**` | Öğretmen PWA'sı, React bileşenleri, şube ilerlemesi ve uygulamaya özgü türetilmiş veriler |
-| **shared** | Kökteki seçili belgeler ve `.github/**` | Ortak ajan talimatları, kapsam tanımı ve CI |
+| **data** | `plans/**` | Kaynak yıllık plan JSON'ları, şemaları, doğrulama raporları ve inceleme kayıtları |
+| **mobile** | `mobile/**` | React Native + Expo (TypeScript) uygulamasının bütün kaynak kodu, ayarları, testleri ve uygulamaya özgü türetilmiş verileri |
+| **shared** | Kök yönetişim belgeleri ve `.github/**` | Ortak ajan kuralları, kapsam sözleşmesi ve CI |
 
 ## Ayrım kuralı
 
-Bir `data` görevi `pwa/**` yazma yetkisi vermez. Bir `pwa` görevi de `plans/**` yazma yetkisi vermez. Karşı alana salt okunur erişim mümkündür; örneğin PWA JSON planlarını okuyarak ekranlar üretir.
+- `data` görevi `mobile/**` yazma yetkisi vermez.
+- `mobile` görevi `plans/**` yazma yetkisi vermez. Mobil uygulama yıllık planları yalnızca **okur**; uygulamaya gereken dönüştürme betiği, önbellek veya katalog `mobile/**` altında hazırlanır.
+- Kişisel şubeler, öğretmen notları ve ders ilerleme kayıtları yıllık plan JSON'larına eklenmez; mobil uygulamanın yerel veri katmanına aittir.
+- Bir görev iki kapsamı birden gerektirirse ayrı commit/PR ile ele alınır. Ortak yönetişim belgeleri ancak kullanıcı açık talep ettiğinde değiştirilir.
 
-Her iki alanı ilgilendiren işler ayrı PR/commit kapsamında yürütülür. Paylaşılan yönetişim dosyalarına dokunmak için ayrıca açık talep gerekir.
+Kapsam kuralları kök `AGENTS.md`, `plans/AGENTS.md`, `mobile/AGENTS.md` ve `.scope.json` içinde yer alır. GitHub Actions PR denetimi veri arşivi ile mobil uygulama kaynaklarının karıştırılmasını yakalar.
 
-`plans/AGENTS.md` ve `pwa/AGENTS.md`, o çalışma alanında çalışan LLM/ajanlar için yerel talimatları içerir. Kök `AGENTS.md` her iki alanı bağlar. `.scope.json` makine tarafından okunabilir kapsam tanımıdır; GitHub Actions PR koruması iki alanın uygulama/veri değişikliklerini aynı PR'da karıştırmayı tespit eder.
-
-**Sınırlama:** Talimatlar ve PR kontrolü tek başına GitHub'daki yazma izinlerini teknik olarak kısıtlamaz. Zorunlu koruma için ilgili kontrolün branch protection/ruleset altında required status check yapılması gerekir.
+**Sınır:** Bu belge ve CI, GitHub yazma izinlerinin yerine geçmez. Kontrolün zorunlu olması için GitHub branch protection/ruleset'te required status check olarak ayarlanması gerekir.

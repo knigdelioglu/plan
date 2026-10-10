@@ -1,11 +1,11 @@
 # Veri Alanı — Scope: data
 
-Bu dosya `plans/**` kapsamındaki bütün yıllık plan dosyaları için geçerlidir.
+Bu dosya `plans/**` kapsamındaki yıllık plan kaynakları için geçerlidir.
 
-**Yazma izni:** Yalnızca `plans/**` altındaki veri arşivi dosyaları; kullanıcı açıkça bir veri görevi vermiş olmalıdır.
+**Yazma izni:** Kullanıcı açıkça veri görevi verdiğinde yalnızca `plans/**` altındaki veri arşivi dosyaları.
 
-**Kesin sınır:** Yıllık plan, kaynak Excel/PDF dönüşümü, JSON Schema, `validation-report.md` veya `review-queue.json` üzerinde çalışırken **`pwa/**` altında hiçbir dosyayı değiştirme**. PWA bileşenlerini, kodunu, yapılandırmasını, testlerini ve çıktılarını otomatik olarak senkronize etme.
+**Kesin sınır:** Yıllık plan JSON, kaynak Excel/PDF aktarımı, JSON Schema, `validation-report.md` veya `review-queue.json` üzerinde çalışırken **`mobile/**` altında hiçbir dosyayı değiştirme**. React Native + Expo ekranlarını, kodunu, ayarlarını, bağımlılıklarını, testlerini ve çıktılarını veri çalışmasına dahil etme.
 
-Kökteki `AGENTS.md` içindeki **Yıllık Plan Aktarım İlkeleri** veri işlerinin değişmez kurallarıdır; kaynak sadakati, birleştirilmiş hücreler, ders saati ayrımları, özel günlerin yerleşimi ve doğrulama kayıtlarını koru.
+Kök `AGENTS.md` içindeki **Yıllık Plan Aktarım İlkeleri** geçerlidir: kaynak sadakatini, özgün `raw` alanlarını, birleştirilmiş hücreleri, bölünmüş ders saatlerini, özel günlerin takvim/uygulama ayrımını ve kaynak doğrulama kayıtlarını koru.
 
-Kök düzeydeki ortak politika ve CI dosyalarını da veri işi bahanesiyle değiştirme. Ayrı PWA geliştirme ihtiyacı varsa bunu bu görevden bağımsız bir çalışma olarak ele al.
+Kök paylaşılan belgeleri ve CI yapılandırmasını veri çalışması bahanesiyle değiştirme. Uygulama geliştirmesi gerekiyorsa bağımsız `mobile` kapsamlı görev olarak ele al.

@@ -8,13 +8,13 @@ permissions:
 
 jobs:
   scope-boundary:
-    name: Keep data and PWA changes separate
+    name: Keep data and mobile changes separate
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Reject mixed data and PWA changes
+      - name: Reject mixed plan data and Expo changes
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -22,12 +22,10 @@ jobs:
         run: |
           set -euo pipefail
           git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-paths.txt
-          # Scope policy metadata may be revised with either scope.
-          if grep -Eq '^plans/' changed-paths.txt && grep -Eq '^pwa/' changed-paths.txt; then
-            if grep -E '^plans/' changed-paths.txt | grep -Ev '^plans/AGENTS\.md$' >/dev/null; then
-              echo "::error::Aynı PR'da plans/** veri dosyaları ve pwa/** değişiklikleri bulunuyor. Kapsamları ayrı PR'lara ayırın."
-              cat changed-paths.txt
-              exit 1
-            fi
+          # plans/AGENTS.md only changes policy, not plan content.
+          if grep -E '^plans/' changed-paths.txt | grep -Ev '^plans/AGENTS\.md$' >/dev/null && grep -Eq '^mobile/' changed-paths.txt; then
+            echo "::error::Aynı PR'da plans/** veri dosyaları ve mobile/** Expo değişiklikleri bulundu. Ayrı PR'lar oluşturun."
+            cat changed-paths.txt
+            exit 1
           fi
           echo "Scope boundary: OK"
