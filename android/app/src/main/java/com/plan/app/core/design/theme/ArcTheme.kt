@@ -275,7 +275,8 @@ fun ArcTheme(
     reducedMotionOverride: Boolean? = null,
     content: @Composable () -> Unit
 ) {
-    val reducedMotion = reducedMotionOverride ?: rememberSystemReducedMotion()
+    val systemReducedMotion = rememberSystemReducedMotion()
+    val reducedMotion = reducedMotionOverride ?: systemReducedMotion
     val arcColors = if (darkTheme) ArcDarkColors else ArcLightColors
     val m3ColorScheme = if (darkTheme) {
         darkColorScheme(
