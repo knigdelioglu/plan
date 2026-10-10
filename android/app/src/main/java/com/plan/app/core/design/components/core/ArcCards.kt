@@ -1,6 +1,8 @@
 package com.plan.app.core.design.components.core
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -44,6 +46,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.plan.app.core.design.motion.ArcMotionTokens
+import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
@@ -89,9 +92,10 @@ fun ArcExpandableCard(
     content: @Composable () -> Unit
 ) {
     var expanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
+    val reducedMotion = LocalReducedMotion.current
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
-        animationSpec = ArcMotionTokens.Springs.Smooth,
+        animationSpec = ArcMotionTokens.respectMotionPreference(reducedMotion, ArcMotionTokens.Springs.Smooth),
         label = "expand_arrow"
     )
 
@@ -143,8 +147,10 @@ fun ArcExpandableCard(
 
             AnimatedVisibility(
                 visible = expanded,
-                enter = fadeIn() + expandVertically(animationSpec = ArcMotionTokens.Springs.smooth()),
-                exit = fadeOut() + shrinkVertically(animationSpec = ArcMotionTokens.Springs.smooth())
+                enter = if (reducedMotion) EnterTransition.None else
+                    fadeIn() + expandVertically(animationSpec = ArcMotionTokens.Springs.smooth()),
+                exit = if (reducedMotion) ExitTransition.None else
+                    fadeOut() + shrinkVertically(animationSpec = ArcMotionTokens.Springs.smooth())
             ) {
                 Column(modifier = Modifier.padding(top = ArcSpacing.space3)) {
                     content()
@@ -170,6 +176,7 @@ fun ArcAccordion(
     allowMultiple: Boolean = false
 ) {
     var expandedIds by remember { mutableStateOf(setOf<String>()) }
+    val reducedMotion = LocalReducedMotion.current
 
     Column(
         modifier = modifier,
@@ -179,7 +186,7 @@ fun ArcAccordion(
             val isExpanded = expandedIds.contains(item.id)
             val arrowRotation by animateFloatAsState(
                 targetValue = if (isExpanded) 180f else 0f,
-                animationSpec = ArcMotionTokens.Springs.Smooth,
+                animationSpec = ArcMotionTokens.respectMotionPreference(reducedMotion, ArcMotionTokens.Springs.Smooth),
                 label = "accordion_arrow_${item.id}"
             )
 
@@ -215,8 +222,10 @@ fun ArcAccordion(
 
                     AnimatedVisibility(
                         visible = isExpanded,
-                        enter = fadeIn() + expandVertically(animationSpec = ArcMotionTokens.Springs.smooth()),
-                        exit = fadeOut() + shrinkVertically(animationSpec = ArcMotionTokens.Springs.smooth())
+                        enter = if (reducedMotion) EnterTransition.None else
+                    fadeIn() + expandVertically(animationSpec = ArcMotionTokens.Springs.smooth()),
+                        exit = if (reducedMotion) ExitTransition.None else
+                    fadeOut() + shrinkVertically(animationSpec = ArcMotionTokens.Springs.smooth())
                     ) {
                         Column(modifier = Modifier.padding(top = ArcSpacing.space3)) {
                             item.content()
