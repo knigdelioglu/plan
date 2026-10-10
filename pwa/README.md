@@ -30,7 +30,11 @@ GitHub Pages gibi bir alt yola dağıtım için örnek: `BASE_PATH=/plan/ npm ru
 - Kaynak JSON'lardan okunan plan kataloğu; haftalar, ders bölümleri, kazanımlar ve tatiller
 - Plan ve hafta seçimi; gerçek veriden ders bölümü ayrıntısı; okul türü uyuşmazlığını dışlama
 - Manifest + hizmet çalışanı hazırlığıyla çevrimdışı önbellekleme
-- Şube ekleme, gerçek ilerleme kayıtları ve IndexedDB **henüz bu sürümde yoktur**; ekranda bunlar çalışıyormuş gibi gösterilmez
+- Şube ekleme/silme, başlangıç haftası belirleme, şube bazlı ayrı ilerleme kayıtları
+- Her ders bölümü için 0–planlanan saat aralığında kayıt; 3+2 bölünmüş haftalarda bağımsız takip
+- Kısa ders notları ve kaldığı yere gitme
+- Dexie + IndexedDB ile cihazda kalıcı veri; veri kaydı tamamlanmadan başarı mesajı verilmez
+- **Henüz bulut senkronizasyonu veya yedekleme/geri yükleme yoktur.** Tarayıcı verilerini silmek kişisel kayıtları kaybettirebilir.
 
 ## Arc Library
 
@@ -43,8 +47,9 @@ src/app/                      uygulama kabuğu ve ekran yönlendirmesi
 src/components/arc/           özgün Arc kaynak bileşenleri ve foundation
 src/features/weeks/           haftalık içerik
 src/features/catalog/         kaynak plan kataloğu
-src/features/classes/         gelecekteki şube takibi
-src/features/progress/        gelecekteki ilerleme kaydı
+src/features/classes/         şube oluşturma, silme ve ilerleme özeti
+src/features/progress/        ders bazlı saat, not ve ilerleme hesaplaması
+src/lib/storage/teacher-db.ts Dexie + IndexedDB kayıt katmanı
 src/lib/motion-tokens.ts      Arc hareket değişkenleri
 scripts/build-plan-catalog.mjs  salt okunur veri dönüştürme
 public/data/catalog.json      üretilmiş PWA katalog verisi

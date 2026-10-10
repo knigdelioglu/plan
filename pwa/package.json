@@ -1,6 +1,6 @@
 {
   "name": "plan-haftalik-pwa",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
     "check": "npm run test && npm run typecheck && npm run build"
   },
   "dependencies": {
@@ -18,7 +18,8 @@
     "lucide-react": "^1.47.0",
     "motion": "^13.4.0",
     "react": "^19.3.0",
-    "react-dom": "^19.3.0"
+    "react-dom": "^19.3.0",
+    "dexie": "^4.2.1"
   },
   "devDependencies": {
     "@types/node": "^26.6.1",
