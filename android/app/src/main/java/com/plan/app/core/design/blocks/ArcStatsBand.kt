@@ -33,14 +33,15 @@ import com.plan.app.core.design.theme.ArcTheme
 fun ArcStatsBand(
     totalWeeks: Int = 37,
     totalLessons: Int = 45,
-    verifiedHours: Int = 180,
-    assumedHours: Int = 185,
+    verifiedHours: Int? = null,
+    assumedHours: Int? = null,
+    annualHours: Int,
     completedHours: Int = 0,
     currentWeekNumber: Int = 1,
     modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
-    val progressPercent = ((completedHours.toFloat() / assumedHours) * 100).toInt()
+    val progressPercent = if (annualHours > 0) ((completedHours.toFloat() / annualHours) * 100).toInt() else 0
 
     Surface(
         modifier = modifier.fillMaxWidth(),
@@ -81,8 +82,16 @@ fun ArcStatsBand(
             Column {
                 Text(text = "Yıllık Ders Saati", style = ArcTheme.typography.labelSmall, color = colors.textMuted)
                 Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = "$verifiedHours + 5", style = ArcTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colors.foreground)
-                    ArcBadge(text = "180 Doğrulandı", variant = ArcBadgeVariant.SUCCESS)
+                    Text(
+                        text = if (verifiedHours != null && assumedHours != null) "$verifiedHours + $assumedHours" else annualHours.toString(),
+                        style = ArcTheme.typography.titleLarge,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.foreground
+                    )
+                    ArcBadge(
+                        text = if (verifiedHours != null) "$verifiedHours doğrulanmış" else "Kaynak toplam",
+                        variant = if (verifiedHours != null) ArcBadgeVariant.SUCCESS else ArcBadgeVariant.NEUTRAL
+                    )
                 }
             }
 
