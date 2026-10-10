@@ -96,7 +96,8 @@ class TeacherRepository(private val context: Context? = null) {
         ))
     }
 
-    fun selectViewMode(mode: PlannerViewMode) = change(snapshot.copy(viewMode = mode))
+    fun selectViewMode(mode: PlannerViewMode) =
+        change(snapshot.copy(viewMode = PlannerViewMode.fromSaved(mode)))
     fun setDarkMode(enabled: Boolean) = change(snapshot.copy(darkMode = enabled))
 
     fun addClassroom(
@@ -230,7 +231,10 @@ class TeacherRepository(private val context: Context? = null) {
                 else file.readText()
             val parsed = json.decodeFromString(TeacherSnapshot.serializer(), raw)
             require(parsed.version == 1) { "Bilinmeyen öğretmen veri sürümü" }
-            return parsed.copy(classrooms = parsed.classrooms.ifEmpty { defaults })
+            return parsed.copy(
+                classrooms = parsed.classrooms.ifEmpty { defaults },
+                viewMode = PlannerViewMode.fromSaved(parsed.viewMode)
+            )
         }
         val base = file.parentFile
         fun <T> readLegacy(name: String, block: (String) -> T): T? {
