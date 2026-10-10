@@ -15,6 +15,7 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.gestures.rememberDraggableState
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -44,6 +45,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onKeyEvent
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.Dp
@@ -203,7 +212,7 @@ fun ArcResizablePanels(
 ) {
     var splitRatio by rememberSaveable { mutableFloatStateOf(initialSplitRatio.coerceIn(0f, 1f)) }
     val density = LocalDensity.current
-    val dividerWidth = 8.dp
+    val dividerWidth = 24.dp
 
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
         val usableWidth = (maxWidth - dividerWidth).coerceAtLeast(1.dp)
@@ -223,17 +232,33 @@ fun ArcResizablePanels(
                 firstPanel()
             }
 
-            // Draggable divider bar
+            // Wider touch target with visible 2dp divider; keyboard arrows support DeX.
             Box(
                 modifier = Modifier
-                    .width(8.dp)
+                    .width(dividerWidth)
                     .fillMaxHeight()
+                    .semantics {
+                        contentDescription = "Panel genişliğini değiştir"
+                        stateDescription = "Sol panel ${firstPanelWidth.value.toInt()} dp"
+                    }
+                    .onKeyEvent { event ->
+                        if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
+                        val step = when (event.key) {
+                            Key.DirectionLeft -> -20f
+                            Key.DirectionRight -> 20f
+                            else -> return@onKeyEvent false
+                        }
+                        splitRatio = (splitRatio + step / usableWidth.value)
+                            .coerceIn(minimumRatio, maximumRatio)
+                        true
+                    }
+                    .focusable()
                     .draggable(
                         orientation = Orientation.Horizontal,
                         state = rememberDraggableState { delta ->
                             val deltaDp = with(density) { delta.toDp().value }
-                            val nextDp = firstPanelWidth.value + deltaDp
-                            splitRatio = (nextDp / usableWidth.value).coerceIn(minimumRatio, maximumRatio)
+                            splitRatio = (splitRatio + deltaDp / usableWidth.value)
+                                .coerceIn(minimumRatio, maximumRatio)
                         }
                     ),
                 contentAlignment = Alignment.Center

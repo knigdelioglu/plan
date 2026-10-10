@@ -68,6 +68,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.plan.app.core.design.motion.ArcMotionTokens
+import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
@@ -405,9 +406,12 @@ fun ArcCheckbox(
     enabled: Boolean = true
 ) {
     val colors = ArcTheme.colors
+    val reducedMotion = LocalReducedMotion.current
     val scale by animateFloatAsState(
         targetValue = if (checked) 1f else 0.85f,
-        animationSpec = ArcMotionTokens.Springs.Snappy,
+        animationSpec = ArcMotionTokens.respectMotionPreference(
+            reducedMotion, ArcMotionTokens.Springs.Snappy
+        ),
         label = "checkbox_scale"
     )
 

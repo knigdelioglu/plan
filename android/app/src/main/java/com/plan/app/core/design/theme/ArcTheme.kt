@@ -10,6 +10,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
+import com.plan.app.core.design.motion.LocalReducedMotion
+import com.plan.app.core.design.motion.rememberSystemReducedMotion
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -270,8 +272,11 @@ object ArcTheme {
 @Composable
 fun ArcTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    reducedMotionOverride: Boolean? = null,
     content: @Composable () -> Unit
 ) {
+    val systemReducedMotion = rememberSystemReducedMotion()
+    val reducedMotion = reducedMotionOverride ?: systemReducedMotion
     val arcColors = if (darkTheme) ArcDarkColors else ArcLightColors
     val m3ColorScheme = if (darkTheme) {
         darkColorScheme(
@@ -306,7 +311,8 @@ fun ArcTheme(
     )
 
     CompositionLocalProvider(
-        LocalArcColors provides arcColors
+        LocalArcColors provides arcColors,
+        LocalReducedMotion provides reducedMotion
     ) {
         MaterialTheme(
             colorScheme = m3ColorScheme,

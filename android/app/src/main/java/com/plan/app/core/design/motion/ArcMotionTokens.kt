@@ -1,6 +1,7 @@
 package com.plan.app.core.design.motion
 
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -66,6 +67,20 @@ object ArcMotionTokens {
 
     fun <T> exitTween(durationMillis: Int = Duration.Exit): AnimationSpec<T> =
         tween(durationMillis = durationMillis, easing = Easing.Exit)
+
+    /**
+     * Do not animate when the Android user disabled animator animations.
+     * Keep a typed specification so Float, Dp and layout transitions agree.
+     */
+    fun <T> respectMotionPreference(
+        reduced: Boolean,
+        normal: AnimationSpec<T>
+    ): AnimationSpec<T> = if (reduced) snap() else normal
+
+    fun <T> respectFiniteMotionPreference(
+        reduced: Boolean,
+        normal: FiniteAnimationSpec<T>
+    ): FiniteAnimationSpec<T> = if (reduced) snap() else normal
 }
 
 val LocalReducedMotion = compositionLocalOf { false }
