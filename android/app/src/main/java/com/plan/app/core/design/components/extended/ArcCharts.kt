@@ -210,12 +210,13 @@ fun ArcDonutChart(
 @Composable
 fun ArcUsageMeter(
     completedHours: Int,
-    verifiedHours: Int = 180,
-    assumedHours: Int = 185,
+    verifiedHours: Int? = null,
+    assumedHours: Int? = null,
+    annualHours: Int,
     modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
-    val percentage = ((completedHours.toFloat() / assumedHours) * 100).toInt()
+    val percentage = if (annualHours > 0) ((completedHours.toFloat() / annualHours) * 100).toInt() else 0
 
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(ArcSpacing.space4)) {
@@ -242,17 +243,19 @@ fun ArcUsageMeter(
                     cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2)
                 )
 
-                // Verified mark line
-                val verifiedX = (verifiedHours.toFloat() / assumedHours) * size.width
-                drawLine(
-                    color = colors.borderStrong,
-                    start = Offset(verifiedX, 0f),
-                    end = Offset(verifiedX, size.height),
-                    strokeWidth = 2.dp.toPx()
-                )
+                // Verified marker is only shown when explicitly present in source.
+                if (verifiedHours != null && annualHours > 0) {
+                    val verifiedX = (verifiedHours.toFloat() / annualHours) * size.width
+                    drawLine(
+                        color = colors.borderStrong,
+                        start = Offset(verifiedX, 0f),
+                        end = Offset(verifiedX, size.height),
+                        strokeWidth = 2.dp.toPx()
+                    )
+                }
 
                 // Fill progress
-                val fillWidth = (completedHours.toFloat() / assumedHours).coerceIn(0f, 1f) * size.width
+                val fillWidth = if (annualHours > 0) (completedHours.toFloat() / annualHours).coerceIn(0f, 1f) * size.width else 0f
                 if (fillWidth > 0f) {
                     drawRoundRect(
                         color = colors.accent,
@@ -268,8 +271,15 @@ fun ArcUsageMeter(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(text = "$completedHours / $assumedHours saat işlendi", style = ArcTheme.typography.bodySmall, color = colors.textSecondary)
-                Text(text = "Doğrulanmış: $verifiedHours sa (+5 varsayılan)", style = ArcTheme.typography.bodySmall, fontSize = 11.sp, color = colors.textMuted)
+                Text(text = "$completedHours / $annualHours saat işlendi", style = ArcTheme.typography.bodySmall, color = colors.textSecondary)
+                Text(
+                    text = if (verifiedHours != null) "Doğrulanmış: $verifiedHours sa" +
+                        (assumedHours?.takeIf { it > 0 }?.let { " (+$it varsayımsal)" } ?: "")
+                    else "Kaynakta doğrulama ayrımı belirtilmemiş",
+                    style = ArcTheme.typography.bodySmall,
+                    fontSize = 11.sp,
+                    color = colors.textMuted
+                )
             }
         }
     }
