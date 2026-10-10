@@ -1,19 +1,13 @@
-# Depo Kapsamı (Scope) ve Çalışma Sınırları
+# Yıllık Plan Veri Arşivi — Çalışma Kuralları
 
-Bu depoda kaynak yıllık plan arşivi ile React Native + Expo uygulaması iki **ayrı çalışma alanıdır**. Bir görev başlamadan önce kapsamı belirle; diğer alanı gerekirse yalnızca **salt okunur** incele.
+Bu depo **yalnızca yıllık ders planlarının kaynak sadakatini koruyan JSON arşividir**. Çalışma alanı `plans/**`; depoda mobil/web uygulaması, paket yöneticisi ya da uygulama derleme altyapısı bulunmaz.
 
-| Görev kapsamı | Yazılabilir konum | Salt okunur konum | Yasak değişiklik |
-| --- | --- | --- | --- |
-| `data` / yıllık plan, kaynak Excel/PDF ve JSON aktarımı | `plans/**` | `plans/**` | `mobile/**` |
-| `mobile` / React Native + Expo uygulaması | `mobile/**` | `plans/**` | `plans/**` |
-
-- **Veri görevi:** Yalnızca `plans/**` içindeki kaynak arşiv üzerinde çalış. Expo uygulamasını, bağımlılıklarını, testlerini ve yapılandırmasını değiştirme.
-- **Expo uygulaması görevi:** Yalnızca `mobile/**` altında çalış. `plans/**` içindeki JSON'ları, şemaları, doğrulama raporlarını ve inceleme kuyruklarını hiçbir gerekçeyle yeniden yazma, biçimlendirme, silme veya taşıma. Gerekli kaynakları salt okunur kullan; türetilmiş katalogları ve dönüştürme kodunu uygulama alanında tut.
-- Kişisel öğretmen/şube/ilerleme kayıtları ortak plan arşivine yazılamaz; uygulamanın kendi depolama katmanında tutulur.
-- Kök `AGENTS.md`, `README.md`, `SCOPES.md`, `.scope.json` ve `.github/**` ortak yönetişim dosyalarıdır. Kullanıcı açıkça istemedikçe değiştirme.
-- Her iki alanın değiştirilmesi istenirse işi ayrı değişiklik kümeleri / ayrı PR'lar hâlinde yürüt. Bir alan için görev verilmesi diğer alana yazma izni oluşturmaz.
-- Repo genelinde otomatik biçimlendirme, taşıma, temizleme veya kod üretimi yaparken diğer kapsamı değiştirme; teslimde değişen dosya yollarını doğrula.
-- Yerel kurallar: `plans/AGENTS.md`, `mobile/AGENTS.md`. Makine tarafından okunabilir sınırlar: `.scope.json`. Genel politika: `SCOPES.md`. CI, plan verisi ile mobil uygulama değişikliklerinin aynı PR'da karışmasını denetler.
+- Kullanıcı yıllık plan ekleme, doğrulama, düzeltme ya da kaynak Excel/PDF aktarımı istediğinde yalnızca ilgili `plans/**` altındaki dosyalarla çalış.
+- Ders, sınıf, okul türü ve öğretim yılı sınıflandırmasını koru. Bir okul türünün verisini başka bir okul türüymüş gibi kullanma.
+- Kök `AGENTS.md`, `README.md`, `SCOPES.md`, `.scope.json` gibi ortak belgeleri yalnızca kullanıcı açıkça istediğinde değiştir.
+- Yeni bir uygulama görevi açıkça verilmedikçe uygulama klasörleri, bağımlılıkları, ekranları, APK/IPA ya da PWA oluşturma; yıllık plan arşivini uygulama geliştirmesiyle karıştırma.
+- Bir çalışmanın sonunda değişen dosya yollarını ve kaynağa ilişkin doğrulama kayıtlarını kontrol et.
+- Alt klasör kuralları: [`plans/AGENTS.md`](plans/AGENTS.md). Kapsam tanımı: [`SCOPES.md`](SCOPES.md).
 
 ---
 

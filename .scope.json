@@ -1,6 +1,6 @@
 {
-  "version": 2,
-  "description": "Yıllık plan arşivi ile React Native + Expo mobil uygulaması arasında ayrı yazma kapsamları.",
+  "version": 3,
+  "description": "Kaynak yıllık plan JSON arşivinin veri ve kök belge çalışma sınırları.",
   "scopes": {
     "data": {
       "write": [
@@ -9,23 +9,7 @@
       "read": [
         "plans/**"
       ],
-      "deny_write": [
-        "mobile/**"
-      ],
       "agent_file": "plans/AGENTS.md"
-    },
-    "mobile": {
-      "write": [
-        "mobile/**"
-      ],
-      "read": [
-        "mobile/**",
-        "plans/**"
-      ],
-      "deny_write": [
-        "plans/**"
-      ],
-      "agent_file": "mobile/AGENTS.md"
     },
     "shared": {
       "write_policy": "explicit-user-request-only",
@@ -33,14 +17,13 @@
         "AGENTS.md",
         "README.md",
         "SCOPES.md",
-        ".scope.json",
-        ".github/**"
+        ".scope.json"
       ]
     }
   },
   "policy": {
-    "no_cross_scope_writes": true,
-    "mixed_scope_changes": "separate-prs",
-    "read_only_cross_scope_access": true
+    "scope": "data-only",
+    "application_workspace": false,
+    "shared_metadata_requires_explicit_request": true
   }
 }

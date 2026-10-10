@@ -1,20 +1,15 @@
 # Çalışma Alanı Sınırları
 
-`knigdelioglu/plan` iki bağımsız çalışma alanı içerir:
+`knigdelioglu/plan` şu anda **yalnızca yıllık plan veri arşividir**. Uygulama geliştirme çalışma alanı yoktur.
 
 | Scope | Konum | İçerik |
 | --- | --- | --- |
-| **data** | `plans/**` | Kaynak yıllık plan JSON'ları, şemaları, doğrulama raporları ve inceleme kayıtları |
-| **mobile** | `mobile/**` | React Native + Expo (TypeScript) uygulamasının bütün kaynak kodu, ayarları, testleri ve uygulamaya özgü türetilmiş verileri |
-| **shared** | Kök yönetişim belgeleri ve `.github/**` | Ortak ajan kuralları, kapsam sözleşmesi ve CI |
+| **data** | `plans/**` | Kaynak yıllık plan JSON'ları, şemalar, doğrulama raporları ve inceleme kayıtları |
+| **shared** | Kök `AGENTS.md`, `README.md`, `SCOPES.md` ve `.scope.json` | Genel açıklamalar ve ajan çalışma ilkeleri |
 
-## Ayrım kuralı
+- Yıllık plan ekleme/düzeltme işleri yalnızca `plans/**` altında yapılır.
+- Ortak kök dosyalar ancak kullanıcının açık talebiyle değiştirilir.
+- Depoda uygulama paketi, mobil ya da web arayüzü, uygulama derleme sistemi bulunmaz. Yeni bir uygulama ancak ayrıca istenirse ayrı ve açıkça tanımlanmış kapsamda ele alınabilir.
+- Bu yazılı kurallar GitHub'ın gerçek yazma izinlerinin yerine geçmez.
 
-- `data` görevi `mobile/**` yazma yetkisi vermez.
-- `mobile` görevi `plans/**` yazma yetkisi vermez. Mobil uygulama yıllık planları yalnızca **okur**; uygulamaya gereken dönüştürme betiği, önbellek veya katalog `mobile/**` altında hazırlanır.
-- Kişisel şubeler, öğretmen notları ve ders ilerleme kayıtları yıllık plan JSON'larına eklenmez; mobil uygulamanın yerel veri katmanına aittir.
-- Bir görev iki kapsamı birden gerektirirse ayrı commit/PR ile ele alınır. Ortak yönetişim belgeleri ancak kullanıcı açık talep ettiğinde değiştirilir.
-
-Kapsam kuralları kök `AGENTS.md`, `plans/AGENTS.md`, `mobile/AGENTS.md` ve `.scope.json` içinde yer alır. GitHub Actions PR denetimi veri arşivi ile mobil uygulama kaynaklarının karıştırılmasını yakalar.
-
-**Sınır:** Bu belge ve CI, GitHub yazma izinlerinin yerine geçmez. Kontrolün zorunlu olması için GitHub branch protection/ruleset'te required status check olarak ayarlanması gerekir.
+Ayrıntılı kaynak sadakati kuralları: [`AGENTS.md`](AGENTS.md) ve [`plans/AGENTS.md`](plans/AGENTS.md).

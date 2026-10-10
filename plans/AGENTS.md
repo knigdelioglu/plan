@@ -1,11 +1,11 @@
 # Veri Alanı — Scope: data
 
-Bu dosya `plans/**` kapsamındaki yıllık plan kaynakları için geçerlidir.
+Bu dosya `plans/**` altındaki yıllık plan dosyalarına uygulanır.
 
-**Yazma izni:** Kullanıcı açıkça veri görevi verdiğinde yalnızca `plans/**` altındaki veri arşivi dosyaları.
+**Yazma izni:** Yalnızca kullanıcı açıkça veri ekleme/düzeltme/aktarım görevi verdiğinde, ilgili `plans/**` arşiv dosyaları.
 
-**Kesin sınır:** Yıllık plan JSON, kaynak Excel/PDF aktarımı, JSON Schema, `validation-report.md` veya `review-queue.json` üzerinde çalışırken **`mobile/**` altında hiçbir dosyayı değiştirme**. React Native + Expo ekranlarını, kodunu, ayarlarını, bağımlılıklarını, testlerini ve çıktılarını veri çalışmasına dahil etme.
-
-Kök `AGENTS.md` içindeki **Yıllık Plan Aktarım İlkeleri** geçerlidir: kaynak sadakatini, özgün `raw` alanlarını, birleştirilmiş hücreleri, bölünmüş ders saatlerini, özel günlerin takvim/uygulama ayrımını ve kaynak doğrulama kayıtlarını koru.
-
-Kök paylaşılan belgeleri ve CI yapılandırmasını veri çalışması bahanesiyle değiştirme. Uygulama geliştirmesi gerekiyorsa bağımsız `mobile` kapsamlı görev olarak ele al.
+- Bu depo yalnızca kaynak yıllık plan veritabanını barındırır; mobil/web uygulaması kodu ve bağımlılıkları bu veri görevinin parçası değildir.
+- Kaynak `annual-plan.json`, JSON Schema, `validation-report.md` ve `review-queue.json` dosyalarını kaynağa uygun, izlenebilir ve birbiriyle tutarlı tut.
+- Birleştirilmiş hücreleri, `3+2` ders saati gibi çok bölümlü haftaları ve özel günlerin anma tarihi / işlenme haftası ayrımını koru.
+- Kök `AGENTS.md` içindeki **Yıllık Plan Aktarım İlkeleri** bağlayıcıdır.
+- Kullanıcının açık talebi olmadan kök yönetişim dosyalarını değiştirme ve arşiv dışına uygulama kodu ekleme.
