@@ -56,6 +56,7 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -216,6 +217,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
         if (isTabletLandscape) {
             // Tablet-first Resizable Paneller
             ArcResizablePanels(
+                modifier = Modifier.testTag("planner-two-pane"),
                 initialSplitRatio = 0.30f,
                 minFirstPanelWidth = PlannerWindowPolicy.MinSidebarDp.dp,
                 minSecondPanelWidth = PlannerWindowPolicy.MinWorkspaceDp.dp,
@@ -238,7 +240,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             )
         } else {
             // Compact / Phone layout
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().testTag("planner-compact")) {
                 LeftSidebarHeader(
                     viewModel = viewModel,
                     currentClass = currentClass,
