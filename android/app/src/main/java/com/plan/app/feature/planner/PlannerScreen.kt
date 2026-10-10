@@ -975,25 +975,29 @@ private fun AnalyticsAndChartsView(
         ?: currentPlan?.metadata?.totalAnnualHours
         ?: currentPlan?.weeks?.sumOf { it.totalHours } ?: 0
 
-    val themeSlices = listOf(
-        DonutSlice("1. Tema: Bir Diyeceğim Var!", 45f, Color(0xFF6366F1)),
-        DonutSlice("2. Tema: Kültür Yolculuğu", 45f, Color(0xFFEC4899)),
-        DonutSlice("3. Tema: Yaşamın İzinde", 45f, Color(0xFF10B981)),
-        DonutSlice("4. Tema: Sanatın Gücü", 45f, Color(0xFFF59E0B)),
-        DonutSlice("Sosyal Etkinlik (Varsayılan)", 5f, Color(0xFF8B5CF6))
+    // Never display hardcoded curriculum statistics or a fabricated verification split.
+    val chartColors = listOf(
+        Color(0xFF6366F1), Color(0xFFEC4899), Color(0xFF10B981),
+        Color(0xFFF59E0B), Color(0xFF8B5CF6)
     )
+    val themes = currentPlan?.themes.orEmpty()
+    val remainingHours = (annualHours - themes.sumOf { it.totalHours }).coerceAtLeast(0)
+    val themeSlices = themes.mapIndexed { index, theme ->
+        DonutSlice(theme.themeName, theme.totalHours.toFloat(), chartColors[index % chartColors.size])
+    } + if (remainingHours > 0) listOf(
+        DonutSlice("Diğer / Sosyal Etkinlik", remainingHours.toFloat(), chartColors[4])
+    ) else emptyList()
 
-    val barItems = listOf(
-        BarChartItem("1. Tema", 45f, Color(0xFF6366F1)),
-        BarChartItem("2. Tema", 45f, Color(0xFFEC4899)),
-        BarChartItem("3. Tema", 45f, Color(0xFF10B981)),
-        BarChartItem("4. Tema", 45f, Color(0xFFF59E0B)),
-        BarChartItem("Etkinlik", 5f, Color(0xFF8B5CF6))
-    )
+    val barItems = themes.mapIndexed { index, theme ->
+        BarChartItem(theme.themeCode, theme.totalHours.toFloat(), chartColors[index % chartColors.size])
+    } + if (remainingHours > 0) listOf(
+        BarChartItem("Diğer", remainingHours.toFloat(), chartColors[4])
+    ) else emptyList()
 
-    val cumulativePoints = listOf(
-        5f, 10f, 15f, 20f, 25f, 30f, 35f, 40f, 45f, 50f, 60f, 75f, 90f, 110f, 130f, 150f, 180f, 185f
-    )
+    val cumulativePoints = currentPlan?.weeks.orEmpty()
+        .runningFold(0) { total, week -> total + week.totalHours }
+        .drop(1)
+        .map { it.toFloat() }
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
         ArcUsageMeter(
