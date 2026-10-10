@@ -65,6 +65,7 @@ import com.plan.app.core.design.components.core.ArcButton
 import com.plan.app.core.design.components.core.ArcButtonVariant
 import com.plan.app.core.design.components.core.ArcSearchField
 import com.plan.app.core.design.motion.ArcMotionTokens
+import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
@@ -169,9 +170,12 @@ fun ArcThemeSwitch(
     modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
+    val reducedMotion = LocalReducedMotion.current
     val offset by animateDpAsState(
         targetValue = if (isDark) 24.dp else 2.dp,
-        animationSpec = ArcMotionTokens.Springs.morph(),
+        animationSpec = ArcMotionTokens.respectMotionPreference(
+            reducedMotion, ArcMotionTokens.Springs.morph()
+        ),
         label = "theme_switch_offset"
     )
 
@@ -224,7 +228,14 @@ fun ArcSwipeActions(
     val density = LocalDensity.current
     val triggerPx = with(density) { 72.dp.toPx() }
     val maxOffset = triggerPx * 1.5f
-    val animatedOffset by animateFloatAsState(targetValue = offsetX, label = "ArcSwipeOffset")
+    val reducedMotion = LocalReducedMotion.current
+    val animatedOffset by animateFloatAsState(
+        targetValue = offsetX,
+        animationSpec = ArcMotionTokens.respectMotionPreference(
+            reducedMotion, ArcMotionTokens.Springs.Snappy
+        ),
+        label = "ArcSwipeOffset"
+    )
 
     Box(
         modifier = modifier
@@ -263,9 +274,14 @@ fun ArcExpandingSearch(
     modifier: Modifier = Modifier
 ) {
     var expanded by remember { mutableStateOf(false) }
+    val reducedMotion = LocalReducedMotion.current
 
     Row(
-        modifier = modifier.animateContentSize(animationSpec = ArcMotionTokens.Springs.morph()),
+        modifier = modifier.animateContentSize(
+            animationSpec = ArcMotionTokens.respectMotionPreference(
+                reducedMotion, ArcMotionTokens.Springs.morph()
+            )
+        ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (!expanded) {
