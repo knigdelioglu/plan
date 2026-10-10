@@ -7,6 +7,9 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -16,6 +19,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -44,6 +49,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
@@ -82,7 +92,10 @@ fun <T> ArcSegmentedControl(
         border = BorderStroke(1.dp, colors.border)
     ) {
         Row(
-            modifier = Modifier.padding(3.dp),
+            modifier = Modifier
+                .horizontalScroll(rememberScrollState())
+                .selectableGroup()
+                .padding(3.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(2.dp)
         ) {
@@ -92,8 +105,10 @@ fun <T> ArcSegmentedControl(
                     modifier = Modifier
                         .clip(ArcRadius.pill)
                         .background(if (isSelected) colors.surface else Color.Transparent)
-                        .clickable { onSelect(opt) }
-                        .padding(horizontal = 14.dp, vertical = 6.dp),
+                        .selectable(selected = isSelected, role = Role.Tab) { onSelect(opt) }
+                        .heightIn(min = 48.dp)
+                        .widthIn(min = 76.dp)
+                        .padding(horizontal = 14.dp, vertical = 8.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -317,7 +332,8 @@ fun ArcSearchField(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     placeholder: String = "Planda ara...",
-    onSearchCommit: (() -> Unit)? = null
+    onSearchCommit: (() -> Unit)? = null,
+    focusRequester: FocusRequester? = null
 ) {
     val colors = ArcTheme.colors
 
@@ -342,7 +358,8 @@ fun ArcSearchField(
             BasicTextField(
                 value = query,
                 onValueChange = onQueryChange,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
+                    .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
                 textStyle = ArcTheme.typography.bodyMedium.copy(color = colors.foreground),
                 cursorBrush = SolidColor(colors.accent),
                 singleLine = true,
@@ -394,24 +411,32 @@ fun ArcCheckbox(
         label = "checkbox_scale"
     )
 
-    Surface(
+    Box(
         modifier = modifier
-            .size(22.dp)
-            .clickable(enabled = enabled) { onCheckedChange(!checked) },
-        shape = RoundedCornerShape(6.dp),
-        color = if (checked) colors.controlOn else Color.Transparent,
-        border = BorderStroke(1.5.dp, if (checked) colors.controlOn else colors.controlTrack)
+            .size(48.dp)
+            .toggleable(
+                value = checked,
+                enabled = enabled,
+                role = Role.Checkbox,
+                onValueChange = onCheckedChange
+            ),
+        contentAlignment = Alignment.Center
     ) {
-        if (checked) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    tint = colors.controlGlyph,
-                    modifier = Modifier
-                        .size(15.dp)
-                        .scale(scale)
-                )
+        Surface(
+            modifier = Modifier.size(22.dp),
+            shape = RoundedCornerShape(6.dp),
+            color = if (checked) colors.controlOn else Color.Transparent,
+            border = BorderStroke(1.5.dp, if (checked) colors.controlOn else colors.controlTrack)
+        ) {
+            if (checked) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        tint = colors.controlGlyph,
+                        modifier = Modifier.size(15.dp).scale(scale)
+                    )
+                }
             }
         }
     }
