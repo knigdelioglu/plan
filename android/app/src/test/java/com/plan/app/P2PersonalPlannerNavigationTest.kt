@@ -32,8 +32,10 @@ class P2PersonalPlannerNavigationTest {
             val file = File("build/tmp/test_storage/teacher-state.json")
             assertTrue(file.isFile)
             val raw = file.readText()
-            assertTrue(raw.contains("\\"viewMode\\":\\"MONTH\\""))
-            file.writeText(raw.replace("\\"viewMode\\":\\"MONTH\\"", "\\"viewMode\\":\\"VALIDATION\\""))
+            val previousView = "\"viewMode\":\"MONTH\""
+            val legacyView = "\"viewMode\":\"VALIDATION\""
+            assertTrue(raw.contains(previousView))
+            file.writeText(raw.replace(previousView, legacyView))
 
             val restored = TeacherRepository(context = null)
             assertEquals(PlannerViewMode.WEEK, restored.viewMode.value)
