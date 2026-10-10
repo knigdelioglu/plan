@@ -117,19 +117,32 @@ class TeacherRepository(private val context: Context? = null) {
     }
 
     fun toggleLessonProgress(classroomId: String, weekNumber: Int, lessonIndex: Int): Boolean {
-        val existing = snapshot.progress.firstOrNull {
+        val next = !isLessonCompleted(classroomId, weekNumber, lessonIndex)
+        setLessonProgress(classroomId, weekNumber, lessonIndex, next)
+        return next
+    }
+
+    /**
+     * Swipe and checkbox actions set an explicit desired state instead of blindly
+     * toggling. Repeating a gesture is safe and does not rewrite the snapshot.
+     */
+    fun setLessonProgress(
+        classroomId: String, weekNumber: Int, lessonIndex: Int, completed: Boolean
+    ): Boolean {
+        require(weekNumber > 0 && lessonIndex > 0)
+        val previous = snapshot.progress.firstOrNull {
             it.classroomId == classroomId && it.weekNumber == weekNumber && it.lessonIndex == lessonIndex
         }
-        val newState = existing?.isCompleted != true
+        if (previous?.isCompleted == completed || (previous == null && !completed)) return completed
         val newEntry = LessonProgress(
-            classroomId, weekNumber, lessonIndex, newState,
-            if (newState) System.currentTimeMillis() else null
+            classroomId, weekNumber, lessonIndex, completed,
+            if (completed) System.currentTimeMillis() else null
         )
         val next = snapshot.progress.filterNot {
             it.classroomId == classroomId && it.weekNumber == weekNumber && it.lessonIndex == lessonIndex
         } + newEntry
         change(snapshot.copy(progress = next))
-        return newState
+        return completed
     }
 
     fun isLessonCompleted(classroomId: String, weekNumber: Int, lessonIndex: Int): Boolean =

@@ -56,6 +56,7 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -216,6 +217,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
         if (isTabletLandscape) {
             // Tablet-first Resizable Paneller
             ArcResizablePanels(
+                modifier = Modifier.testTag("planner-two-pane"),
                 initialSplitRatio = 0.30f,
                 minFirstPanelWidth = PlannerWindowPolicy.MinSidebarDp.dp,
                 minSecondPanelWidth = PlannerWindowPolicy.MinWorkspaceDp.dp,
@@ -238,7 +240,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             )
         } else {
             // Compact / Phone layout
-            Column(modifier = Modifier.fillMaxSize()) {
+            Column(modifier = Modifier.fillMaxSize().testTag("planner-compact")) {
                 LeftSidebarHeader(
                     viewModel = viewModel,
                     currentClass = currentClass,
@@ -577,50 +579,31 @@ private fun WeeklyLessonPlanView(
         return
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
-        // Week Header Card
-        ArcCard(modifier = Modifier.fillMaxWidth()) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(ArcSpacing.space4),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "${activeWeek.weekNumber}. Hafta (${activeWeek.month})",
-                            style = ArcTheme.typography.titleLarge,
-                            color = colors.foreground
-                        )
-                        ArcBadge(
-                            text = activeWeek.dateRangeRaw,
-                            variant = ArcBadgeVariant.NEUTRAL
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(2.dp))
-                    Text(
-                        text = "${activeWeek.theme?.themeCode}: ${activeWeek.theme?.themeName}",
-                        style = ArcTheme.typography.bodyMedium,
-                        color = colors.accent
-                    )
-                }
+    val currentPlan by viewModel.currentPlan.collectAsState()
+    val totalWeeks = currentPlan?.weeks?.maxOfOrNull { it.weekNumber } ?: activeWeekNumber
 
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    ArcButton(
-                        onClick = { viewModel.selectWeek(activeWeekNumber - 1) },
-                        enabled = activeWeekNumber > 1,
-                        variant = ArcButtonVariant.SECONDARY
-                    ) {
-                        Text("← Önceki Hafta")
+    Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
+        // Week heading reflows instead of clipping the two navigation buttons on phones.
+        ArcCard(modifier = Modifier.fillMaxWidth()) {
+            BoxWithConstraints(
+                modifier = Modifier.fillMaxWidth().padding(ArcSpacing.space4)
+            ) {
+                val compactHeader = maxWidth < 650.dp
+                if (compactHeader) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        WeekHeaderLabel(activeWeek, colors.foreground, colors.accent)
+                        WeekNavigationButtons(viewModel, activeWeekNumber, totalWeeks, compact = true)
                     }
-                    ArcButton(
-                        onClick = { viewModel.selectWeek(activeWeekNumber + 1) },
-                        enabled = activeWeekNumber < 37,
-                        variant = ArcButtonVariant.SECONDARY
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text("Sonraki Hafta →")
+                        Box(modifier = Modifier.weight(1f)) {
+                            WeekHeaderLabel(activeWeek, colors.foreground, colors.accent)
+                        }
+                        WeekNavigationButtons(viewModel, activeWeekNumber, totalWeeks, compact = false)
                     }
                 }
             }
@@ -653,8 +636,11 @@ private fun WeeklyLessonPlanView(
             }
 
             ArcSwipeActions(
-                onSwipeLeft = { viewModel.toggleLessonProgress(activeWeek.weekNumber, lesson.lessonIndex) },
-                onSwipeRight = { viewModel.toggleLessonProgress(activeWeek.weekNumber, lesson.lessonIndex) }
+                // Swipe left = completed; swipe right = not completed. Repeat gestures are safe.
+                onSwipeLeft = { viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, true) },
+                onSwipeRight = { viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, false) },
+                onSwipeLeftLabel = "Dersi işlendi olarak işaretle",
+                onSwipeRightLabel = "Dersin işlendi işaretini kaldır"
             ) {
                 ArcCard(
                     modifier = Modifier.fillMaxWidth(),
@@ -672,9 +658,10 @@ private fun WeeklyLessonPlanView(
                             ) {
                                 ArcCheckbox(
                                     checked = isCompleted,
-                                    onCheckedChange = {
-                                        viewModel.toggleLessonProgress(activeWeek.weekNumber, lesson.lessonIndex)
-                                    }
+                                    onCheckedChange = { next ->
+                                        viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, next)
+                                    },
+                                    label = "${activeWeek.weekNumber}. hafta, ${lesson.lessonIndex}. bölüm işlendi"
                                 )
                                 Column {
                                     Text(
@@ -683,7 +670,8 @@ private fun WeeklyLessonPlanView(
                                         color = if (isCompleted) colors.textSecondary else colors.foreground
                                     )
                                     Text(
-                                        text = "${lesson.hours} Ders Saati (${lesson.hoursSourceStatus ?: "doğrulandı"})",
+                                        text = "${lesson.hours} Ders Saati" +
+                                            (lesson.hoursSourceStatus?.let { " ($it)" } ?: ""),
                                         style = ArcTheme.typography.labelSmall,
                                         color = colors.textMuted
                                     )
@@ -786,6 +774,63 @@ private fun WeeklyLessonPlanView(
 
         // Pedagogical Context & Teacher Notes Side-by-Side or Stacked
         TeacherNotesAndPedagogicalSection(viewModel = viewModel, activeWeek = activeWeek)
+    }
+}
+
+@Composable
+private fun WeekHeaderLabel(
+    week: PlanWeek,
+    titleColor: Color,
+    accentColor: Color
+) {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text(
+            text = "${week.weekNumber}. Hafta (${week.month})",
+            style = ArcTheme.typography.titleLarge,
+            color = titleColor
+        )
+        ArcBadge(text = week.dateRangeRaw, variant = ArcBadgeVariant.NEUTRAL)
+        week.theme?.let { theme ->
+            Text(
+                text = "${theme.themeCode}: ${theme.themeName}",
+                style = ArcTheme.typography.bodyMedium,
+                color = accentColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun WeekNavigationButtons(
+    viewModel: PlannerViewModel,
+    weekNumber: Int,
+    lastWeekNumber: Int,
+    compact: Boolean
+) {
+    Row(
+        modifier = if (compact) Modifier.fillMaxWidth() else Modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Box(modifier = if (compact) Modifier.weight(1f) else Modifier) {
+            ArcButton(
+                onClick = { viewModel.selectWeek(weekNumber - 1) },
+                enabled = weekNumber > 1,
+                variant = ArcButtonVariant.SECONDARY,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (compact) "← Önceki" else "← Önceki Hafta")
+            }
+        }
+        Box(modifier = if (compact) Modifier.weight(1f) else Modifier) {
+            ArcButton(
+                onClick = { viewModel.selectWeek(weekNumber + 1) },
+                enabled = weekNumber < lastWeekNumber,
+                variant = ArcButtonVariant.SECONDARY,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(if (compact) "Sonraki →" else "Sonraki Hafta →")
+            }
+        }
     }
 }
 
