@@ -1,6 +1,8 @@
 # Arc Library — Jetpack Compose Uyarlama ve Kapsam Matrisi
 
-Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) açık kaynak tasarım sisteminin `plan` deposundaki Kotlin + Jetpack Compose yerel uyarlamasını, 70 bileşenini, 2 temel paketini ve 9 arayüz bloğunu belgeler.
+Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) kaynaklı 70 potansiyel bileşenin, 2 tasarım paketinin ve 9 bloğun **kaynak/envanter haritasıdır**. Bir satırın burada bulunması bileşenin Arc ile davranış eşdeğerliğini, uygulamada kullanıldığını veya cihazda test edildiğini kanıtlamaz.
+
+**Gerçek P2 kapsam ve durum belgesi:** [P2_AUDIT.md](P2_AUDIT.md). Kişisel öğretmen uygulaması yalnızca **Haftalık, Aylık, Temalar, İlerleme** sekmelerini kullanır. Gereksiz denetim, karşılaştırma, JSON içe aktarma, yardım ve imza ekranları ürünün parçası değildir. Kod karşılıkları ortak kütüphanede bulunabilir; üründe kullanılacakmış gibi yorumlanmamalıdır.
 
 ---
 
@@ -25,11 +27,11 @@ Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) açık kaynak tasarım sist
 | 6 | `Bottom Sheet` | `ArcBottomSheet` | `core/ArcNavigation.kt` | Mobil ve dar pencerelerde ders detay alt çekmecesi |
 | 7 | `Card` | `ArcCard` | `core/ArcCards.kt` | Temel içerik ve panel kartları |
 | 8 | `Expandable Card` | `ArcExpandableCard` | `core/ArcCards.kt` | Genişletilebilir pedagojik açıklamalar ve kazanım kartları |
-| 9 | `Accordion` | `ArcAccordion` | `core/ArcCards.kt` | SSS rehberi ve ders detay katmanları |
+| 9 | `Accordion` | `ArcAccordion` | `core/ArcCards.kt` | Ders detay katmanları için kütüphane bileşeni; SSS ekranı kaldırıldı |
 | 10 | `Badge` | `ArcBadge` | `core/ArcIndicators.kt` | Hafta numaraları, kazanım kodları (TDE2.1), durum etiketleri |
 | 11 | `Tooltip` | `ArcTooltip` | `core/ArcIndicators.kt` | Butonlar ve kısayollar için fare/uzun dokunuş ipuçları |
 | 12 | `Popover` | `ArcPopover` | `core/ArcIndicators.kt` | Hızlı işlem ve detay penceresi |
-| 13 | `Segmented Control` | `ArcSegmentedControl` | `core/ArcControls.kt` | Görünüm geçişleri (Haftalık, Aylık, Tematik, Yıllık, Karşılaştırma vb.) |
+| 13 | `Segmented Control` | `ArcSegmentedControl` | `core/ArcControls.kt` | Dört görünüm: Haftalık, Aylık, Temalar, İlerleme; 48dp hedef ve yatay kaydırma |
 | 14 | `Select` | `ArcSelect` | `core/ArcControls.kt` | Okul türü ve sınıf seçim açılır menüleri |
 | 15 | `Combobox` | `ArcCombobox` | `core/ArcControls.kt` | Aranabilir ve filtrelenebilir seçim alanı |
 | 16 | `Filter Toolbar` | `ArcFilterToolbar` | `core/ArcControls.kt` | Çok ölçütlü plan filtreleme araç çubuğu |
@@ -71,7 +73,7 @@ Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) açık kaynak tasarım sist
 | 45 | `Expanding Search` | `ArcExpandingSearch` | `advanced/ArcActionsAdvanced.kt` | İkondan arama çubuğuna genişleyen arama alanı |
 | 46 | `Metric Card` | `ArcMetricCard` | `advanced/ArcWorkflowAdvanced.kt` | Ders saati, hafta ve ilerleme metrik kartları |
 | 47 | `Carousel` | `ArcCarousel` | `advanced/ArcWorkflowAdvanced.kt` | Aylık ve tematik haftalar arasında kaydırmalı kart gösterimi |
-| 48 | `Activity Heatmap` | `ArcActivityHeatmap` | `advanced/ArcWorkflowAdvanced.kt` | 37 haftanın tamamlanma yoğunluğunu gösteren ısı haritası |
+| 48 | `Activity Heatmap` | `ArcActivityHeatmap` | `advanced/ArcWorkflowAdvanced.kt` | İlerleme ekranında gerçek sınıf kayıtlarıyla adaptif (5/10 sütun) ısı haritası |
 | 49 | `Timeline` | `ArcTimeline` | `advanced/ArcWorkflowAdvanced.kt` | Akademik yıl ve tatil kilometre taşları zaman çizelgesi |
 | 50 | `Confirm Morph` | `ArcConfirmMorph` | `advanced/ArcActionsAdvanced.kt` | Sil/Temizle işleminde onay butonuna dönüşen arayüz |
 | 51 | `Hold to Confirm` | `ArcHoldToConfirm` | `advanced/ArcActionsAdvanced.kt` | İlerlemeyi sıfırlama veya kritik işlemlerde basılı tutma halkası |
@@ -88,7 +90,7 @@ Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) açık kaynak tasarım sist
 |---|---|---|---|---|
 | 56 | `Expanding Button Group` | `ArcExpandingButtonGroup` | `extended/ArcExtendedActions.kt` | Açılan yüzen işlem butonu (Not, Kalem, Arama) |
 | 57 | `Card Stack` | `ArcCardStack` | `extended/ArcExtendedActions.kt` | Haftalık dersleri kart destesi gibi inceleme |
-| 58 | `JSON Viewer` | `ArcJsonViewer` | `extended/ArcDataViews.kt` | Kaynak `annual-plan.json` dosyasını sözdizimi renklendirmeli ağaç olarak inceleme |
+| 58 | `JSON Viewer` | `ArcJsonViewer` | `extended/ArcDataViews.kt` | Uygulama dışı: JSON denetim ekranı kaldırıldı, ortak bileşen kaynakta mevcut |
 | 59 | `Pagination` | `ArcPagination` | `extended/ArcExtendedActions.kt` | Sayfalama ve haftalar arasında hızlı geçiş |
 | 60 | `Animated Counter` | `ArcAnimatedCounter` | `extended/ArcAnimationText.kt` | Saat ve tamamlanma yüzdelerinde yuvarlanan sayaç animasyonu |
 | 61 | `Text Morph` | `ArcTextMorph` | `extended/ArcAnimationText.kt` | Başlıklar arasında yumuşak metin dönüşümü |
@@ -96,8 +98,8 @@ Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) açık kaynak tasarım sist
 | 63 | `Sortable Data Table` | `ArcSortableDataTable` | `extended/ArcDataViews.kt` | Sıralanabilir kazanım ve inceleme kuyruğu tablosu |
 | 64 | `Line Chart` | `ArcLineChart` | `extended/ArcCharts.kt` | 37 haftalık kümülatif ders saati ilerleme eğrisi |
 | 65 | `Donut Chart` | `ArcDonutChart` | `extended/ArcCharts.kt` | 4 temanın 185 saatlik oransal pasta/halka dağılımı |
-| 66 | `Usage Meter` | `ArcUsageMeter` | `extended/ArcCharts.kt` | 180 doğrulanmış vs 185 varsayılan saat göstergesi |
-| 67 | `Signature Pad` | `ArcSignaturePad` | `extended/ArcTeacherTools.kt` | Stylus (S-Pen) ve parmak ile el yazısı not / onay imzası |
+| 66 | `Usage Meter` | `ArcUsageMeter` | `extended/ArcCharts.kt` | Yalnızca kaynakta bulunan doğrulanmış/varsayımsal saatleri ayrı gösterir |
+| 67 | `Signature Pad` | `ArcSignaturePad` | `extended/ArcTeacherTools.kt` | Uygulama dışı: kişisel öğretmen ekranından kaldırıldı; eski çizim verileri silinmedi |
 | 68 | `Rich Text Editor` | `ArcRichTextEditor` | `extended/ArcTeacherTools.kt` | Kalın, italik, madde imli zengin öğretmen notları editörü |
 | 69 | `Bar Chart` | `ArcBarChart` | `extended/ArcCharts.kt` | Tema başına düşen saatlerin sütun grafiği |
 | 70 | `User Menu` | `ArcUserMenu` | `extended/ArcExtendedActions.kt` | Sınıf değiştirici, çalışma alanı ve tercihler menüsü |
@@ -112,8 +114,8 @@ Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) açık kaynak tasarım sist
 | 2 | `Command Palette` | `ArcCommandPalette` | `blocks/ArcCommandPalette.kt` | `Cmd+K` / `Ctrl+K` fiziksel klavye kısayoluyla anında haftaya/temaya atlama |
 | 3 | `Empty States` | `ArcEmptyStatesBlock` | `blocks/ArcEmptyStatesBlock.kt` | Henüz planı olmayan sınıflar (9, 10, 12. sınıf) ve boş arama ekranları |
 | 4 | `Notification Center` | `ArcNotificationCenter` | `blocks/ArcNotificationCenter.kt` | Ara tatiller, 15 Temmuz anması ve plan doğrulama bildirimleri çekmecesi |
-| 5 | `File Upload` | `ArcFileUpload` | `blocks/ArcFileUpload.kt` | Harici `annual-plan.json` dosyalarını içe aktarma ve doğrulama arayüzü |
-| 6 | `Changelog Feed` | `ArcChangelogFeed` | `blocks/ArcChangelogFeed.kt` | Müfredat veri sürümü ve doğrulama günlüğü akışı |
-| 7 | `Comparison Table` | `ArcComparisonTable` | `blocks/ArcComparisonTable.kt` | Anadolu Lisesi ve Fen Lisesi planlarını yan yana karşılaştırma |
-| 8 | `Stats Band` | `ArcStatsBand` | `blocks/ArcStatsBand.kt` | 37 Hafta, 45 Ders Bölümü, 180+5 Saat ve İlerleme % sayaç bandı |
-| 9 | `FAQ Section` | `ArcFaqSection` | `blocks/ArcFaqSection.kt` | 15 Temmuz anması, 3+2 saatler ve Maarif Modeli açıklamaları SSS akordeonu |
+| 5 | `File Upload` | `ArcFileUpload` | `blocks/ArcFileUpload.kt` | Uygulama dışı: JSON içe aktarma ekranı kaldırıldı |
+| 6 | `Changelog Feed` | `ArcChangelogFeed` | `blocks/ArcChangelogFeed.kt` | Uygulama dışı: sürüm geçmişi ekranı kaldırıldı |
+| 7 | `Comparison Table` | `ArcComparisonTable` | `blocks/ArcComparisonTable.kt` | Uygulama dışı: karşılaştırma sekmesi kaldırıldı |
+| 8 | `Stats Band` | `ArcStatsBand` | `blocks/ArcStatsBand.kt` | Seçili kaynak plandan türetilen hafta, ders bölümü, saat ve ilerleme göstergeleri |
+| 9 | `FAQ Section` | `ArcFaqSection` | `blocks/ArcFaqSection.kt` | Uygulama dışı: SSS sekmesi kaldırıldı |

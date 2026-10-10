@@ -132,7 +132,7 @@ fun ArcCalendar(
                             border = if (selected) BorderStroke(1.dp, colors.accent) else null
                         ) {
                             Column(
-                                modifier = Modifier.height(42.dp),
+                                modifier = Modifier.height(48.dp),
                                 verticalArrangement = Arrangement.Center,
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {

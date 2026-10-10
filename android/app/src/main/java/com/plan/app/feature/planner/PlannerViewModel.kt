@@ -5,10 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.plan.app.core.data.PlanRepository
 import com.plan.app.core.data.TeacherRepository
-import com.plan.app.core.design.blocks.ComparisonRow
-import com.plan.app.core.design.components.extended.JsonNode
 import com.plan.app.core.model.AnnualPlan
-import com.plan.app.core.model.ChangelogEntry
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.DrawingStroke
 import com.plan.app.core.model.LessonProgress
@@ -57,15 +54,6 @@ class PlannerViewModel @JvmOverloads constructor(
     private val _currentPlan = MutableStateFlow<AnnualPlan?>(null)
     val currentPlan: StateFlow<AnnualPlan?> = _currentPlan.asStateFlow()
 
-    private val _fenPlan = MutableStateFlow<AnnualPlan?>(null)
-    val fenPlan: StateFlow<AnnualPlan?> = _fenPlan.asStateFlow()
-
-    private val _rawPlanJson = MutableStateFlow("")
-    val rawPlanJson: StateFlow<String> = _rawPlanJson.asStateFlow()
-
-    private val _validationReport = MutableStateFlow("")
-    val validationReport: StateFlow<String> = _validationReport.asStateFlow()
-
     private val _notifications = MutableStateFlow(
         listOf(
             NotificationItem(
@@ -81,34 +69,11 @@ class PlannerViewModel @JvmOverloads constructor(
                 message = "16 - 20 Kasım 2026 tarihleri arasında 1. dönem ara tatili uygulanacaktır.",
                 timestamp = "16 Kasım 2026",
                 type = NotificationType.ACADEMIC_BREAK
-            ),
-            NotificationItem(
-                id = "notif-3",
-                title = "Kaynak Plan Doğrulandı",
-                message = "180 ders saati özgün 11. Sınıf Excel arşiviyle birebir doğrulanmıştır.",
-                timestamp = "Ekim 2026",
-                type = NotificationType.VALIDATION_NOTICE
+
             )
         )
     )
     val notifications: StateFlow<List<NotificationItem>> = _notifications.asStateFlow()
-
-    private val _changelogEntries = MutableStateFlow(
-        listOf(
-            com.plan.app.core.model.ChangelogEntry(
-                version = "v2.0.0",
-                date = "10 Ekim 2026",
-                title = "11. Sınıf TDE Anadolu ve Fen Lisesi Doğrulaması",
-                details = listOf(
-                    "37 haftanın tarihleri, temalar, kazanım ve pedagojik açıklamaları kayıpsız aktarıldı.",
-                    "3+2 saatlik çoklu ders bölümleri hiyerarşik olarak korundu.",
-                    "15 Temmuz anmasının açılış haftasına yerleşimi doğrulandı."
-                ),
-                author = "Yıllık Plan Arşivi"
-            )
-        )
-    )
-    val changelogEntries: StateFlow<List<com.plan.app.core.model.ChangelogEntry>> = _changelogEntries.asStateFlow()
 
     init {
         loadActivePlan()
@@ -208,108 +173,13 @@ class PlannerViewModel @JvmOverloads constructor(
         return newClass
     }
 
-    fun getComparisonRows(): List<ComparisonRow> {
-        val a = _currentPlan.value
-        val f = _fenPlan.value
-        return listOf(
-            ComparisonRow(
-                feature = "Toplam Hafta Sayısı",
-                anadoluValue = "${a?.metadata?.totalTeachingWeeks ?: 37} Hafta",
-                fenValue = "${f?.metadata?.totalTeachingWeeks ?: 37} Hafta"
-            ),
-            ComparisonRow(
-                feature = "Haftalık Ders Saati",
-                anadoluValue = "${a?.metadata?.weeklyLessonHours ?: 5} Saat",
-                fenValue = "${f?.metadata?.weeklyLessonHours ?: 5} Saat"
-            ),
-            ComparisonRow(
-                feature = "Doğrulanmış Saatler",
-                anadoluValue = a?.metadata?.totalAnnualHoursVerified?.let { "$it Saat" } ?: "Belirtilmemiş",
-                fenValue = f?.metadata?.totalAnnualHoursVerified?.let { "$it Saat" } ?: "Belirtilmemiş"
-            ),
-            ComparisonRow(
-                feature = "3+2 Saat Dağılımı",
-                anadoluValue = "8 Hafta (16 Ders Bölümü)",
-                fenValue = "8 Hafta (16 Ders Bölümü)"
-            ),
-            ComparisonRow(
-                feature = "Özgün Belge Başlığı",
-                anadoluValue = a?.metadata?.documentTitle ?: "",
-                fenValue = f?.metadata?.documentTitle ?: "",
-                isDifferent = true
-            ),
-            ComparisonRow(
-                feature = "1. Hafta Özel Gün",
-                anadoluValue = "15 Temmuz Demokrasi Günü",
-                fenValue = "15 Temmuz Demokrasi Günü"
-            )
-        )
-    }
-
-    fun getJsonViewerRootNode(): JsonNode {
-        val plan = _currentPlan.value ?: return JsonNode("plan", "Yükleniyor...")
-        return JsonNode(
-            key = "annual_plan",
-            children = listOf(
-                JsonNode(
-                    key = "metadata",
-                    children = listOf(
-                        JsonNode("academic_year", plan.metadata.academicYear),
-                        JsonNode("grade_level", plan.metadata.gradeLevel.toString()),
-                        JsonNode("course_name", plan.metadata.courseName),
-                        JsonNode("school_type", plan.metadata.schoolType),
-                        JsonNode("verified_lesson_hours", plan.metadata.verifiedLessonHours?.toString() ?: "Kaynakta yok"),
-                        JsonNode("assumed_lesson_hours", plan.metadata.assumedLessonHours?.toString() ?: "Kaynakta yok"),
-                        JsonNode("total_annual_hours", (plan.metadata.totalAnnualHoursAssumed
-                            ?: plan.metadata.totalAnnualHours)?.toString() ?: "Kaynakta yok")
-                    )
-                ),
-                JsonNode(
-                    key = "general_explanations",
-                    children = listOf(
-                        JsonNode("differentiation", plan.generalExplanations?.differentiation?.title),
-                        JsonNode("school_based_planning", plan.generalExplanations?.schoolBasedPlanning?.title)
-                    )
-                ),
-                JsonNode(
-                    key = "academic_calendar_breaks",
-                    children = plan.academicCalendarBreaks.map {
-                        JsonNode(it.breakName, "${it.startDate} — ${it.endDate}")
-                    }
-                ),
-                JsonNode(
-                    key = "themes",
-                    children = plan.themes.map {
-                        JsonNode("${it.themeCode}: ${it.themeName}", "${it.totalHours} saat")
-                    }
-                ),
-                JsonNode(
-                    key = "weeks",
-                    children = plan.weeks.take(5).map { w ->
-                        JsonNode(
-                            "${w.weekNumber}. Hafta (${w.dateRangeRaw})",
-                            "${w.totalHours} saat, ${w.lessons.size} ders bölümü"
-                        )
-                    }
-                )
-            )
-        )
-    }
-
     private fun loadActivePlan() {
         val currentClass = classrooms.value.firstOrNull { it.id == activeClassroomId.value }
             ?: classrooms.value.firstOrNull()
-        try {
-            _currentPlan.value = currentClass?.let(planRepository::loadAnnualPlan)
-            _fenPlan.value = runCatching { planRepository.loadAnnualPlan("Fen Lisesi") }.getOrNull()
-            val sourceType = currentClass?.schoolType ?: ""
-            _rawPlanJson.value = runCatching { planRepository.getRawPlanJson(sourceType) }.getOrDefault("")
-            _validationReport.value = planRepository.loadValidationReport(sourceType)
-        } catch (e: Exception) {
-            // Missing plan must display an empty state; never display the previous class's plan.
-            _currentPlan.value = null
-            _rawPlanJson.value = ""
-            _validationReport.value = "Seçilen sınıfın planı bulunamadı: ${e.message}"
-        }
+        // Only the active classroom's plan is loaded: no hidden comparisons,
+        // raw JSON inspection, or validation reports on every classroom change.
+        _currentPlan.value = runCatching {
+            currentClass?.let(planRepository::loadAnnualPlan)
+        }.getOrNull()
     }
 }

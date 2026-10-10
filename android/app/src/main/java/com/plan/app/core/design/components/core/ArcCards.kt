@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -28,8 +29,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -83,7 +88,7 @@ fun ArcExpandableCard(
     leadingIcon: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    var expanded by remember { mutableStateOf(initiallyExpanded) }
+    var expanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = ArcMotionTokens.Springs.Smooth,
@@ -95,7 +100,9 @@ fun ArcExpandableCard(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clickable { expanded = !expanded },
+                    .heightIn(min = 48.dp)
+                    .semantics { stateDescription = if (expanded) "Genişletilmiş" else "Daraltılmış" }
+                    .clickable(role = Role.Button) { expanded = !expanded },
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -181,7 +188,9 @@ fun ArcAccordion(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
+                            .heightIn(min = 48.dp)
+                            .semantics { stateDescription = if (isExpanded) "Genişletilmiş" else "Daraltılmış" }
+                            .clickable(role = Role.Button) {
                                 expandedIds = if (isExpanded) {
                                     expandedIds - item.id
                                 } else {
