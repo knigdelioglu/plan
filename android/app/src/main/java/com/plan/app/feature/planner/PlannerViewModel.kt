@@ -130,6 +130,12 @@ class PlannerViewModel @JvmOverloads constructor(
         return teacherRepository.toggleLessonProgress(cid, weekNumber, lessonIndex)
     }
 
+    fun setLessonProgress(weekNumber: Int, lessonIndex: Int, completed: Boolean): Boolean {
+        return teacherRepository.setLessonProgress(
+            activeClassroomId.value, weekNumber, lessonIndex, completed
+        )
+    }
+
     fun isLessonCompleted(weekNumber: Int, lessonIndex: Int): Boolean {
         val cid = activeClassroomId.value
         return teacherRepository.isLessonCompleted(cid, weekNumber, lessonIndex)
