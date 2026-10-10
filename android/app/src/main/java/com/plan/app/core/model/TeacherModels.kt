@@ -58,12 +58,19 @@ data class DrawingPoint(
 enum class PlannerViewMode(val title: String) {
     WEEK("Haftalık"),
     MONTH("Aylık"),
-    THEME("Tematik"),
+    THEME("Temalar"),
+    // Legacy values remain deserializable so existing teacher-state.json is never lost.
     YEAR("Yıllık"),
     COMPARISON("Karşılaştırma"),
-    ANALYTICS("Analiz"),
+    ANALYTICS("İlerleme"),
     VALIDATION("Doğrulama & JSON"),
-    FAQ("Rehber & SSS")
+    FAQ("Rehber & SSS");
+
+    companion object {
+        val visibleModes = listOf(WEEK, MONTH, THEME, ANALYTICS)
+        fun fromSaved(mode: PlannerViewMode): PlannerViewMode =
+            mode.takeIf { it in visibleModes } ?: WEEK
+    }
 }
 
 data class PlanFilter(
