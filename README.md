@@ -40,7 +40,7 @@ plans/
 - **Okul türü:** Planın geçerli olduğu tür; `anadolu-lisesi`, `fen-lisesi`, `sosyal-bilimler-lisesi`. Birbirinden farklı planlar **ayrı klasörlerde** tutulur.
 - Aynı düzey için farklı sürümler gerektiğinde planların üzerine yazmak yerine ayrı ve açıkça tanımlanmış varyantlar kullanılmalıdır.
 
-Şimdilik **2026-2027 Türk Dili ve Edebiyatı** dersi için 9–12. sınıfların her birinde **Anadolu Lisesi, Fen Lisesi ve Sosyal Bilimler Lisesi** klasörleri açılmıştır (toplam 12 okul türü/sınıf kombinasyonu). **11. sınıf Fen Lisesi** ve **11. sınıf Anadolu Lisesi** klasörlerinde plan ve doğrulama dosyaları vardır. Anadolu Lisesi JSON'unun kaynak dosya adı ve okul türü kimlik alanları güncellenmiştir; içeriği özgün Anadolu Lisesi Excel'iyle henüz yeniden doğrulanmamıştır. Diğer klasörlerdeki `.gitkeep` dosyaları dizinleri Git'te korumak içindir; **yıllık plan verisi içermez**.
+Şimdilik **2026-2027 Türk Dili ve Edebiyatı** dersi için 9–12. sınıfların her birinde **Anadolu Lisesi, Fen Lisesi ve Sosyal Bilimler Lisesi** klasörleri açılmıştır (toplam 12 okul türü/sınıf kombinasyonu). **11. sınıf Fen Lisesi** ve **11. sınıf Anadolu Lisesi** klasörlerinde plan ve doğrulama dosyaları vardır. 11. sınıf Anadolu Lisesi JSON'u özgün Anadolu Lisesi Excel'iyle karşılaştırılarak doğrulanmış ve kullanıcı tarafından arşivde kullanım için onaylanmıştır (10 Ekim 2026). Bu onay MEB veya okul/zümre resmî onayı değildir. Diğer klasörlerdeki `.gitkeep` dosyaları dizinleri Git'te korumak içindir; **yıllık plan verisi içermez**.
 
 ## Mevcut plan
 
@@ -58,6 +58,16 @@ Kaynak: 2026–2027 11. sınıf Fen Lisesi Türk Dili ve Edebiyatı çerçeve y�
 | Akademik tatil aralığı | 3 |
 
 Bu planın yanında [JSON şeması](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/annual-plan.schema.json), [aktarım ve doğrulama raporu](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/validation-report.md) ve [özel durum / inceleme kayıtları](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/review-queue.json) bulunur.
+
+### 11. sınıf — Anadolu Lisesi — 2026–2027
+
+**Durum:** Özgün kaynağa göre doğrulandı; **kullanıcı tarafından arşivde kullanım için onaylandı** (2026-10-10). Resmî MEB, okul veya zümre onayı değildir.
+
+- [Yıllık plan JSON](plans/2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi/annual-plan.json)
+- [Kaynak doğrulama raporu](plans/2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi/validation-report.md)
+- [İnceleme kuyruğu](plans/2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi/review-queue.json)
+
+Kaynak: `2026-2027 ANADOLU LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx` — `11.SINIF` sayfası. 37 hafta / 45 ders bölümü, kaynaktan açıkça doğrulanan 180 saat ve 37. haftaya ait ayrı gösterilen 5 saat varsayımı. Kaynakla eşleştirme sonucu `metadata.source_verification`, kullanıcı onayı ise `metadata.approval` alanında birbirinden bağımsız tutulur.
 
 ### JSON veri modeli
 
@@ -106,7 +116,7 @@ PY
 
 **Takvimdeki anma tarihi ile okuldaki uygulama haftası ayrıdır.** Örneğin 15 Temmuz Demokrasi ve Millî Birlik Günü anması, yaz tatili nedeniyle yıllık planda okulun açılış haftasına yerleştirilebilir. Bu, tarih farkı nedeniyle otomatik olarak `calendar_anomaly` sayılmamalıdır. `date_text`/`commemoration_date` ile `scheduled_week` ayrı korunmalı, kesin etkinlik günü kaynakta yoksa uydurulmamalıdır. `is_calendar_aligned=false` literal tarih karşılaştırmasını, `has_calendar_discrepancy=false` ise planlı ve geçerli hafta yerleşimini gösterebilir. Diğer özel günlerde de tarih farkının sebebi (tatil, hafta sonu, planlama kararı) incelenmeden hata veya otomatik düzeltme kararı verilmemelidir.
 
-**Okul türü klasör adına göre değil özgün belgeye göre belirlenir.** `11/anadolu-lisesi/` altındaki JSON'un kimlik alanları Anadolu Lisesi olarak düzeltildi. Bu bir metadata güncellemesidir; içerik, özgün Anadolu Lisesi Excel'iyle yeniden doğrulandığında doğrulama raporu da güncellenmelidir.
+**Okul türü klasör adına göre değil özgün belgeye göre belirlenir.** `11/anadolu-lisesi/` altındaki JSON, özgün Anadolu Lisesi Excel'indeki `11.SINIF` sayfasıyla karşılaştırılarak doğrulandı. `validation-report.md` kaynak karşılaştırmasını, `review-queue.json` inceleme kararlarını içerir. Arşiv içi kullanıcı onayı resmî MEB, okul veya zümre onayı yerine geçmez.
 
 Daha sonraki JSON aktarımları için ajana yönelik kalıcı ilkeler kökteki [AGENTS.md](AGENTS.md) belgesindedir.
 

@@ -7,8 +7,15 @@
 **Çalışma Sayfası:** `11.SINIF`  
 **İlk Üretim Tarihi:** 2026-10-10T17:27:34  
 **Anadolu Kaynak Doğrulama Tarihi:** 2026-10-10  
+**Arşiv Kullanıcı Onayı:** 2026-10-10 — Kullanıcı tarafından onaylandı (resmî MEB/okul/zümre onayı değil)  
 **Veri Şeması Standardı:** JSON Schema Draft 2020-12  
 **Doğrulama Sonucu:** Anadolu Lisesi Kaynağıyla Doğrudan Doğrulandı — 180 Saat Kaynakta Açık, 37. Hafta 5 Saat Varsayımsal  
+
+---
+
+## Arşiv onay kaydı
+
+Kaynak dosyasıyla karşılaştırılması tamamlanmış 11. sınıf Anadolu Lisesi JSON sürümü, kullanıcının 10 Ekim 2026 tarihli açık talebiyle **GitHub arşivinde kullanım için onaylanmıştır**. Bu işlem veri kaynağı doğrulamasından ayrı bir kullanıcı onayıdır; resmî MEB, okul yönetimi veya zümre kurulu onayı olarak yorumlanamaz. 37. hafta saat varsayımı ve özel günlerin kaynak takvim yerleşimleri korunur.
 
 ---
 

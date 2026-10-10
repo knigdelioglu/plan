@@ -542,5 +542,12 @@
     "verified_on": "2026-10-10",
     "source_workbook_sha256": "24b7d5de542681bdf3ff60503014342ecbcaeb6bf196532409fc0ce4af883d4f",
     "worksheet": "11.SINIF"
+  },
+  "approval": {
+    "status": "approved_by_user",
+    "approved_on": "2026-10-10",
+    "scope": "github_archive_use",
+    "source_verification": "verified_against_original_anadolu_workbook",
+    "official_approval": false
   }
 }

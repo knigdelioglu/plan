@@ -43,6 +43,16 @@
         "37. haftadaki 5 saat kaynak Excel'de sayısal yazmıyor; tahmini saat olarak işaretli.",
         "12 Mart ve 29 Mayıs etkinliklerinin haftalara dağılımı kaynakta bulunduğu biçimde korundu."
       ]
+    },
+    "review_status": "user_approved",
+    "approval": {
+      "status": "approved_by_user",
+      "approved_on": "2026-10-10",
+      "scope": "github_archive_use",
+      "basis": "source_verified_against_original_anadolu_workbook",
+      "source_verification_status": "verified_against_original_anadolu_workbook",
+      "official_meb_or_school_approval": false,
+      "note": "Kullanıcı, özgün Anadolu Lisesi Excel dosyasıyla doğrulanmış yıllık planın GitHub veri arşivi sürümünü onayladı. Bu onay MEB, okul idaresi veya zümre resmî onayı değildir."
     }
   },
   "general_explanations": {
