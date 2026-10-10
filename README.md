@@ -1,6 +1,6 @@
 # Plan — Öğretmenler İçin Yıllık Plan Arşivi
 
-Bu depo, öğretmenlerin **yıllık ders planlarını JSON biçiminde**, ders, sınıf, öğretim yılı ve okul türüne göre düzenli ve yeniden kullanılabilir şekilde saklamak için oluşturulmuştur.
+Bu depo, öğretmenlerin **yıllık ders planlarını JSON biçiminde**, öğretim yılı, ders, sınıf ve okul türüne göre düzenli ve yeniden kullanılabilir şekilde saklamak için oluşturulmuştur.
 
 Amaç; yıllık planları uygulamalar, dijital ders araçları ve öğretmen iş akışları tarafından okunabilir kılarken **kaynak belgedeki içerik, sıra ve izlenebilirliği korumaktır**. Depo bir yıllık plan oluşturma uygulaması değil, sürümlenebilir veri arşividir.
 
@@ -8,24 +8,24 @@ Amaç; yıllık planları uygulamalar, dijital ders araçları ve öğretmen iş
 
 ```text
 plans/
-└── turk-dili-ve-edebiyati/
-    ├── 9/
-    ├── 10/
-    ├── 11/
-    │   └── 2026-2027/
-    │       └── fen-lisesi/
-    │           ├── annual-plan.json
-    │           ├── annual-plan.schema.json
-    │           ├── validation-report.md
-    │           └── review-queue.json
-    └── 12/
+└── 2026-2027/
+    └── turk-dili-ve-edebiyati/
+        ├── 9/
+        ├── 10/
+        ├── 11/
+        │   └── fen-lisesi/
+        │       ├── annual-plan.json
+        │       ├── annual-plan.schema.json
+        │       ├── validation-report.md
+        │       └── review-queue.json
+        └── 12/
 ```
 
-**Dizin kuralı:** `plans/<ders-kodu>/<sinif>/<YYYY-YYYY>/<okul-turu>/`
+**Dizin kuralı:** `plans/<YYYY-YYYY>/<ders-kodu>/<sinif>/<okul-turu>/`
 
+- **Öğretim yılı:** Başlangıç ve bitiş yılı; ör. `2026-2027`.
 - **Ders:** Türkçe karakter içermeyen, küçük harfli, kısa çizgili ad; ör. `turk-dili-ve-edebiyati`.
 - **Sınıf:** Sayısal düzey; ör. `9`, `10`, `11`, `12`.
-- **Öğretim yılı:** Başlangıç ve bitiş yılı; ör. `2026-2027`.
 - **Okul türü:** Planın geçerli olduğu tür; ör. `fen-lisesi`, `anadolu-lisesi`. Birbirinden farklı planlar **ayrı klasörlerde** tutulur.
 - Aynı düzey için farklı sürümler gerektiğinde planların üzerine yazmak yerine ayrı ve açıkça tanımlanmış varyantlar kullanılmalıdır.
 
@@ -33,7 +33,7 @@ plans/
 
 ## Mevcut plan
 
-**[11. sınıf — Fen Lisesi — 2026–2027](plans/turk-dili-ve-edebiyati/11/2026-2027/fen-lisesi/annual-plan.json)**
+**[11. sınıf — Fen Lisesi — 2026–2027](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/annual-plan.json)**
 
 Kaynak: 2026–2027 11. sınıf Fen Lisesi Türk Dili ve Edebiyatı çerçeve yıllık planının `11. SINIF` çalışma sayfası.
 
@@ -46,7 +46,7 @@ Kaynak: 2026–2027 11. sınıf Fen Lisesi Türk Dili ve Edebiyatı çerçeve y�
 | Ana tema | 4 |
 | Akademik tatil aralığı | 3 |
 
-Bu planın yanında [JSON şeması](plans/turk-dili-ve-edebiyati/11/2026-2027/fen-lisesi/annual-plan.schema.json), [aktarım ve doğrulama raporu](plans/turk-dili-ve-edebiyati/11/2026-2027/fen-lisesi/validation-report.md) ve [özel durum / inceleme kayıtları](plans/turk-dili-ve-edebiyati/11/2026-2027/fen-lisesi/review-queue.json) bulunur.
+Bu planın yanında [JSON şeması](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/annual-plan.schema.json), [aktarım ve doğrulama raporu](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/validation-report.md) ve [özel durum / inceleme kayıtları](plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi/review-queue.json) bulunur.
 
 ### JSON veri modeli
 
@@ -75,7 +75,7 @@ import json
 from pathlib import Path
 from jsonschema import Draft202012Validator, FormatChecker
 
-folder = Path("plans/turk-dili-ve-edebiyati/11/2026-2027/fen-lisesi")
+folder = Path("plans/2026-2027/turk-dili-ve-edebiyati/11/fen-lisesi")
 data = json.loads((folder / "annual-plan.json").read_text(encoding="utf-8"))
 schema = json.loads((folder / "annual-plan.schema.json").read_text(encoding="utf-8"))
 Draft202012Validator(schema, format_checker=FormatChecker()).validate(data)
@@ -93,7 +93,7 @@ PY
 
 ## Yeni plan ekleme ilkeleri
 
-1. Planı doğru ders / sınıf / öğretim yılı / okul türü klasörüne yerleştirin. Başka sınıfın veya okul türünün verisini kopyalayıp yalnızca `metadata` değiştirerek yeni plan üretmeyin.
+1. Planı doğru öğretim yılı / ders / sınıf / okul türü klasörüne yerleştirin. Başka sınıfın veya okul türünün verisini kopyalayıp yalnızca `metadata` değiştirerek yeni plan üretmeyin.
 2. `annual-plan.json` içinde kaynak kimliğini ve özgün metinleri koruyun. Birleştirilmiş hücreler, bölünmüş ders saatleri ve tatil aralıklarını semantik açıdan doğru modelleyin.
 3. Planı uygun JSON Schema ile doğrulayın; hafta, tarih ve ders saati toplamlarını denetleyin. Belirsizlikleri ve kaynakla ilgili uyuşmazlıkları ayrı inceleme kayıtlarında açıkça tutun.
 4. Mümkünse planla birlikte şemasını, doğrulama raporunu ve inceleme kayıtlarını ekleyin. İleride farklı müfredat şemaları yan yana bulunabilir.
