@@ -514,14 +514,14 @@
         "A1"
       ],
       "description": "Fen Lisesi çalışma sayfasında A1 başlığı '... 11. SINIF FEN LİSESİ TÜRK DİLİ VE EDEBİYATI ...' ifadesini içermektedir. Sayfa sekme adı '11. SINIF' (boşluklu) olarak adlandırılmıştır. Anadolu Lisesi çalışma sayfasında ise başlıkta 'FEN LİSESİ' ibaresi yoktur ve sekme adı '11.SINIF'tır.",
-      "resolution_applied": "Kullanıcının görev tanımına tam uygun olarak doğrudan '2026-2027 FEN LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx' dosyasındaki '11. SINIF' çalışma sayfası işlendi.",
+      "resolution_applied": "Bu kayıt ilk aktarımın Fen Lisesi çalışma sayfasından yapıldığını belgeler. Anadolu Lisesi klasöründeki metadata, sonraki kullanıcı talebiyle Anadolu Lisesi olarak değiştirildi; ders metinleri yeniden aktarılmadı.",
       "status": "verified_correct"
     },
     {
       "id": "RQ-013",
-      "category": "archive_school_type_mismatch",
-      "severity": "high",
-      "title": "Anadolu Lisesi klasöründeki planın kaynağı Fen Lisesi",
+      "category": "source_identity_relabel_pending_validation",
+      "severity": "medium",
+      "title": "Anadolu Lisesi kaynak kimliği güncellendi; içerik kökeni yeniden doğrulanmadı",
       "weeks": [],
       "rows": [
         1
@@ -529,9 +529,9 @@
       "cells": [
         "A1"
       ],
-      "description": "Bu dört dosya plans/2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi/ altında saklanmaktadır; ancak annual-plan.json metadata.school_type='Fen Lisesi', document_title ve source_file alanları da Fen Lisesi kaynağını gösterir. Depo klasörü kaynağın okul türünü değiştirmez.",
-      "resolution_applied": "Kaynak kimliği değiştirilmedi. annual-plan.json metadata.archive_path_school_type_mismatch=true ve açıklama eklendi. Anadolu Lisesi planı yerine kullanılmadan önce doğru kaynak dosyasıyla yeniden aktarılması gerekiyor.",
-      "status": "open_source_type_mismatch"
+      "description": "Dosya Anadolu Lisesi klasöründedir. metadata.school_type, source_file, worksheet_name ve document_title alanları kullanıcı talebiyle Anadolu Lisesi kaynağına göre düzeltildi. Önceki Fen Lisesi metadata uyuşmazlığı giderildi; ancak ders içeriklerinin gerçek Anadolu Lisesi çalışma sayfası ile birebir karşılaştırması bu düzenleme kapsamında yapılmadı.",
+      "resolution_applied": "Kaynak adı ve okul türü metadata'sı güncellendi, archive_path_school_type_mismatch=false. Kaynak içeriklerini yeniden üretmeden koruduk; özgün Anadolu Excel ile pedagojik veri karşılaştırması ileride ayrıca yapılabilir.",
+      "status": "metadata_corrected_content_unverified"
     }
   ]
 }

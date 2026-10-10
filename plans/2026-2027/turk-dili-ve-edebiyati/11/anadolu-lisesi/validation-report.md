@@ -1,5 +1,7 @@
 # 11. Sınıf Türk Dili ve Edebiyatı Yıllık Planı Veri Doğrulama ve Aktarım Raporu
 
+> **Metadata düzeltmesi (2026-10-10):** Bu klasördeki `annual-plan.json` dosyasının `school_type` değeri **Anadolu Lisesi**; `source_file` değeri **`2026-2027 ANADOLU LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx`** olarak kullanıcı talebiyle güncellendi. Belge başlığı ve çalışma sayfası adı buna uyumlu hâle getirildi. Bu rapordaki ilk aktarım ve içerik karşılaştırma bulguları önceki **Fen Lisesi kaynağına** ilişkindir; ders içerikleri Anadolu Lisesi Excel'iyle bu işlemde yeniden doğrulanmadı. Kaynak türü kimlik uyuşmazlığı giderildi, içerik kökeni yeniden doğrulama için RQ-013'te takip ediliyor.
+
 **Belge Başlığı:** 2026-2027 EĞİTİM ÖĞRETİM YILI 11. SINIF FEN LİSESİ TÜRK DİLİ VE EDEBİYATI DERSİ ÇERÇEVE YILLIK PLANI  
 **Kaynak Dosya:** `2026-2027 FEN LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx`  
 **Çalışma Sayfası:** `11. SINIF`  
@@ -235,13 +237,13 @@ Süreç bileşenleri (G sütunu) aktarımında en üst düzey kaynak sadakati sa
 | **RQ-010** | `theme_merged_pedagogical_cells` | Düşük | H, I, J, K Sütunlarının Tema Boyunca Birleştirilmesi | 1-36 (`H4:H12 vb.`) | Çözümlendi |
 | **RQ-011** | `code_formatting` | Düşük | 1. Tema SDB Becerileri Kod Yazım Düzensizliği | 1-9 (`I4:I12`) | Belgelendi |
 | **RQ-012** | `workbook_metadata_difference` | Düşük | Fen Lisesi ile Anadolu Lisesi Sekme ve Başlık Farkı | Genel (`A1`) | Kaynak Farkı Doğrulandı |
-| **RQ-013** | `archive_school_type_mismatch` | Yüksek | Anadolu Lisesi Klasöründe Fen Lisesi Kaynağı | Genel (`A1`) | Açık — Doğru Kaynak Gerekli |
+| **RQ-013** | `source_identity_relabel_pending_validation` | Orta | Anadolu Lisesi Kimliği Güncellendi; İçerik Yeniden Doğrulanmadı | Genel (`A1`) | Metadata Düzeltildi |
 
 ---
 
 ### Arşiv konumu ve okul türü uyarısı
 
-Bu rapor ve JSON **`11/anadolu-lisesi/` klasöründe** bulunmakla birlikte kaynak belgenin başlığı ve JSON `metadata.school_type` değeri **Fen Lisesi** olarak kalmaktadır. Yalnızca klasör adına bakarak bu veri Anadolu Lisesi planı kabul edilmemelidir. Kaynak metin değiştirilerek veya `school_type` alanı zorla yeniden etiketlenerek sorun çözülemez; doğru Anadolu Lisesi planı geldiğinde ayrı aktarım ve doğrulama gerekir. Bu durum RQ-013 ile açık inceleme kaydına alınmıştır.
+Bu klasördeki JSON'un `metadata.school_type` ve `source_file` alanları Anadolu Lisesi kaynağına göre güncellenmiştir. Önceki klasör/metadata uyuşmazlığı giderildi. Ancak bu, ders içeriklerinin özgün Anadolu Lisesi Excel'iyle yeniden doğrulandığı anlamına gelmez. RQ-013 bu doğrulama sınırını belgelendirir.
 
 ---
 

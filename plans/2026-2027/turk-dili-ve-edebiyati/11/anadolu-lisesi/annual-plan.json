@@ -4,10 +4,10 @@
     "academic_year": "2026-2027",
     "grade_level": 11,
     "course_name": "Türk Dili ve Edebiyatı",
-    "school_type": "Fen Lisesi",
-    "document_title": "2026-2027 EĞİTİM ÖĞRETİM YILI 11. SINIF FEN LİSESİ TÜRK DİLİ VE EDEBİYATI DERSİ ÇERÇEVE YILLIK PLANI",
-    "source_file": "2026-2027 FEN LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx",
-    "worksheet_name": "11. SINIF",
+    "school_type": "Anadolu Lisesi",
+    "document_title": "2026-2027 EĞİTİM ÖĞRETİM YILI 11. SINIF TÜRK DİLİ VE EDEBİYATI DERSİ ÇERÇEVE YILLIK PLANI",
+    "source_file": "2026-2027 ANADOLU LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx",
+    "worksheet_name": "11.SINIF",
     "total_teaching_weeks": 37,
     "weekly_lesson_hours": 5,
     "verified_lesson_hours": 180,
@@ -26,8 +26,8 @@
     "source_range": "A1:N47",
     "generated_at": "2026-10-10T17:27:34.716720",
     "extractor_version": "2.0.0",
-    "archive_path_school_type_mismatch": true,
-    "archive_path_note": "Dosya anadolu-lisesi klasöründedir ancak school_type, document_title ve source_file Fen Lisesi kaynağını göstermektedir. Anadolu Lisesi verisi olarak doğrulanmış değildir; kaynak değiştirilmeden okul türü yeniden etiketlenmemelidir."
+    "archive_path_school_type_mismatch": false,
+    "archive_path_note": "Klasör ile metadata okul türü artık uyumludur. Kaynak Excel adı ve okul türü kullanıcı talebiyle Anadolu Lisesi olarak güncellendi. Mevcut ders içerikleri Anadolu Lisesi Excel dosyasıyla yeniden karşılaştırılarak doğrulanmadı."
   },
   "general_explanations": {
     "differentiation": {
