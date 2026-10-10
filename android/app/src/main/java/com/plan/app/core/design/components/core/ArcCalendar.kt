@@ -25,6 +25,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,12 +68,23 @@ fun ArcCalendar(
     val selectedStart = remember(planWeeks, selectedWeek) {
         planWeeks.firstOrNull { it.weekNumber == selectedWeek }?.startDate?.let(LocalDate::parse)
     }
-    var displayedMonth by remember(firstDate) {
-        mutableStateOf(YearMonth.from(firstDate ?: LocalDate.now()))
+    val planKey = firstDate?.toString()
+    val selectedKey = selectedStart?.toString()
+    var monthValue by rememberSaveable(planKey) {
+        mutableStateOf(YearMonth.from(selectedStart ?: firstDate ?: LocalDate.now()).toString())
     }
-    LaunchedEffect(selectedStart) {
-        if (selectedStart != null) displayedMonth = YearMonth.from(selectedStart)
+    // Remember which week was synchronized. A rotation must not force a browsed
+    // calendar month back to the selected week's month.
+    var syncedSelection by rememberSaveable(planKey) {
+        mutableStateOf(selectedKey)
     }
+    LaunchedEffect(selectedKey) {
+        if (selectedKey != null && selectedKey != syncedSelection) {
+            monthValue = YearMonth.from(selectedStart).toString()
+            syncedSelection = selectedKey
+        }
+    }
+    val displayedMonth = YearMonth.parse(monthValue)
     val earliestMonth = firstDate?.let(YearMonth::from)
     val latestMonth = lastDate?.let(YearMonth::from)
     val days = remember(displayedMonth, planWeeks, academicBreaks) {
@@ -92,16 +104,16 @@ fun ArcCalendar(
                 Text(monthTitle, style = ArcTheme.typography.titleMedium, color = colors.foreground)
                 Row {
                     IconButton(
-                        onClick = { displayedMonth = displayedMonth.minusMonths(1) },
+                        onClick = { monthValue = displayedMonth.minusMonths(1).toString() },
                         enabled = earliestMonth != null && displayedMonth > earliestMonth,
                         modifier = Modifier.size(48.dp)
                     ) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki ay")
                     }
                     IconButton(
-                        onClick = { displayedMonth = displayedMonth.plusMonths(1) },
+                        onClick = { monthValue = displayedMonth.plusMonths(1).toString() },
                         enabled = latestMonth != null && displayedMonth < latestMonth,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki ay")
                     }

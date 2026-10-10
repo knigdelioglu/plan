@@ -44,6 +44,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -163,7 +166,9 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     val activeWeek = viewModel.getActiveWeek()
     val colors = ArcTheme.colors
 
-    var showNewClassDialog by remember { mutableStateOf(false) }
+    var showNewClassDialog by rememberSaveable { mutableStateOf(false) }
+    // Hoisted above the compact/two-pane branch: DeX resize does not reset it.
+    var sidebarRatio by rememberSaveable { mutableFloatStateOf(0.4f) }
     var newClassName by remember { mutableStateOf("") }
     val availablePlans = viewModel.availablePlans
     var selectedPlanPath by remember { mutableStateOf<String?>(null) }
@@ -218,7 +223,9 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             // Tablet-first Resizable Paneller
             ArcResizablePanels(
                 modifier = Modifier.testTag("planner-two-pane"),
-                initialSplitRatio = 0.30f,
+                initialSplitRatio = 0.40f,
+                controlledSplitRatio = sidebarRatio,
+                onSplitRatioChange = { sidebarRatio = it },
                 minFirstPanelWidth = PlannerWindowPolicy.MinSidebarDp.dp,
                 minSecondPanelWidth = PlannerWindowPolicy.MinWorkspaceDp.dp,
                 firstPanel = {
@@ -895,13 +902,15 @@ private fun TeacherNotesAndPedagogicalSection(
         }
 
         // Rich Text Notes
-        ArcRichTextEditor(
-            value = noteText,
-            onValueChange = {
-                noteText = it
-                viewModel.saveTeacherNote(it, NoteType.TEXT)
-            }
-        )
+        key(activeClassroomId, activeWeek.weekNumber) {
+            ArcRichTextEditor(
+                value = noteText,
+                onValueChange = {
+                    noteText = it
+                    viewModel.saveTeacherNote(it, NoteType.TEXT)
+                }
+            )
+        }
 
         // Signature UI intentionally removed for this personal weekly planner.
     }

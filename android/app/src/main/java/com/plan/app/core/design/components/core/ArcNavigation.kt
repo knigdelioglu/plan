@@ -205,12 +205,21 @@ fun ArcDrawer(
 fun ArcResizablePanels(
     modifier: Modifier = Modifier,
     initialSplitRatio: Float = 0.35f,
+    controlledSplitRatio: Float? = null,
+    onSplitRatioChange: ((Float) -> Unit)? = null,
     minFirstPanelWidth: Dp = 260.dp,
     minSecondPanelWidth: Dp = 380.dp,
     firstPanel: @Composable () -> Unit,
     secondPanel: @Composable () -> Unit
 ) {
-    var splitRatio by rememberSaveable { mutableFloatStateOf(initialSplitRatio.coerceIn(0f, 1f)) }
+    var internalSplitRatio by rememberSaveable {
+        mutableFloatStateOf(initialSplitRatio.coerceIn(0f, 1f))
+    }
+    val splitRatio = controlledSplitRatio ?: internalSplitRatio
+    fun updateSplitRatio(newRatio: Float) {
+        internalSplitRatio = newRatio
+        onSplitRatioChange?.invoke(newRatio)
+    }
     val density = LocalDensity.current
     val dividerWidth = 24.dp
 
@@ -248,8 +257,10 @@ fun ArcResizablePanels(
                             Key.DirectionRight -> 20f
                             else -> return@onKeyEvent false
                         }
-                        splitRatio = (splitRatio + step / usableWidth.value)
-                            .coerceIn(minimumRatio, maximumRatio)
+                        updateSplitRatio(
+                            (splitRatio + step / usableWidth.value)
+                                .coerceIn(minimumRatio, maximumRatio)
+                        )
                         true
                     }
                     .focusable()
@@ -257,8 +268,10 @@ fun ArcResizablePanels(
                         orientation = Orientation.Horizontal,
                         state = rememberDraggableState { delta ->
                             val deltaDp = with(density) { delta.toDp().value }
-                            splitRatio = (splitRatio + deltaDp / usableWidth.value)
-                                .coerceIn(minimumRatio, maximumRatio)
+                            updateSplitRatio(
+                                (splitRatio + deltaDp / usableWidth.value)
+                                    .coerceIn(minimumRatio, maximumRatio)
+                            )
                         }
                     ),
                 contentAlignment = Alignment.Center

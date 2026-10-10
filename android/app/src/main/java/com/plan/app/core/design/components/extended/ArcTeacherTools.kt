@@ -2,6 +2,7 @@ package com.plan.app.core.design.components.extended
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -29,12 +31,20 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
@@ -46,7 +56,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.plan.app.core.design.components.advanced.ArcTextarea
 import com.plan.app.core.design.components.core.ArcButton
 import com.plan.app.core.design.components.core.ArcButtonVariant
 import com.plan.app.core.design.components.core.ArcCard
@@ -193,8 +202,8 @@ fun ArcSignaturePad(
 }
 
 /**
- * Arc Rich Text Editor Component (68 / 70 - C.13)
- * Formatted teacher notes toolbar (Markdown support: bold, italic, bullet list, quote).
+ * Real selection-aware teacher note editor. Markdown is stored as plain text;
+ * formatting only wraps selected text or inserts syntax at the caret.
  */
 @Composable
 fun ArcRichTextEditor(
@@ -203,49 +212,87 @@ fun ArcRichTextEditor(
     modifier: Modifier = Modifier
 ) {
     val colors = ArcTheme.colors
+    val inputFocus = remember { FocusRequester() }
+    var field by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue(value, selection = TextRange(value.length)))
+    }
+    LaunchedEffect(value) {
+        if (field.text != value) {
+            field = TextFieldValue(value, selection = TextRange(value.length))
+        }
+    }
+
+    fun apply(format: NoteFormat) {
+        val next = formatTeacherNote(
+            field.text, field.selection.start, field.selection.end, format
+        )
+        field = TextFieldValue(
+            text = next.text,
+            selection = TextRange(next.selectionStart, next.selectionEnd)
+        )
+        onValueChange(next.text)
+        inputFocus.requestFocus()
+    }
 
     ArcCard(modifier = modifier) {
         Column(modifier = Modifier.padding(ArcSpacing.space3)) {
-            // Formatting Toolbar
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 6.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                IconButton(
-                    onClick = { onValueChange("$value **vurgu**") },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(Icons.Default.FormatBold, contentDescription = "Kalın", tint = colors.foreground)
-                }
-                IconButton(
-                    onClick = { onValueChange("$value *italik*") },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(Icons.Default.FormatItalic, contentDescription = "İtalik", tint = colors.foreground)
-                }
-                IconButton(
-                    onClick = { onValueChange("$value\n• Madde") },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(Icons.Default.FormatListBulleted, contentDescription = "Liste", tint = colors.foreground)
-                }
-                IconButton(
-                    onClick = { onValueChange("$value\n> Alıntı") },
-                    modifier = Modifier.size(32.dp)
-                ) {
-                    Icon(Icons.Default.FormatQuote, contentDescription = "Alıntı", tint = colors.foreground)
+                listOf(
+                    Triple(Icons.Default.FormatBold, "Kalın", NoteFormat.BOLD),
+                    Triple(Icons.Default.FormatItalic, "İtalik", NoteFormat.ITALIC),
+                    Triple(Icons.Default.FormatListBulleted, "Liste", NoteFormat.LIST),
+                    Triple(Icons.Default.FormatQuote, "Alıntı", NoteFormat.QUOTE)
+                ).forEach { (icon, label, format) ->
+                    IconButton(
+                        onClick = { apply(format) },
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(icon, contentDescription = label, tint = colors.foreground)
+                    }
                 }
             }
 
-            ArcTextarea(
-                value = value,
-                onValueChange = onValueChange,
-                placeholder = "Biçimlendirilmiş öğretmen ders notları...",
-                minLines = 5
-            )
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = ArcRadius.md,
+                color = colors.surface,
+                border = BorderStroke(1.dp, colors.border)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    BasicTextField(
+                        value = field,
+                        onValueChange = {
+                            field = it
+                            if (it.text != value) onValueChange(it.text)
+                        },
+                        modifier = Modifier.fillMaxWidth().heightIn(min = 132.dp)
+                            .focusRequester(inputFocus)
+                            .testTag("teacher-note-input"),
+                        textStyle = ArcTheme.typography.bodyMedium.copy(color = colors.foreground),
+                        cursorBrush = SolidColor(colors.accent),
+                        decorationBox = { inner ->
+                            Box {
+                                if (field.text.isEmpty()) {
+                                    Text(
+                                        "Öğretmen notunuzu yazın...",
+                                        style = ArcTheme.typography.bodyMedium,
+                                        color = colors.textMuted
+                                    )
+                                }
+                                inner()
+                            }
+                        }
+                    )
+                    Text(
+                        text = "${value.length} karakter",
+                        style = ArcTheme.typography.labelSmall,
+                        color = colors.textMuted
+                    )
+                }
+            }
         }
     }
 }
