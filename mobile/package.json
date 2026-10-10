@@ -10,14 +10,15 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/*.test.mjs",
-    "check": "pnpm run test && pnpm run typecheck",
+    "test": "node --experimental-strip-types --test tests/*.test.mjs",
+    "check": "pnpm run catalog && pnpm run test && pnpm run typecheck && expo install --check",
     "doctor": "expo-doctor",
-    "catalog": "node scripts/build-catalog.mjs"
+    "catalog": "node scripts/build-catalog.mjs",
+    "build:android:preview": "eas build --platform android --profile preview"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
-    "@native-motion/react-native": "github:knigdelioglu/native-motion#802fed948881e149d5f26cd367b05740db7733bd&path:packages/react-native",
+    "@native-motion/react-native": "github:knigdelioglu/native-motion#802fed948881e149d5f26cd367b05740db7733bd&path:/packages/react-native",
     "expo": "~55.0.0",
     "expo-constants": "~55.0.0",
     "expo-font": "~55.0.0",
@@ -29,7 +30,10 @@
     "react-native": "0.83.6",
     "react-native-safe-area-context": "~5.6.2",
     "react-native-screens": "~4.23.0",
-    "expo-crypto": "~55.0.0"
+    "expo-crypto": "~55.0.0",
+    "expo-document-picker": "~55.0.17",
+    "expo-file-system": "~55.0.26",
+    "expo-sharing": "~55.0.24"
   },
   "devDependencies": {
     "@types/react": "^19.2.0",

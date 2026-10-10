@@ -18,14 +18,14 @@ Expo Go ile Android/iOS'ta açın veya geliştirme derlemesi kullanın. Ayrı An
 ```sh
 npx pnpm@10.19.0 run test
 npx pnpm@10.19.0 run typecheck
-npx expo install --check
+npx pnpm@10.19.0 exec expo install --check
 ```
 
 ### Native Motion bağımlılığı
 
 Uygulama tasarımı `@native-motion/react-native` paketinin **doğrudan kaynak kodunu** kullanır.
 Paket GitHub monoreposunun `packages/react-native` alt dizininden, **sabit commit** üzerinden
-pnpm Git subdirectory protokolüyle kurulur. Bu sayede kütüphanenin yeni sürümlerine geçmek
+pnpm Git subdirectory (`&path:/packages/react-native`) protokolüyle kurulur. Bu sayede kütüphanenin yeni sürümlerine geçmek
 yalnızca commit referansını değiştirmeyi ve UI uyarlayıcılarını doğrulamayı gerektirir.
 
 - Kaynak: [knigdelioglu/native-motion](https://github.com/knigdelioglu/native-motion)
@@ -61,10 +61,33 @@ veritabanında tutulur; `plans/**` veya katalog JSON'una yazılmaz.
 haftalarda her ders bölümü ayrı kaydedilir. Seçilen başlangıç haftasından
 öncesi işlenmiş kabul edilmez.
 
-**Sınır:** Henüz bulut senkronizasyonu, veri dışa aktarma/yedekleme ve hesap
-sistemi yoktur. Uygulamayı silmek veya cihaz verilerini temizlemek ilerleme
-kayıtlarını kaybettirebilir. Bu nedenle üretim kullanımından önce yedekleme
-eklenmelidir.
+### Manuel yedekleme ve geri yükleme
+
+**Sınıflarım → Yedekleme ve geri yükleme** alanından:
+1. **Yedeği dışa aktar:** Şube ve ders ilerlemelerini JSON biçiminde paylaşım ekranına verir; dosyayı Dosyalar/Drive gibi güvenli bir yere siz kaydedersiniz. Paylaşım ekranının kapanması, hedefte gerçekten saklandığını kanıtlamaz.
+2. **Dosyadan geri yükle:** Dosyayı önce bütünlük ve plan doğrulamasından geçirir, etkilenecek şube/kayıt sayılarını gösterir ve açık onay ister. **Mevcut yerel kayıtların tamamını değiştirir.** İşlem SQLite transaction'ıyla yürütülür; hata durumunda geri alınır.
+
+JSON yedeği **şifreli değildir** ve kişisel ders notlarını içerir. Güvenli bir yerde saklayın; başkalarıyla paylaşmayın. Doğrulaması tamamlanmamış veya artık katalogda bulunmayan plana ait yedekler veri kaybını önlemek amacıyla reddedilir.
+
+**Sınır:** Henüz otomatik/bulut eşitlemesi ve kullanıcı hesabı yoktur. Uygulamayı veya cihaz verilerini silmeden önce yedek dosyasının gerçekten kaydedildiğini doğrulayın.
+
+
+### Android APK önizlemesi
+
+`eas.json` içinde **preview** profili Android APK üretecek şekilde yapılandırıldı.
+Bu repo değişikliği tek başına bir APK veya GitHub Release oluşturmaz; Expo/EAS
+hesabıyla giriş yapıp bulutta bir derleme başlatılması gerekir:
+
+```sh
+cd mobile
+npx eas-cli login
+npx eas-cli build --platform android --profile preview
+```
+
+Üretilen APK'yı gerçek Android cihazda test edip sonra paylaşın. Şu anda fiziksel
+Android/iOS cihaz smoke testi ve tam TypeScript derlemesi bağımlılıklar kurulamadığı
+için doğrulanmış değildir. Projedeki testler veri iş kuralları ve yedek doğrulama
+senaryolarını kapsar; cihaz davranışlarının yerine geçmez.
 
 ### Geliştirme alanı
 

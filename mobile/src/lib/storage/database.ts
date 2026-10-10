@@ -1,5 +1,6 @@
 import * as SQLite from 'expo-sqlite';
 import * as Crypto from 'expo-crypto';
+import {validateBackup,type BackupFile} from '../../features/backup/backup-format';
 import { findPlan, findWeek } from '../../features/catalog/queries';
 import { classNameKey, validateHours, type ClassRecord, type Snapshot } from '../../features/progress/model';
 
@@ -91,6 +92,36 @@ export async function persistLesson(classId:string,weekNumber:number,lessonIndex
         VALUES(?,?,?,?,?,?) ON CONFLICT(class_id,week,lesson) DO UPDATE SET
         done_hours=excluded.done_hours,note=excluded.note,updated_at=excluded.updated_at`,
         [classId,weekNumber,lessonIndex,doneHours,note,new Date().toISOString()]);
+    }
+  });
+}
+
+/** Atomic replacement: SQLite rolls back all deletes/inserts if any write fails. */
+export async function replaceFromBackup(document: BackupFile): Promise<void> {
+  // Revalidate at the persistence boundary; a caller can never bypass validation.
+  const backup = validateBackup(document, findPlan);
+  const db = await getDatabase();
+  await db.withExclusiveTransactionAsync(async tx => {
+    await tx.runAsync('DELETE FROM lesson_progress');
+    await tx.runAsync('DELETE FROM classes');
+    await tx.runAsync("DELETE FROM preferences WHERE key='active_class'");
+    for (const group of backup.classes) {
+      await tx.runAsync(
+        'INSERT INTO classes(id,name,name_key,plan_id,start_week,created_at) VALUES (?,?,?,?,?,?)',
+        [group.id,group.name,group.nameKey,group.planId,group.startWeek,group.createdAt]
+      );
+    }
+    for (const record of backup.records) {
+      await tx.runAsync(
+        'INSERT INTO lesson_progress(class_id,week,lesson,done_hours,note,updated_at) VALUES (?,?,?,?,?,?)',
+        [record.classId,record.week,record.lesson,record.doneHours,record.note,record.updatedAt]
+      );
+    }
+    if (backup.selectedClassId) {
+      await tx.runAsync(
+        "INSERT INTO preferences(key,value) VALUES('active_class',?)",
+        [backup.selectedClassId]
+      );
     }
   });
 }

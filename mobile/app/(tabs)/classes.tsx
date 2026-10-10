@@ -7,6 +7,7 @@ import {useApp} from '@/app/AppProvider';
 import {useAppTheme} from '@/theme';
 import {plans,findPlan,defaultWeek} from '@/features/catalog/queries';
 import {classSummary} from '@/features/progress/model';
+import {BackupPanel} from '@/features/backup/BackupPanel';
 
 export default function ClassesScreen() {
  const p=useAppTheme();
@@ -97,5 +98,6 @@ export default function ClassesScreen() {
        disabled={busy||!plan||name.trim().length<2||name.trim().length>40}
        onPress={()=>void add()}/>
    </Card>
+   <BackupPanel/>
  </Screen>;
 }

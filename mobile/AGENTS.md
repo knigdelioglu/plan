@@ -19,6 +19,7 @@ biçimlendirilemez. Gerekli veri uyarlamaları sadece `mobile/scripts/**` ve
 - Anadolu Lisesi 11. sınıf JSON'u kaynak içerik doğrulaması tamamlanana dek
   yayımlanmaz. Kaynak farklarını `plans/**` içinde otomatik onarma.
 - Kullanıcıya ait kayıtlar katalog JSON'una veya Git'e yazılmaz, yerel SQLite'da kalır.
+- Yedekleme `src/features/backup/**` içinde sürümlü JSON sözleşmesi kullanır; geri yükleme bütün kayıtları **önce** doğrulamalı, kullanıcı onayından sonra **tek atomik transaction** ile değiştirmelidir. Başarı, veritabanı işlemi bitmeden bildirilmez. Kişisel yedek dosyaları şifreli değildir; otomatik paylaşım yapma.
 - Expo arayüzlerini gerçek Android tablet/iOS ile test etmeden üretim onayı verme;
   Native Motion deneysel, Reduce Motion/RTL/erişilebilirlik ayrıca incelenmeli.
 - Görev sonunda `git diff --name-only` ile `plans/**` verilerinin değişmediğini kontrol et.
