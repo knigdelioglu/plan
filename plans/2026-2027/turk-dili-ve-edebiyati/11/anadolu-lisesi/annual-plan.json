@@ -25,7 +25,9 @@
     },
     "source_range": "A1:N47",
     "generated_at": "2026-10-10T17:27:34.716720",
-    "extractor_version": "2.0.0"
+    "extractor_version": "2.0.0",
+    "archive_path_school_type_mismatch": true,
+    "archive_path_note": "Dosya anadolu-lisesi klasöründedir ancak school_type, document_title ve source_file Fen Lisesi kaynağını göstermektedir. Anadolu Lisesi verisi olarak doğrulanmış değildir; kaynak değiştirilmeden okul türü yeniden etiketlenmemelidir."
   },
   "general_explanations": {
     "differentiation": {
@@ -304,11 +306,18 @@
             "name": "15 Temmuz Demokrasi ve Millî Birlik Günü",
             "date_text": "15 Temmuz",
             "is_calendar_aligned": false,
-            "calendar_note": "15 Temmuz tarihi yaz tatiline denk gelmektedir; MEB müfredatında öğretim yılının ilk haftasında anma programı olarak uygulanır."
+            "calendar_note": "15 Temmuz, anmanın takvimdeki tarihidir. Okuldaki uygulama 14-18 Eylül 2026 tarihli 1. haftaya planlı olarak alınmıştır; bu bir yıllık plan yerleşim hatası değildir. Kesin uygulama günü kaynakta belirtilmemiştir.",
+            "is_schedule_valid": true,
+            "commemoration_date": "15 Temmuz",
+            "scheduled_week": 1,
+            "scheduled_date": null,
+            "scheduling_status": "intentional_school_year_opening_observance",
+            "schedule_basis": "15 Temmuz anma etkinliği yaz tatili nedeniyle okul açıldıktan sonra eğitim öğretim yılının ilk haftasında gerçekleştirilecek şekilde planlanmıştır."
           }
         ],
-        "has_calendar_discrepancy": true,
-        "calendar_discrepancy_note": "15 Temmuz tarihi, 1. haftanın tarih aralığı olan 14-18 Eylül 2026 ile takvimsel olarak uyuşmamaktadır."
+        "has_calendar_discrepancy": false,
+        "calendar_discrepancy_note": null,
+        "scheduling_note": "Resmî anma tarihi ile okuldaki uygulama haftası farklı kavramlardır; açılış haftasına yerleşim planlıdır."
       },
       "pedagogical_context": {
         "assessment_and_evaluation": {

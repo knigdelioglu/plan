@@ -110,6 +110,14 @@
         },
         "extractor_version": {
           "type": "string"
+        },
+        "archive_path_school_type_mismatch": {
+          "type": "boolean",
+          "description": "Depo klasörünün okul türü ile kaynak dosyanın okul türü eşleşmiyorsa true."
+        },
+        "archive_path_note": {
+          "type": "string",
+          "description": "Kaynak türü ile arşiv konumu arasındaki uyuşmazlığın açıklaması."
         }
       }
     },
@@ -481,22 +489,57 @@
                       "type": "string"
                     },
                     "is_calendar_aligned": {
-                      "type": "boolean"
+                      "type": "boolean",
+                      "description": "Anma gününün literal tarihinin haftanın tarihleri içinde olup olmadığı. false değeri tek başına uygulama hatası anlamına gelmez."
                     },
                     "calendar_note": {
                       "type": "string"
+                    },
+                    "is_schedule_valid": {
+                      "type": "boolean",
+                      "description": "Takvimdeki anma günü haftayla çakışmasa da planlanan uygulama haftası doğrulanmış/geçerli olabilir."
+                    },
+                    "commemoration_date": {
+                      "type": "string",
+                      "description": "Günün özgün tarih adı; ör. 15 Temmuz."
+                    },
+                    "scheduled_week": {
+                      "type": "integer",
+                      "minimum": 1,
+                      "description": "Etkinliğin okuldaki uygulama haftası; anma gününün takvim tarihiyle aynı olmak zorunda değildir."
+                    },
+                    "scheduled_date": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date",
+                      "description": "Okuldaki kesin uygulama günü belirlenmediyse null."
+                    },
+                    "scheduling_status": {
+                      "type": "string",
+                      "description": "Planlı eğitim yılı başlangıç anması gibi özel yerleşim durumu."
+                    },
+                    "schedule_basis": {
+                      "type": "string",
+                      "description": "Takvim günü ile uygulama haftasının neden ayrıldığının açıklaması."
                     }
                   }
                 }
               },
               "has_calendar_discrepancy": {
-                "type": "boolean"
+                "type": "boolean",
+                "description": "Planlanmış okul içi uygulamayı hata sayma. Anma tarihinin haftayla eşleşmemesi tek başına takvim uyuşmazlığı değildir."
               },
               "calendar_discrepancy_note": {
                 "type": [
                   "string",
                   "null"
                 ]
+              },
+              "scheduling_note": {
+                "type": "string",
+                "description": "Özel günün yıllık planda hangi nedenle bu haftaya yerleştirildiği; resmi tarih ile ders haftası ayrımı."
               }
             }
           },

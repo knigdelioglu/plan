@@ -40,7 +40,7 @@ plans/
 - **Okul türü:** Planın geçerli olduğu tür; `anadolu-lisesi`, `fen-lisesi`, `sosyal-bilimler-lisesi`. Birbirinden farklı planlar **ayrı klasörlerde** tutulur.
 - Aynı düzey için farklı sürümler gerektiğinde planların üzerine yazmak yerine ayrı ve açıkça tanımlanmış varyantlar kullanılmalıdır.
 
-Şimdilik **2026-2027 Türk Dili ve Edebiyatı** dersi için 9–12. sınıfların her birinde **Anadolu Lisesi, Fen Lisesi ve Sosyal Bilimler Lisesi** klasörleri açılmıştır (toplam 12 okul türü/sınıf kombinasyonu). Yalnızca **11. sınıf Fen Lisesi** için plan ve doğrulama dosyaları vardır. Diğer klasörlerdeki `.gitkeep` dosyaları dizinleri Git'te korumak içindir; **yıllık plan verisi içermez**.
+Şimdilik **2026-2027 Türk Dili ve Edebiyatı** dersi için 9–12. sınıfların her birinde **Anadolu Lisesi, Fen Lisesi ve Sosyal Bilimler Lisesi** klasörleri açılmıştır (toplam 12 okul türü/sınıf kombinasyonu). **11. sınıf Fen Lisesi** için plan ve doğrulama dosyaları vardır. **11. sınıf Anadolu Lisesi klasörüne de dosyalar eklenmiştir; ancak içerikleri şu anda Fen Lisesi kaynağından üretildiği için doğrulanmış Anadolu Lisesi planı değildir.** Diğer klasörlerdeki `.gitkeep` dosyaları dizinleri Git'te korumak içindir; **yıllık plan verisi içermez**.
 
 ## Mevcut plan
 
@@ -101,6 +101,14 @@ PY
 ```
 
 **Önemli:** Şemadan geçmek, kaynak belgenin pedagojik ve takvimsel açıdan kusursuz olduğu anlamına gelmez. Örnek dosyanın `review-queue.json` kaydında kaynakta korunmuş takvim çelişkisi ve kaynaktan çıkarımla belirlenen saat gibi durumlar da belgelenmiştir. Bu ayrımlar otomatik olarak silinmemeli veya kaynağa danışmadan değiştirilmemelidir.
+
+### Özel günlerin planlanması ve kaynak doğruluğu
+
+**Takvimdeki anma tarihi ile okuldaki uygulama haftası ayrıdır.** Örneğin 15 Temmuz Demokrasi ve Millî Birlik Günü anması, yaz tatili nedeniyle yıllık planda okulun açılış haftasına yerleştirilebilir. Bu, tarih farkı nedeniyle otomatik olarak `calendar_anomaly` sayılmamalıdır. `date_text`/`commemoration_date` ile `scheduled_week` ayrı korunmalı, kesin etkinlik günü kaynakta yoksa uydurulmamalıdır. `is_calendar_aligned=false` literal tarih karşılaştırmasını, `has_calendar_discrepancy=false` ise planlı ve geçerli hafta yerleşimini gösterebilir. Diğer özel günlerde de tarih farkının sebebi (tatil, hafta sonu, planlama kararı) incelenmeden hata veya otomatik düzeltme kararı verilmemelidir.
+
+**Okul türü klasör adına göre değil özgün belgeye göre belirlenir.** Şu an `11/anadolu-lisesi/` altındaki JSON'un kaynağı Fen Lisesidir ve veride açık uyarı bulunur. Bu dosya Anadolu Lisesi kaynağıyla değiştirilip ayrıca doğrulanmadan Anadolu planı olarak kullanılmamalıdır.
+
+Daha sonraki JSON aktarımları için ajana yönelik kalıcı ilkeler kökteki [AGENTS.md](AGENTS.md) belgesindedir.
 
 ## Yeni plan ekleme ilkeleri
 

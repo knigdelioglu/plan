@@ -1,7 +1,7 @@
 {
   "document": "11. Sınıf Türk Dili ve Edebiyatı Yıllık Planı İnceleme ve Doğrulama Kuyruğu",
   "generated_at": "2026-10-10T17:25:00",
-  "total_items": 12,
+  "total_items": 13,
   "items": [
     {
       "id": "RQ-001",
@@ -102,9 +102,9 @@
     },
     {
       "id": "RQ-004",
-      "category": "calendar_anomaly",
-      "severity": "medium",
-      "title": "1. Hafta Belirli Günler Takvim Uyuşmazlığı (15 Temmuz)",
+      "category": "intentional_commemoration_scheduling",
+      "severity": "info",
+      "title": "15 Temmuz anmasının okul açılış haftasında planlı uygulanması",
       "weeks": [
         1
       ],
@@ -114,12 +114,12 @@
       "cells": [
         "L4"
       ],
-      "description": "L4 hücresinde '15 Temmuz Demokrasi ve Millî Birlik Günü' yazmaktadır. 1. haftanın ders tarihi 14-18 Eylül 2026'dır. 15 Temmuz tarihi yaz tatiline denk gelmekte olup MEB tarafından öğretim yılının ilk haftasında anılması kararlaştırılmıştır. Ancak kronolojik olarak 14-18 Eylül aralığı ile uyuşmamaktadır.",
+      "description": "L4 hücresinde '15 Temmuz Demokrasi ve Millî Birlik Günü' yer alır. Anmanın takvim tarihi 15 Temmuz olmakla birlikte okul uygulaması 14-18 Eylül 2026 tarihli 1. haftada planlanmıştır. Bu yerleşim kullanıcı tarafından belirtilen zorunlu okul açılışı anması bağlamında normaldir; kronolojik tarihler farklı diye kaynak hatası sayılmamalıdır. Kesin uygulama günü kaynakta bulunmuyor.",
       "source_raw_values": {
         "L4": "15 Temmuz Demokrasi ve Millî Birlik Günü"
       },
-      "resolution_applied": "Kaynak verideki yerleşim aynen korundu; calendar_discrepancy_note ile takvim durumu belgelendi.",
-      "status": "source_discrepancy_noted"
+      "resolution_applied": "Anma tarihi ve planlanan hafta ayrı alanlarda korundu; has_calendar_discrepancy=false, is_schedule_valid=true, scheduled_week=1, scheduled_date=null. Özgün L4 metni ve okul haftası değiştirilmedi.",
+      "status": "resolved_intentional_schedule"
     },
     {
       "id": "RQ-005",
@@ -516,6 +516,22 @@
       "description": "Fen Lisesi çalışma sayfasında A1 başlığı '... 11. SINIF FEN LİSESİ TÜRK DİLİ VE EDEBİYATI ...' ifadesini içermektedir. Sayfa sekme adı '11. SINIF' (boşluklu) olarak adlandırılmıştır. Anadolu Lisesi çalışma sayfasında ise başlıkta 'FEN LİSESİ' ibaresi yoktur ve sekme adı '11.SINIF'tır.",
       "resolution_applied": "Kullanıcının görev tanımına tam uygun olarak doğrudan '2026-2027 FEN LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx' dosyasındaki '11. SINIF' çalışma sayfası işlendi.",
       "status": "verified_correct"
+    },
+    {
+      "id": "RQ-013",
+      "category": "archive_school_type_mismatch",
+      "severity": "high",
+      "title": "Anadolu Lisesi klasöründeki planın kaynağı Fen Lisesi",
+      "weeks": [],
+      "rows": [
+        1
+      ],
+      "cells": [
+        "A1"
+      ],
+      "description": "Bu dört dosya plans/2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi/ altında saklanmaktadır; ancak annual-plan.json metadata.school_type='Fen Lisesi', document_title ve source_file alanları da Fen Lisesi kaynağını gösterir. Depo klasörü kaynağın okul türünü değiştirmez.",
+      "resolution_applied": "Kaynak kimliği değiştirilmedi. annual-plan.json metadata.archive_path_school_type_mismatch=true ve açıklama eklendi. Anadolu Lisesi planı yerine kullanılmadan önce doğru kaynak dosyasıyla yeniden aktarılması gerekiyor.",
+      "status": "open_source_type_mismatch"
     }
   ]
 }

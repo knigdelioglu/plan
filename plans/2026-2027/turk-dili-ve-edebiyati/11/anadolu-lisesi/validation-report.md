@@ -27,11 +27,11 @@ Aktarım süreci salt bir programatik hücre okuma işlemi olarak ele alınmamı
 | **Süreç Bileşenleri Madde Sayısı** | 708 Madde | **708 Madde** | Excel G sütunu ile birebir eşleşti (Tema başına 177 madde) |
 | **Müfredat Ana Temaları** | 4 Tema + 1 Sosyal Etkinlik | **4 Tema + 1 Sosyal Etkinlik** | Her ana tema 45 saat ($4 \times 45 = 180$ saat) |
 | **Akademik Tatil Blokları** | 3 Tatil | **3 Tatil** | 1. Ara Tatil, Yarıyıl Tatili, 2. Ara Tatil (Satır 14, 25, 30) |
-| **Belirli Gün ve Haftalar** | 11 Kayıt | **11 Kayıt (12 Etkinlik)** | 23. hafta çift etkinlikli; 3 takvim uyuşmazlığı işaretlendi |
+| **Belirli Gün ve Haftalar** | 11 Kayıt | **11 Kayıt (12 Etkinlik)** | 23. hafta çift etkinlikli; 15 Temmuz için planlı okul açılış anması, ayrıca 2 tarih inceleme kaydı |
 | **Birleştirilmiş Hücre Aralıkları** | 49 Aralık | **49 Aralık** | Tümü çözümlendi ve metadata ile ilişkilendirildi |
 | **Ay Sütununda Devam Hücresi Sayısı** | 25 Hafta | **25 Hafta** | Çapa hücresi (`anchor_cell`) ve aralık ile tam izlenebilir |
 | **JSON Schema Doğrulaması** | Draft 2020-12 | **Geçerli (0 Hata)** | `jsonschema.validate` ile tam uyum |
-| **İnceleme Kuyruğu (Review Queue)** | 12 Madde | **12 Yapılandırılmış Madde** | Tüm özel durumlar ve varsayımlar belgelendi |
+| **İnceleme Kuyruğu (Review Queue)** | 13 Madde | **13 Yapılandırılmış Madde** | Kaynak/klasör okul türü uyuşmazlığı açık kayıt olarak eklendi |
 
 ---
 
@@ -193,16 +193,16 @@ JSON modelimizde her hücre başvurusu `{anchor_cell, merged_range, physical_cel
 
 Excel tablosunun L sütununda yer alan "Belirli Gün ve Haftalar" verileri incelenmiş; özgün metinler (`raw`) hiçbir karakter veya satır sonu eksiltilmeden saklanmış, yapılandırılmış `events` alanlarında ayrıştırılmıştır.
 
-Kaynak tabloda tespit edilen 3 önemli takvim uyuşmazlığı ve 1 çoklu etkinlik durumu aşağıda belgelenmiştir:
+Kaynakta 15 Temmuz için **planlı okul açılışı anması**, ayrıca gerekçesi teyit edilmesi gereken **2 tarih yerleşimi** (12 Mart ve 29 Mayıs) ve **1 çoklu etkinlik hücresi** bulunmaktadır:
 
 | Hafta | Tarih Aralığı | Hücre | Özgün Metin (`raw`) | Tespit Edilen Takvimsel Durum |
 | :---: | :---: | :---: | :--- | :--- |
-| **1** | 14-18 Eylül 2026 | `L4` | `15 Temmuz Demokrasi ve Millî Birlik Günü` | **Takvim Uyuşmazlığı:** 15 Temmuz tarihi yaz tatiline denk gelmektedir. MEB mevzuatı gereği eğitim-öğretim yılının ilk haftasında anılmaktadır; kronolojik olarak 14-18 Eylül ile uyuşmamaktadır. |
+| **1** | 14-18 Eylül 2026 | `L4` | `15 Temmuz Demokrasi ve Millî Birlik Günü` | **Planlı okul açılış haftası anması (hata değil):** Anma tarihinin 15 Temmuz olması, okulun açıldığı 1. haftada uygulanmasına engel değildir. Etkinliğin kesin uygulama günü kaynakta yoktur. |
 | **22** | 1-5 Mart 2027 | `L29` | `İstiklâl Marşı'nın Kabulü ve Mehmet Akif Ersoy'u Anma Günü (12 Mart)    ` | **Takvim Uyuşmazlığı:** 12 Mart tarihi bir sonraki hafta olan 2. Dönem Ara Tatili'ne (8-12 Mart 2027) denk gelmektedir. Kaynak tablo anma gününü tatil öncesindeki 22. haftaya yazmıştır. |
 | **23** | 15-19 Mart 2027 | `L31` | `\nTürk Dünyası ve Toplulukları Haftası (16-22 Mart)      \n\n\n\nŞehitler Haftası (18 Mart)\n\n\n      \n\n ` | **Çoklu Etkinlik:** Hücrede iki ayrı anma günü aşırı boşluk ve satır sonlarıyla bir arada yer almaktadır. Modelde 2 ayrı yapılandırılmış etkinlik (`events`) olarak ayrıştırılmıştır. |
 | **33** | 24-28 Mayıs 2027 | `L42` | `İstanbul'un Fethi (29 Mayıs)       ` | **Takvim Uyuşmazlığı:** 33. haftanın öğretim günleri 24-28 Mayıs (Pazartesi-Cuma) arasındadır. 29 Mayıs 2027 tarihi Cumartesi gününe (hafta sonu) denk gelmektedir. |
 
-Tüm kayıtlarda `has_calendar_discrepancy` ve `calendar_discrepancy_note` alanları eklenerek takvimsel gerçeklik belgelenmiş, ancak kaynak tabloya sadakat gereği hiçbir etkinliğin yeri değiştirilmemiştir.
+`date_text`/`commemoration_date` günün takvim tarihini, `scheduled_week` ve gerekiyorsa `scheduled_date` okuldaki uygulamayı gösterir. 15 Temmuz için `is_calendar_aligned=false` yalnızca tarihlerin aynı aralıkta olmadığını, `is_schedule_valid=true` ve `has_calendar_discrepancy=false` ise planlı yerleşimin hata olmadığını bildirir. 12 Mart ve 29 Mayıs kayıtları açıklamasız otomatik taşınmamıştır; yerleşim gerekçeleri ayrıca teyit edilmelidir.
 
 ---
 
@@ -217,16 +217,16 @@ Süreç bileşenleri (G sütunu) aktarımında en üst düzey kaynak sadakati sa
 
 ---
 
-## 7. İnceleme Kuyruğu (Review Queue - 12 Madde) Özeti
+## 7. İnceleme Kuyruğu (Review Queue - 13 Madde) Özeti
 
-`review-queue.json` dosyasında yer alan 12 adet kayıt ve çözüm durumları:
+`review-queue.json` dosyasında yer alan 13 adet kayıt ve çözüm durumları:
 
 | ID | Kategori | Önem | Konu | İlgili Haftalar / Hücreler | Durum |
 | :---: | :--- | :---: | :--- | :--- | :---: |
 | **RQ-001** | `lesson_hours_split` | Orta | Hücre İçi "3+2" Saat Dağılımı | 7, 16, 25, 34 (`C10, C21, C33, C43`) | Yapılandırıldı |
 | **RQ-002** | `multi_row_weeks` | Orta | İki Fiziksel Satıra Yayılan Haftalar | 9, 18, 27, 36 (`B12:B13, D13:L13 vb.`) | Yapılandırıldı |
 | **RQ-003** | `missing_explicit_hours_assumption` | Yüksek | 37. Hafta Sayısal Saat Yokluğu ve 5 Saat Varsayımı | 37 (`C47:L47`) | Varsayım Olarak İşaretlendi |
-| **RQ-004** | `calendar_anomaly` | Orta | 1. Hafta 15 Temmuz Takvim Uyuşmazlığı | 1 (`L4`) | Belgelendi |
+| **RQ-004** | `intentional_commemoration_scheduling` | Bilgi | 1. Hafta 15 Temmuz Açılış Anması | 1 (`L4`) | Planlı Yerleşim; Hata Değil |
 | **RQ-005** | `calendar_anomaly` | Yüksek | 22. Hafta 12 Mart Takvim Uyuşmazlığı | 22 (`L29`) | Belgelendi |
 | **RQ-006** | `calendar_anomaly` | Orta | 33. Hafta 29 Mayıs Takvim Uyuşmazlığı | 33 (`L42`) | Belgelendi |
 | **RQ-007** | `multi_event_cell` | Orta | 23. Hafta Çoklu Etkinlik ve Boşluk Düzensizliği | 23 (`L31`) | Yapılandırıldı |
@@ -234,7 +234,14 @@ Süreç bileşenleri (G sütunu) aktarımında en üst düzey kaynak sadakati sa
 | **RQ-009** | `global_merged_cells` | Düşük | M ve N Sütunlarının Tablo Boyunca Birleştirilmesi | 1-37 (`M4:M47, N4:N47`) | Çözümlendi |
 | **RQ-010** | `theme_merged_pedagogical_cells` | Düşük | H, I, J, K Sütunlarının Tema Boyunca Birleştirilmesi | 1-36 (`H4:H12 vb.`) | Çözümlendi |
 | **RQ-011** | `code_formatting` | Düşük | 1. Tema SDB Becerileri Kod Yazım Düzensizliği | 1-9 (`I4:I12`) | Belgelendi |
-| **RQ-012** | `workbook_metadata_difference` | Düşük | Fen Lisesi ile Anadolu Lisesi Sekme ve Başlık Farkı | Genel (`A1`) | Doğrulandı |
+| **RQ-012** | `workbook_metadata_difference` | Düşük | Fen Lisesi ile Anadolu Lisesi Sekme ve Başlık Farkı | Genel (`A1`) | Kaynak Farkı Doğrulandı |
+| **RQ-013** | `archive_school_type_mismatch` | Yüksek | Anadolu Lisesi Klasöründe Fen Lisesi Kaynağı | Genel (`A1`) | Açık — Doğru Kaynak Gerekli |
+
+---
+
+### Arşiv konumu ve okul türü uyarısı
+
+Bu rapor ve JSON **`11/anadolu-lisesi/` klasöründe** bulunmakla birlikte kaynak belgenin başlığı ve JSON `metadata.school_type` değeri **Fen Lisesi** olarak kalmaktadır. Yalnızca klasör adına bakarak bu veri Anadolu Lisesi planı kabul edilmemelidir. Kaynak metin değiştirilerek veya `school_type` alanı zorla yeniden etiketlenerek sorun çözülemez; doğru Anadolu Lisesi planı geldiğinde ayrı aktarım ve doğrulama gerekir. Bu durum RQ-013 ile açık inceleme kaydına alınmıştır.
 
 ---
 
@@ -245,4 +252,4 @@ Aşağıdaki dosyalar hem `/Volumes/Lacie/MacBook Klasörleri/grade-11-annual-p
 1. `annual-plan.json` — 11. Sınıf Fen Lisesi eksiksiz, hafta merkezli, ders bölümlerini destekleyen yıllık plan verisi.
 2. `annual-plan.schema.json` — JSON Schema Draft 2020-12 standardına uygun resmi veri şeması.
 3. `validation-report.md` — Bu kapsamlı doğrulama ve kanıt raporu.
-4. `review-queue.json` — 12 yapılandırılmış inceleme maddesini içeren denetim kuyruğu.
+4. `review-queue.json` — 13 yapılandırılmış inceleme maddesini içeren denetim kuyruğu.
