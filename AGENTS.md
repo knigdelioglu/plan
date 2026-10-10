@@ -1,13 +1,16 @@
-# Yıllık Plan Veri Arşivi — Çalışma Kuralları
+# Yıllık Plan ve Android Native Uygulaması — Çalışma Kuralları
 
-Bu depo **yalnızca yıllık ders planlarının kaynak sadakatini koruyan JSON arşividir**. Çalışma alanı `plans/**`; depoda mobil/web uygulaması, paket yöneticisi ya da uygulama derleme altyapısı bulunmaz.
+Bu depo iki temel çalışma alanından oluşur:
+1. `plans/**`: Yıllık ders planlarının kaynak sadakatini koruyan JSON veri arşivi.
+2. `android/**`: Öğretmenler için geliştirilen Kotlin + Jetpack Compose Android Native uygulaması (Arc tasarım sistemi uyarlaması).
 
-- Kullanıcı yıllık plan ekleme, doğrulama, düzeltme ya da kaynak Excel/PDF aktarımı istediğinde yalnızca ilgili `plans/**` altındaki dosyalarla çalış.
-- Ders, sınıf, okul türü ve öğretim yılı sınıflandırmasını koru. Bir okul türünün verisini başka bir okul türüymüş gibi kullanma.
-- Kök `AGENTS.md`, `README.md`, `SCOPES.md`, `.scope.json` gibi ortak belgeleri yalnızca kullanıcı açıkça istediğinde değiştir.
-- Yeni bir uygulama görevi açıkça verilmedikçe uygulama klasörleri, bağımlılıkları, ekranları, APK/IPA ya da PWA oluşturma; yıllık plan arşivini uygulama geliştirmesiyle karıştırma.
-- Bir çalışmanın sonunda değişen dosya yollarını ve kaynağa ilişkin doğrulama kayıtlarını kontrol et.
-- Alt klasör kuralları: [`plans/AGENTS.md`](plans/AGENTS.md). Kapsam tanımı: [`SCOPES.md`](SCOPES.md).
+### Çalışma Alanı ve İzolasyon Kuralları
+
+- **Android Geliştirme Sınırı:** Android uygulaması geliştiren ajanlar yalnızca `android/**` altındaki dosyalarda değişiklik yapar. `plans/**` altındaki kaynak plan JSON'ları, şemalar, doğrulama raporları veya inceleme kayıtları Android geliştirme sürecinde **kesinlikle değiştirilemez**.
+- **Kaynak Sadakati:** Uygulama `plans/**` verilerini kaynak olarak okur. Kaynakta olmayan bilgi üretilmez, varsayımlar ile doğrulanmış veriler net olarak ayrılır.
+- **Kişisel Veri Bağımsızlığı:** Öğretmenin ders işaretlemeleri, notları, çizimleri ve sınıf ilerlemeleri cihazda yerel olarak (Room / DataStore) saklanır; kaynak arşiv dosyalarına dokunulmaz.
+- **Kök Belgeler:** Kök `AGENTS.md`, `README.md`, `SCOPES.md`, `.scope.json` dosyaları yalnızca kullanıcı açıkça talimat verdiğinde güncellenir.
+- Alt klasör kuralları: [`plans/AGENTS.md`](plans/AGENTS.md) ve [`android/AGENTS.md`](android/AGENTS.md). Kapsam tanımı: [`SCOPES.md`](SCOPES.md).
 
 ---
 

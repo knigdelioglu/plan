@@ -1,6 +1,6 @@
 {
-  "version": 3,
-  "description": "Kaynak yıllık plan JSON arşivinin veri ve kök belge çalışma sınırları.",
+  "version": 4,
+  "description": "Kaynak yıllık plan JSON arşivi ve Android Native uygulama çalışma sınırları.",
   "scopes": {
     "data": {
       "write": [
@@ -10,6 +10,16 @@
         "plans/**"
       ],
       "agent_file": "plans/AGENTS.md"
+    },
+    "android": {
+      "write": [
+        "android/**"
+      ],
+      "read": [
+        "android/**",
+        "plans/**"
+      ],
+      "agent_file": "android/AGENTS.md"
     },
     "shared": {
       "write_policy": "explicit-user-request-only",
@@ -22,8 +32,9 @@
     }
   },
   "policy": {
-    "scope": "data-only",
-    "application_workspace": false,
+    "scope": "multi-workspace",
+    "application_workspace": true,
+    "plans_archive_read_only_for_app": true,
     "shared_metadata_requires_explicit_request": true
   }
 }

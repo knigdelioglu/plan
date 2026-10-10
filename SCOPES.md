@@ -1,15 +1,17 @@
 # Çalışma Alanı Sınırları
 
-`knigdelioglu/plan` şu anda **yalnızca yıllık plan veri arşividir**. Uygulama geliştirme çalışma alanı yoktur.
+`knigdelioglu/plan` deposu iki ayrı çalışma alanına ve kesin izolasyon ilkelerine sahiptir:
 
-| Scope | Konum | İçerik |
-| --- | --- | --- |
-| **data** | `plans/**` | Kaynak yıllık plan JSON'ları, şemalar, doğrulama raporları ve inceleme kayıtları |
-| **shared** | Kök `AGENTS.md`, `README.md`, `SCOPES.md` ve `.scope.json` | Genel açıklamalar ve ajan çalışma ilkeleri |
+| Scope | Konum | İçerik | Erişim Kuralı |
+| --- | --- | --- | --- |
+| **data** | `plans/**` | Kaynak yıllık plan JSON'ları, şemalar, doğrulama raporları ve inceleme kayıtları | Yalnızca veri aktarım ve doğrulama ajanları yazar. Android uygulama geliştiren ajanlar için salt okunurdur; asla değiştirilemez. |
+| **android** | `android/**` | Android Native uygulaması (Kotlin + Jetpack Compose, Arc tasarım sistemi, testler) | Yalnızca Android uygulama geliştiren ajanlar yazar. Veri arşivine müdahale edemez. |
+| **shared** | Kök `AGENTS.md`, `README.md`, `SCOPES.md` ve `.scope.json` | Genel açıklamalar ve çalışma ilkeleri | Yalnızca kullanıcının açık talimatıyla değiştirilir. |
 
-- Yıllık plan ekleme/düzeltme işleri yalnızca `plans/**` altında yapılır.
-- Ortak kök dosyalar ancak kullanıcının açık talebiyle değiştirilir.
-- Depoda uygulama paketi, mobil ya da web arayüzü, uygulama derleme sistemi bulunmaz. Yeni bir uygulama ancak ayrıca istenirse ayrı ve açıkça tanımlanmış kapsamda ele alınabilir.
-- Bu yazılı kurallar GitHub'ın gerçek yazma izinlerinin yerine geçmez.
+### İzolasyon Kuralları
 
-Ayrıntılı kaynak sadakati kuralları: [`AGENTS.md`](AGENTS.md) ve [`plans/AGENTS.md`](plans/AGENTS.md).
+- **Veri Koruma:** `android/**` altındaki kodlar ve testler `plans/**` dizinini yalnızca okuyabilir (kaynak olarak paketler veya okur). `plans/**` içindeki JSON, schema, validation-report veya review-queue dosyaları hiçbir koşulda uygulama geliştirme sırasında değiştirilmez.
+- **Kişisel Veri Ayrımı:** Öğretmenin ders ilerlemeleri, notları, çizimleri ve sınıf kayıtları Room veritabanında yerel olarak saklanır; kaynak arşiv dosyalarına yazılmaz.
+- **Görev Sınırı:** Veri aktarımı yapan ajanlar `android/**` alanına müdahale edemez; Android geliştiren ajanlar `plans/**` arşivini değiştiremez.
+
+Ayrıntılı kaynak sadakati kuralları: [`AGENTS.md`](AGENTS.md), [`plans/AGENTS.md`](plans/AGENTS.md) ve [`android/AGENTS.md`](android/AGENTS.md).
