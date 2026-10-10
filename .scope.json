@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "description": "Aynı depodaki kaynak yıllık planlar ve haftalık plan PWA'sı için ayrı yazma kapsamları.",
+  "scopes": {
+    "data": {
+      "write": [
+        "plans/**"
+      ],
+      "read": [
+        "plans/**"
+      ],
+      "deny_write": [
+        "pwa/**"
+      ],
+      "agent_file": "plans/AGENTS.md"
+    },
+    "pwa": {
+      "write": [
+        "pwa/**"
+      ],
+      "read": [
+        "pwa/**",
+        "plans/**"
+      ],
+      "deny_write": [
+        "plans/**"
+      ],
+      "agent_file": "pwa/AGENTS.md"
+    },
+    "shared": {
+      "write_policy": "explicit-user-request-only",
+      "paths": [
+        "AGENTS.md",
+        "README.md",
+        "SCOPES.md",
+        ".scope.json",
+        ".github/**"
+      ]
+    }
+  },
+  "policy": {
+    "no_cross_scope_writes": true,
+    "mixed_scope_changes": "separate-prs",
+    "read_only_cross_scope_access": true
+  }
+}

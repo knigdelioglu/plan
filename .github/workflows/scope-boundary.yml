@@ -1,0 +1,33 @@
+name: Scope boundary
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  scope-boundary:
+    name: Keep data and PWA changes separate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Reject mixed data and PWA changes
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --name-only "$BASE_SHA" "$HEAD_SHA" > changed-paths.txt
+          # Scope policy metadata may be revised with either scope.
+          if grep -Eq '^plans/' changed-paths.txt && grep -Eq '^pwa/' changed-paths.txt; then
+            if grep -E '^plans/' changed-paths.txt | grep -Ev '^plans/AGENTS\.md$' >/dev/null; then
+              echo "::error::Aynı PR'da plans/** veri dosyaları ve pwa/** değişiklikleri bulunuyor. Kapsamları ayrı PR'lara ayırın."
+              cat changed-paths.txt
+              exit 1
+            fi
+          fi
+          echo "Scope boundary: OK"
