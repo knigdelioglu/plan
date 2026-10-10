@@ -54,6 +54,7 @@ data class DrawingPoint(
     val y: Float
 )
 
+@Serializable
 enum class PlannerViewMode(val title: String) {
     WEEK("Haftalık"),
     MONTH("Aylık"),
