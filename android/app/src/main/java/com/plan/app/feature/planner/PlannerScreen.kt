@@ -170,28 +170,30 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     val selectedPlan = availablePlans.firstOrNull { it.pathSegment == selectedPlanPath }
         ?: availablePlans.firstOrNull()
 
-    // Build command palette items
+    // Source-backed quick commands. Removed views never appear in the palette.
     val commandItems = remember(currentPlan) {
-        listOf(
-            CommandItem("cmd-week-1", "1. Hafta — Açılış & 15 Temmuz Anması", "Haftalar", "1", Icons.Default.Event) {
-                viewModel.selectWeek(1)
+        currentPlan?.weeks.orEmpty().map { week ->
+            CommandItem(
+                id = "week-${week.weekNumber}",
+                title = "${week.weekNumber}. Hafta — ${week.lessons.firstOrNull()?.topicTitle.orEmpty()}",
+                category = "Haftalar",
+                icon = Icons.Default.Event
+            ) {
+                viewModel.selectWeek(week.weekNumber)
+                viewModel.selectViewMode(PlannerViewMode.WEEK)
+            }
+        } + listOf(
+            CommandItem("view-week", "Haftalık plan", "Görünümler", icon = Icons.Default.Event) {
                 viewModel.selectViewMode(PlannerViewMode.WEEK)
             },
-            CommandItem("cmd-week-7", "7. Hafta — 3+2 Saatlik Çoklu Ders Bölümü", "Haftalar", "7", Icons.Default.Event) {
-                viewModel.selectWeek(7)
-                viewModel.selectViewMode(PlannerViewMode.WEEK)
+            CommandItem("view-month", "Aylık takvim", "Görünümler", icon = Icons.Default.Event) {
+                viewModel.selectViewMode(PlannerViewMode.MONTH)
             },
-            CommandItem("cmd-comparison", "Anadolu vs Fen Lisesi Karşılaştırma", "Görünümler", "K", Icons.Default.Tune) {
-                viewModel.selectViewMode(PlannerViewMode.COMPARISON)
+            CommandItem("view-themes", "Temalar", "Görünümler", icon = Icons.Default.Description) {
+                viewModel.selectViewMode(PlannerViewMode.THEME)
             },
-            CommandItem("cmd-analytics", "İlerleme Analizi & Grafikler", "Görünümler", "A", Icons.Default.Description) {
+            CommandItem("view-progress", "İlerleme", "Görünümler", icon = Icons.Default.Check) {
                 viewModel.selectViewMode(PlannerViewMode.ANALYTICS)
-            },
-            CommandItem("cmd-validation", "Kaynak JSON & Doğrulama Raporu", "Doğrulama", "J", Icons.Default.Description) {
-                viewModel.selectViewMode(PlannerViewMode.VALIDATION)
-            },
-            CommandItem("cmd-faq", "Maarif Modeli & Sık Sorulan Sorular", "Rehber", "?", Icons.Default.Flag) {
-                viewModel.selectViewMode(PlannerViewMode.FAQ)
             }
         )
     }
@@ -208,14 +210,15 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             }
             .focusable()
     ) {
-        val isTabletLandscape = maxWidth >= 840.dp
+        // An actual sidebar calendar needs at least ~350dp for usable touch targets.
+        val isTabletLandscape = maxWidth >= 920.dp
 
         if (isTabletLandscape) {
             // Tablet-first Resizable Paneller
             ArcResizablePanels(
                 initialSplitRatio = 0.30f,
-                minFirstPanelWidth = 260.dp,
-                minSecondPanelWidth = 520.dp,
+                minFirstPanelWidth = 350.dp,
+                minSecondPanelWidth = 480.dp,
                 firstPanel = {
                     LeftSidebar(
                         viewModel = viewModel,
@@ -522,7 +525,7 @@ private fun CenterWorkspace(
 
         // View Mode Segmented Control (Component 19)
         ArcSegmentedControl(
-            options = PlannerViewMode.entries,
+            options = PlannerViewMode.visibleModes,
             selected = viewMode,
             onSelect = { viewModel.selectViewMode(it) },
             title = { it.title },
@@ -544,21 +547,15 @@ private fun CenterWorkspace(
             PlannerViewMode.THEME -> {
                 ThematicCurriculumView(currentPlan = currentPlan)
             }
-            PlannerViewMode.YEAR -> {
-                YearlyTimelineView(viewModel = viewModel, currentPlan = currentPlan)
-            }
-            PlannerViewMode.COMPARISON -> {
-                ArcComparisonTable(rows = viewModel.getComparisonRows())
-            }
             PlannerViewMode.ANALYTICS -> {
                 AnalyticsAndChartsView(viewModel = viewModel, currentPlan = currentPlan)
             }
-            PlannerViewMode.VALIDATION -> {
-                ValidationAndJsonInspectorView(viewModel = viewModel)
-            }
-            PlannerViewMode.FAQ -> {
-                FaqAndImportView()
-            }
+            // Legacy serialized view states are migrated to WEEK; never show removed screens.
+            else -> WeeklyLessonPlanView(
+                viewModel = viewModel,
+                activeWeek = activeWeek,
+                activeWeekNumber = activeWeekNumber
+            )
         }
     }
 }
@@ -966,56 +963,6 @@ private fun ThematicCurriculumView(currentPlan: com.plan.app.core.model.AnnualPl
 }
 
 @Composable
-private fun YearlyTimelineView(
-    viewModel: PlannerViewModel,
-    currentPlan: com.plan.app.core.model.AnnualPlan?
-) {
-    val weeks = currentPlan?.weeks ?: emptyList()
-    val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
-    val activeClassroomId by viewModel.activeClassroomId.collectAsState()
-    val progress by viewModel.progressList.collectAsState()
-    val completedWeeks = weeks.filter { week ->
-        week.lessons.isNotEmpty() && week.lessons.all { lesson ->
-            progress.any {
-                it.classroomId == activeClassroomId && it.weekNumber == week.weekNumber &&
-                    it.lessonIndex == lesson.lessonIndex && it.isCompleted
-            }
-        }
-    }.map { it.weekNumber }.toSet()
-
-    val milestones = weeks.map { w ->
-        TimelineMilestone(
-            weekNumber = w.weekNumber,
-            title = "${w.theme?.themeCode ?: ""} — ${w.lessons.firstOrNull()?.learningArea ?: "Ders"}",
-            dateText = "${w.dateRangeRaw} (${w.month})",
-            isBreak = false,
-            isPassed = w.weekNumber in completedWeeks,
-            isCurrent = w.weekNumber == activeWeekNumber
-        )
-    }
-
-    Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
-        ArcActivityHeatmap(
-            totalWeeks = weeks.size,
-            completedWeeks = completedWeeks,
-            currentWeek = activeWeekNumber,
-            onSelectWeek = {
-                viewModel.selectWeek(it)
-                viewModel.selectViewMode(PlannerViewMode.WEEK)
-            }
-        )
-
-        ArcTimeline(
-            milestones = milestones,
-            onSelectMilestone = {
-                viewModel.selectWeek(it)
-                viewModel.selectViewMode(PlannerViewMode.WEEK)
-            }
-        )
-    }
-}
-
-@Composable
 private fun AnalyticsAndChartsView(
     viewModel: PlannerViewModel,
     currentPlan: com.plan.app.core.model.AnnualPlan?
@@ -1065,6 +1012,16 @@ private fun AnalyticsAndChartsView(
             }.sumOf { it.hours }
         }.drop(1).map { it.toFloat() }
 
+    val completedWeeks = currentPlan?.weeks.orEmpty().filter { week ->
+        week.lessons.isNotEmpty() && week.lessons.all { lesson ->
+            progress.any {
+                it.classroomId == activeClassroomId && it.weekNumber == week.weekNumber &&
+                    it.lessonIndex == lesson.lessonIndex && it.isCompleted
+            }
+        }
+    }.map { it.weekNumber }.toSet()
+    val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
+
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
         ArcUsageMeter(
             completedHours = completedHours,
@@ -1073,63 +1030,41 @@ private fun AnalyticsAndChartsView(
             annualHours = annualHours
         )
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(ArcSpacing.space4)
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                ArcDonutChart(slices = themeSlices)
-            }
-            Box(modifier = Modifier.weight(1f)) {
-                ArcBarChart(items = barItems)
+        Text(
+            "Plana göre tema dağılımı",
+            style = ArcTheme.typography.titleMedium,
+            color = ArcTheme.colors.foreground
+        )
+        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+            if (maxWidth < 620.dp) {
+                Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
+                    ArcDonutChart(slices = themeSlices)
+                    ArcBarChart(items = barItems)
+                }
+            } else {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(ArcSpacing.space4)
+                ) {
+                    Box(modifier = Modifier.weight(1f)) { ArcDonutChart(slices = themeSlices) }
+                    Box(modifier = Modifier.weight(1f)) { ArcBarChart(items = barItems) }
+                }
             }
         }
 
+        Text(
+            "Tamamlanan ders saatleri",
+            style = ArcTheme.typography.titleMedium,
+            color = ArcTheme.colors.foreground
+        )
         ArcLineChart(dataPoints = cumulativePoints)
-    }
-}
-
-@Composable
-private fun ValidationAndJsonInspectorView(viewModel: PlannerViewModel) {
-    val colors = ArcTheme.colors
-    val rootNode = viewModel.getJsonViewerRootNode()
-    val validationReport by viewModel.validationReport.collectAsState()
-
-    Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
-        ArcJsonViewer(rootNode = rootNode)
-
-        ArcCard(modifier = Modifier.fillMaxWidth()) {
-            Column(modifier = Modifier.padding(ArcSpacing.space5)) {
-                Text(text = "Doğrulama ve İnceleme Raporu", style = ArcTheme.typography.titleLarge, color = colors.foreground)
-                Spacer(modifier = Modifier.height(ArcSpacing.space3))
-                Text(
-                    text = validationReport,
-                    style = ArcTheme.typography.bodySmall,
-                    color = colors.textSecondary
-                )
+        ArcActivityHeatmap(
+            totalWeeks = currentPlan?.weeks?.size ?: 0,
+            completedWeeks = completedWeeks,
+            currentWeek = activeWeekNumber,
+            onSelectWeek = { week ->
+                viewModel.selectWeek(week)
+                viewModel.selectViewMode(PlannerViewMode.WEEK)
             }
-        }
-    }
-}
-
-@Composable
-private fun FaqAndImportView() {
-    Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
-        ArcFaqSection()
-        ArcFileUpload(onFileSelected = {})
-        ArcChangelogFeed(
-            entries = listOf(
-                com.plan.app.core.model.ChangelogEntry(
-                    version = "v2.0.0",
-                    date = "10 Ekim 2026",
-                    title = "11. Sınıf TDE Anadolu ve Fen Lisesi Doğrulaması",
-                    details = listOf(
-                        "37 haftanın tarihleri, temalar ve kazanımları kayıpsız aktarıldı.",
-                        "3+2 saatlik çoklu ders bölümleri hiyerarşik olarak korundu."
-                    ),
-                    author = "Arşiv Yöneticisi"
-                )
-            )
         )
     }
 }
