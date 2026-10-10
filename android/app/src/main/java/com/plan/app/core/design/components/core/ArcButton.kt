@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.plan.app.core.design.motion.ArcMotionTokens
+import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
@@ -47,8 +48,8 @@ enum class ArcButtonVariant {
 }
 
 enum class ArcButtonSize(val height: Dp, val horizontalPadding: Dp, val fontSize: Int) {
-    SM(36.dp, 12.dp, 13),
-    MD(44.dp, 16.dp, 14),
+    SM(48.dp, 12.dp, 13),
+    MD(48.dp, 16.dp, 14),
     LG(50.dp, 20.dp, 15)
 }
 
@@ -71,9 +72,12 @@ fun ArcButton(
     val colors = ArcTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val reducedMotion = LocalReducedMotion.current
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.97f else 1.0f,
-        animationSpec = ArcMotionTokens.Springs.Snappy,
+        animationSpec = ArcMotionTokens.respectMotionPreference(
+            reducedMotion, ArcMotionTokens.Springs.Snappy
+        ),
         label = "button_scale"
     )
 
@@ -146,7 +150,7 @@ fun ArcButton(
 fun ArcActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    size: Dp = 40.dp,
+    size: Dp = 48.dp,
     shape: Shape = ArcRadius.control,
     enabled: Boolean = true,
     variant: ArcButtonVariant = ArcButtonVariant.SECONDARY,
@@ -155,9 +159,12 @@ fun ArcActionButton(
     val colors = ArcTheme.colors
     val interactionSource = remember { MutableInteractionSource() }
     val isPressed by interactionSource.collectIsPressedAsState()
+    val reducedMotion = LocalReducedMotion.current
     val scale by animateFloatAsState(
         targetValue = if (isPressed && enabled) 0.94f else 1.0f,
-        animationSpec = ArcMotionTokens.Springs.Snappy,
+        animationSpec = ArcMotionTokens.respectMotionPreference(
+            reducedMotion, ArcMotionTokens.Springs.Snappy
+        ),
         label = "action_button_scale"
     )
 
