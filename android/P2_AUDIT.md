@@ -9,7 +9,7 @@ Kişisel öğretmen uygulamasında yalnızca **Haftalık, Aylık, Temalar, İler
 
 ## Ölçüm metodolojisi
 
-`COMPONENTS_MATRIX.md` içindeki 70 Arc bileşeni ile `PlannerScreen.kt` içindeki doğrudan fonksiyon çağrılarını kıyasladık. Sonuç: **29/70** bileşen ana ekrandan doğrudan çağrılıyor; **50/70** doğrudan çağrılmıyor. Bu sayım bir bileşenin başka bir bileşen içinde dolaylı kullanılmadığını kanıtlamaz ve **Arc ile davranış eşdeğerliği testi değildir**. Kaynak dosyanın varlığı "uygulamada çalışıyor" anlamına gelmez.
+`COMPONENTS_MATRIX.md` içindeki 70 Arc bileşeni ile `PlannerScreen.kt` içindeki doğrudan fonksiyon çağrılarını kıyasladık. Sonuç: **25/70** bileşen ana ekrandan doğrudan çağrılıyor; **45/70** doğrudan çağrılmıyor. Bu sayım bir bileşenin başka bir bileşen içinde dolaylı kullanılmadığını kanıtlamaz ve **Arc ile davranış eşdeğerliği testi değildir**. Kaynak dosyanın varlığı "uygulamada çalışıyor" anlamına gelmez.
 
 P2 kriterleri her önemli bileşen için ayrı doğrulanacak: 1) kaynak davranış karşılaştırması, 2) ürün içinde gerçek kullanım, 3) erişilebilirlik/klavye/dokunma, 4) kompakt ve tablet pencere testi, 5) CI birim testleri, 6) cihaz/emülatör Compose UI testleri.
 
