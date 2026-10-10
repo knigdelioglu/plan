@@ -1,6 +1,10 @@
 package com.plan.app.core.design.components.advanced
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -14,6 +18,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -35,8 +40,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
@@ -53,6 +62,7 @@ import com.plan.app.core.design.components.core.ArcBadge
 import com.plan.app.core.design.components.core.ArcBadgeVariant
 import com.plan.app.core.design.components.core.ArcCard
 import com.plan.app.core.design.motion.ArcMotionTokens
+import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
@@ -89,12 +99,15 @@ private fun TreeNodeItem(
     level: Int,
     indent: Dp
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable(node.id) { mutableStateOf(false) }
     val hasChildren = node.children.isNotEmpty()
     val colors = ArcTheme.colors
+    val reducedMotion = LocalReducedMotion.current
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 90f else 0f,
-        animationSpec = ArcMotionTokens.Springs.Smooth,
+        animationSpec = ArcMotionTokens.respectMotionPreference(
+            reducedMotion, ArcMotionTokens.Springs.Smooth
+        ),
         label = "tree_node_arrow"
     )
 
@@ -103,7 +116,11 @@ private fun TreeNodeItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(ArcRadius.sm)
-                .clickable {
+                .heightIn(min = 48.dp)
+                .semantics {
+                    if (hasChildren) stateDescription = if (expanded) "Açık" else "Kapalı"
+                }
+                .clickable(role = Role.Button) {
                     if (hasChildren) expanded = !expanded
                     node.onClick?.invoke()
                 }
@@ -142,7 +159,11 @@ private fun TreeNodeItem(
             }
         }
 
-        AnimatedVisibility(visible = expanded && hasChildren) {
+        AnimatedVisibility(
+            visible = expanded && hasChildren,
+            enter = if (reducedMotion) EnterTransition.None else fadeIn(),
+            exit = if (reducedMotion) ExitTransition.None else fadeOut()
+        ) {
             Column {
                 node.children.forEach { child ->
                     TreeNodeItem(node = child, level = level + 1, indent = indent)
