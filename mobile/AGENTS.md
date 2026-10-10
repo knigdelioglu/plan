@@ -1,17 +1,26 @@
-# Mobil Uygulama — Scope: mobile
+# Mobil uygulama — Scope: mobile (React Native + Expo)
 
-Bu kurallar `mobile/**` içindeki bütün React Native + Expo geliştirmeleri için geçerlidir.
+**Yazma izni: sadece `mobile/**`.** `plans/**` kesinlikle salt okunurdur.
+JSON arşivi, şemalar, raporlar ve kuyruklar bu kapsamda taşınamaz, değiştirilemez,
+biçimlendirilemez. Gerekli veri uyarlamaları sadece `mobile/scripts/**` ve
+`mobile/src/**` altında yapılır.
 
-**Yazılabilir tek alan: `mobile/**`.** `../plans/**` salt okunur kaynak veridir. Yıllık plan JSON'larını, şemaları, raporları, inceleme kuyruklarını ve diğer kaynak arşiv dosyalarını değiştirme. Türetilmiş katalog, normalizasyon, veri okuma veya önbellekleme kodunu `mobile/**` içinde geliştir.
+- Uygulama React Native + Expo + TypeScript; Android/iOS öncelikli.
+- Navigasyon `expo-router`, yerel kişisel kayıt `expo-sqlite`.
+- Görsel bileşenleri uygulama ekranlarında `src/components/ui.tsx` içindeki
+  uyarlayıcılar üzerinden kullan; Native Motion paketiyle doğrudan entegrasyon
+  ancak uygun adapter yoksa ve açık sözleşmesi mevcutsa yapılır.
+- Native Motion bağımlılığı monorepo alt paketi için sabit Git commit'ine pinlidir.
+  Güncellemede önce API uyumluluğunu ve Expo sürümünü doğrula; değişiklikleri
+  yalnızca `mobile/**` içinde tut.
+- Aynı plandaki şubeler birbirinden bağımsız; `classId + weekNumber + lessonIndex`
+  ders kaydı kimliğidir. `3+2` ders ayrımı ve sınıf başlangıç haftası korunur.
+- Gerçek SQLite yazımı başarılı olmadan "Kaydedildi" durumunu gösterme.
+- Anadolu Lisesi 11. sınıf JSON'u kaynak içerik doğrulaması tamamlanana dek
+  yayımlanmaz. Kaynak farklarını `plans/**` içinde otomatik onarma.
+- Kullanıcıya ait kayıtlar katalog JSON'una veya Git'e yazılmaz, yerel SQLite'da kalır.
+- Expo arayüzlerini gerçek Android tablet/iOS ile test etmeden üretim onayı verme;
+  Native Motion deneysel, Reduce Motion/RTL/erişilebilirlik ayrıca incelenmeli.
+- Görev sonunda `git diff --name-only` ile `plans/**` verilerinin değişmediğini kontrol et.
 
-## Teknoloji ve amaç
-
-- **React Native + Expo + TypeScript** ile sıfırdan geliştirme; Android ve iOS önceliklidir. Expo Router, EAS veya yerel veri kütüphanesini ihtiyaç doğrulandıktan sonra uygulama alanında yapılandır.
-- Ürün: öğretmenlere ders/sınıf/okul türüne göre haftalık yıllık planları gösterme, aynı yıllık planı kullanan şubelerin ilerlemesini **ayrı** izleme, ders bölümü ve işlenen saat düzeyinde takip, öğretmen notları ve çevrimdışı kullanım.
-- Arşivdeki 3+2 gibi aynı haftaya bağlı birden fazla ders bölümü korunmalı. Takvim haftası ile öğretmen ilerlemesi farklı kavramlardır. Kaynak şüpheli veya doğrulanmamışsa bunu sessizce doğru kabul edip yayımlama.
-- Kişisel öğretmen verilerini plan JSON'larına veya depo içine yazma; uygun uygulama depolama katmanında sakla.
-- Veri kaynağını düzeltmek gerekiyorsa sorunu raporla, ayrı bir `data` görevi bekle. Uygulama görevi sırasında `plans/**` veya paylaşılan kök dosyaları değiştirme.
-- Önceki web uygulamasındaki kodu otomatik taşımaya çalışma; bu yeni **native Expo** uygulamasıdır. Arayüz ve gezinme React Native'e özgü hazırlanır.
-- Değişiklik tesliminde dosya farklarını denetle; `plans/**` için sıfır yazma/değişiklik olmalı.
-
-**Mevcut durum:** Sadece çalışma alanı ve talimatlar var. Expo projesi henüz başlatılmadı; `package.json`, `app.json` ve çalışan ekranlar henüz oluşturulmadı.
+Kök [AGENTS.md](../AGENTS.md) ve [SCOPES.md](../SCOPES.md) ortak kuralları geçerlidir.
