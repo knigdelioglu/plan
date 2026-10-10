@@ -30,6 +30,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -90,7 +94,7 @@ fun ArcCalendar(
                     IconButton(
                         onClick = { displayedMonth = displayedMonth.minusMonths(1) },
                         enabled = earliestMonth != null && displayedMonth > earliestMonth,
-                        modifier = Modifier.size(36.dp)
+                        modifier = Modifier.size(48.dp)
                     ) {
                         Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki ay")
                     }
@@ -120,11 +124,31 @@ fun ArcCalendar(
                     weekDays.forEach { day ->
                         val enabled = day.inDisplayedMonth && day.teachingWeekNumber != null
                         val selected = enabled && selectedWeek == day.teachingWeekNumber
+                        val spokenDate = day.date.format(
+                            DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("tr-TR"))
+                        )
+                        val spokenLabel = buildString {
+                            append(spokenDate)
+                            if (day.isAcademicBreak) {
+                                append(", ara tatil")
+                                day.breakName?.takeIf { it.isNotBlank() }?.let { append(", $it") }
+                            }
+                            day.teachingWeekNumber?.let { append(", $it. öğretim haftası") }
+                            if (day.hasSpecialEvent) append(", özel gün")
+                            if (selected) append(", seçili")
+                        }
                         Surface(
                             modifier = Modifier
                                 .weight(1f)
                                 .padding(1.dp)
-                                .clickable(enabled = enabled) {
+                                .semantics {
+                                    contentDescription = spokenLabel
+                                    this.selected = selected
+                                }
+                                .clickable(
+                                    enabled = enabled,
+                                    role = Role.Button
+                                ) {
                                     day.teachingWeekNumber?.let(onSelectWeek)
                                 },
                             shape = ArcRadius.sm,
