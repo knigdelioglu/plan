@@ -33,6 +33,7 @@ import com.plan.app.core.design.components.core.ArcCalendar
 import com.plan.app.core.model.PlanWeek
 import com.plan.app.core.model.AcademicCalendarBreak
 import com.plan.app.core.design.theme.ArcTheme
+import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 
@@ -153,7 +154,7 @@ class ArcInteractionTest {
         }
         val actions = rule.onNodeWithTag("swipe-progress")
             .fetchSemanticsNode().config[SemanticsProperties.CustomActions]
-        assert(actions.map { it.label } == listOf("İşlendi", "İşaretini kaldır"))
+        assertEquals(listOf("İşlendi", "İşaretini kaldır"), actions.map { it.label })
         rule.onNodeWithTag("swipe-progress").performTouchInput { swipeLeft() }
         rule.onNodeWithText("Tamamlandı").assertExists()
         rule.onNodeWithTag("swipe-progress").performTouchInput { swipeLeft() }
