@@ -1,0 +1,856 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://meb.gov.tr/schemas/curriculum/grade-11-annual-plan.schema.json",
+  "title": "Grade 11 Turkish Language and Literature Annual Plan Schema",
+  "description": "JSON Schema for 11th Grade Turkish Language and Literature Annual Curriculum Framework Plan (Türkiye Yüzyılı Maarif Modeli).",
+  "type": "object",
+  "required": [
+    "metadata",
+    "general_explanations",
+    "academic_calendar_breaks",
+    "themes",
+    "weeks"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "required": [
+        "academic_year",
+        "grade_level",
+        "course_name",
+        "school_type",
+        "document_title",
+        "source_file",
+        "worksheet_name",
+        "total_teaching_weeks",
+        "weekly_lesson_hours",
+        "total_annual_hours",
+        "source_range",
+        "generated_at"
+      ],
+      "additionalProperties": true,
+      "properties": {
+        "academic_year": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{4}$"
+        },
+        "grade_level": {
+          "type": "integer",
+          "enum": [
+            11
+          ]
+        },
+        "course_name": {
+          "type": "string"
+        },
+        "school_type": {
+          "type": "string"
+        },
+        "document_title": {
+          "type": "string"
+        },
+        "source_file": {
+          "type": "string"
+        },
+        "worksheet_name": {
+          "type": "string"
+        },
+        "total_teaching_weeks": {
+          "type": "integer",
+          "enum": [
+            37
+          ]
+        },
+        "weekly_lesson_hours": {
+          "type": "integer",
+          "enum": [
+            5
+          ]
+        },
+        "total_annual_hours": {
+          "type": "integer",
+          "enum": [
+            185
+          ]
+        },
+        "source_range": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string"
+        },
+        "extractor_version": {
+          "type": "string"
+        }
+      }
+    },
+    "general_explanations": {
+      "type": "object",
+      "required": [
+        "differentiation",
+        "school_based_planning"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "differentiation": {
+          "type": "object",
+          "required": [
+            "title",
+            "text",
+            "source_cell_range",
+            "is_merged"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "source_cell_range": {
+              "type": "string"
+            },
+            "is_merged": {
+              "type": "boolean"
+            }
+          }
+        },
+        "school_based_planning": {
+          "type": "object",
+          "required": [
+            "title",
+            "text",
+            "source_cell_range",
+            "is_merged"
+          ],
+          "properties": {
+            "title": {
+              "type": "string"
+            },
+            "text": {
+              "type": "string"
+            },
+            "source_cell_range": {
+              "type": "string"
+            },
+            "is_merged": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    },
+    "academic_calendar_breaks": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "break_name",
+          "date_range_raw",
+          "start_date",
+          "end_date",
+          "between_weeks",
+          "source_row",
+          "source_cell_range"
+        ],
+        "properties": {
+          "break_name": {
+            "type": "string"
+          },
+          "date_range_raw": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "between_weeks": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "source_row": {
+            "type": "integer"
+          },
+          "source_cell_range": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "themes": {
+      "type": "array",
+      "minItems": 4,
+      "items": {
+        "type": "object",
+        "required": [
+          "theme_number",
+          "theme_code",
+          "theme_name",
+          "week_range",
+          "total_hours",
+          "assessment_and_evaluation",
+          "interdisciplinary_components"
+        ],
+        "properties": {
+          "theme_number": {
+            "type": "integer"
+          },
+          "theme_code": {
+            "type": "string"
+          },
+          "theme_name": {
+            "type": "string"
+          },
+          "week_range": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "minItems": 2,
+            "maxItems": 2
+          },
+          "total_hours": {
+            "type": "integer"
+          },
+          "assessment_and_evaluation": {
+            "type": "object",
+            "required": [
+              "text",
+              "source_cell_range"
+            ],
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "source_cell_range": {
+                "type": "string"
+              }
+            }
+          },
+          "interdisciplinary_components": {
+            "type": "object",
+            "required": [
+              "social_emotional_learning_skills",
+              "values",
+              "literacy_skills"
+            ],
+            "properties": {
+              "social_emotional_learning_skills": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "codes",
+                  "source_cell_range"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_cell_range": {
+                    "type": "string"
+                  }
+                }
+              },
+              "values": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "codes",
+                  "source_cell_range"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_cell_range": {
+                    "type": "string"
+                  }
+                }
+              },
+              "literacy_skills": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "codes",
+                  "source_cell_range"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_cell_range": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "weeks": {
+      "type": "array",
+      "minItems": 37,
+      "maxItems": 37,
+      "items": {
+        "type": "object",
+        "required": [
+          "week_number",
+          "month",
+          "date_range_raw",
+          "start_date",
+          "end_date",
+          "total_hours",
+          "hours_raw",
+          "theme",
+          "special_days_and_weeks",
+          "pedagogical_context",
+          "lessons",
+          "source_metadata"
+        ],
+        "properties": {
+          "week_number": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 37
+          },
+          "month": {
+            "type": "string"
+          },
+          "date_range_raw": {
+            "type": "string"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "end_date": {
+            "type": "string",
+            "format": "date"
+          },
+          "total_hours": {
+            "type": "integer",
+            "enum": [
+              5
+            ]
+          },
+          "hours_raw": {
+            "type": "string"
+          },
+          "theme": {
+            "type": "object",
+            "required": [
+              "theme_code",
+              "theme_name"
+            ],
+            "properties": {
+              "theme_number": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "theme_code": {
+                "type": "string"
+              },
+              "theme_name": {
+                "type": "string"
+              }
+            }
+          },
+          "special_days_and_weeks": {
+            "type": "object",
+            "required": [
+              "present"
+            ],
+            "properties": {
+              "present": {
+                "type": "boolean"
+              },
+              "text": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "source_cell": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          },
+          "pedagogical_context": {
+            "type": "object",
+            "required": [
+              "assessment_and_evaluation",
+              "social_emotional_learning_skills",
+              "values",
+              "literacy_skills",
+              "differentiation",
+              "school_based_planning_framework"
+            ],
+            "properties": {
+              "assessment_and_evaluation": {
+                "type": "object",
+                "required": [
+                  "is_merged"
+                ],
+                "properties": {
+                  "text": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "source_cell_range": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "is_merged": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "social_emotional_learning_skills": {
+                "type": "object",
+                "required": [
+                  "codes",
+                  "is_merged"
+                ],
+                "properties": {
+                  "text": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_cell_range": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "is_merged": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "values": {
+                "type": "object",
+                "required": [
+                  "codes",
+                  "is_merged"
+                ],
+                "properties": {
+                  "text": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_cell_range": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "is_merged": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "literacy_skills": {
+                "type": "object",
+                "required": [
+                  "codes",
+                  "is_merged"
+                ],
+                "properties": {
+                  "text": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "codes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "source_cell_range": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "is_merged": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "differentiation": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "source_cell_range",
+                  "is_merged"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "source_cell_range": {
+                    "type": "string"
+                  },
+                  "is_merged": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "school_based_planning_framework": {
+                "type": "object",
+                "required": [
+                  "text",
+                  "source_cell_range",
+                  "is_merged"
+                ],
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  },
+                  "source_cell_range": {
+                    "type": "string"
+                  },
+                  "is_merged": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          },
+          "lessons": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 2,
+            "items": {
+              "type": "object",
+              "required": [
+                "lesson_index",
+                "hours",
+                "hours_raw",
+                "learning_area",
+                "topic_title",
+                "topic_raw",
+                "texts_and_materials",
+                "learning_outcomes",
+                "process_components",
+                "source_metadata"
+              ],
+              "properties": {
+                "lesson_index": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 2
+                },
+                "hours": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 5
+                },
+                "hours_raw": {
+                  "type": "string"
+                },
+                "learning_area": {
+                  "type": "string"
+                },
+                "topic_title": {
+                  "type": "string"
+                },
+                "topic_raw": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "texts_and_materials": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "learning_outcomes_raw": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "learning_outcomes": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "code",
+                      "text"
+                    ],
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "text": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "process_components_raw": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "process_components": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "required": [
+                      "main_code",
+                      "title",
+                      "sub_components"
+                    ],
+                    "properties": {
+                      "main_code": {
+                        "type": "string"
+                      },
+                      "title": {
+                        "type": "string"
+                      },
+                      "sub_components": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "required": [
+                            "sub_code",
+                            "code",
+                            "letter",
+                            "title",
+                            "items"
+                          ],
+                          "properties": {
+                            "sub_code": {
+                              "type": "string"
+                            },
+                            "code": {
+                              "type": "string"
+                            },
+                            "letter": {
+                              "type": "string"
+                            },
+                            "title": {
+                              "type": "string"
+                            },
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "source_metadata": {
+                  "type": "object",
+                  "required": [
+                    "source_row",
+                    "cell_hours",
+                    "notes"
+                  ],
+                  "properties": {
+                    "source_row": {
+                      "type": "integer"
+                    },
+                    "cell_hours": {
+                      "type": "string"
+                    },
+                    "cell_topic": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cell_outcomes": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "cell_process_components": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "notes": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "source_metadata": {
+            "type": "object",
+            "required": [
+              "worksheet",
+              "physical_rows",
+              "row_start",
+              "row_end",
+              "cell_month",
+              "cell_week",
+              "cell_hours",
+              "cell_theme",
+              "cell_topic",
+              "cell_outcomes",
+              "cell_process_components",
+              "cell_differentiation",
+              "cell_school_planning"
+            ],
+            "properties": {
+              "worksheet": {
+                "type": "string"
+              },
+              "physical_rows": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "row_start": {
+                "type": "integer"
+              },
+              "row_end": {
+                "type": "integer"
+              },
+              "cell_month": {
+                "type": "string"
+              },
+              "cell_week": {
+                "type": "string"
+              },
+              "cell_hours": {
+                "type": "string"
+              },
+              "cell_theme": {
+                "type": "string"
+              },
+              "cell_topic": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_outcomes": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_process_components": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_assessment": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_sdb": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_values": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_literacy": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_special_days": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "cell_differentiation": {
+                "type": "string"
+              },
+              "cell_school_planning": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
