@@ -1,6 +1,7 @@
 package com.plan.app.core.design.motion
 
 import androidx.compose.animation.core.AnimationSpec
+import androidx.compose.animation.core.FiniteAnimationSpec
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.SpringSpec
@@ -75,6 +76,11 @@ object ArcMotionTokens {
         reduced: Boolean,
         normal: AnimationSpec<T>
     ): AnimationSpec<T> = if (reduced) snap() else normal
+
+    fun <T> respectFiniteMotionPreference(
+        reduced: Boolean,
+        normal: FiniteAnimationSpec<T>
+    ): FiniteAnimationSpec<T> = if (reduced) snap() else normal
 }
 
 val LocalReducedMotion = compositionLocalOf { false }
