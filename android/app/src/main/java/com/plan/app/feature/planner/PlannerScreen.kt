@@ -636,7 +636,9 @@ private fun WeeklyLessonPlanView(
             ArcSwipeActions(
                 // Swipe left = completed; swipe right = not completed. Repeat gestures are safe.
                 onSwipeLeft = { viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, true) },
-                onSwipeRight = { viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, false) }
+                onSwipeRight = { viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, false) },
+                onSwipeLeftLabel = "Dersi işlendi olarak işaretle",
+                onSwipeRightLabel = "Dersin işlendi işaretini kaldır"
             ) {
                 ArcCard(
                     modifier = Modifier.fillMaxWidth(),
