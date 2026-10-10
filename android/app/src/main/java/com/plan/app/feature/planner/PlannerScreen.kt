@@ -211,13 +211,13 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             .focusable()
     ) {
         // An actual sidebar calendar needs at least ~350dp for usable touch targets.
-        val isTabletLandscape = maxWidth >= 920.dp
+        val isTabletLandscape = maxWidth >= 950.dp
 
         if (isTabletLandscape) {
             // Tablet-first Resizable Paneller
             ArcResizablePanels(
                 initialSplitRatio = 0.30f,
-                minFirstPanelWidth = 350.dp,
+                minFirstPanelWidth = 390.dp,
                 minSecondPanelWidth = 480.dp,
                 firstPanel = {
                     LeftSidebar(
