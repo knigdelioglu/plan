@@ -27,7 +27,23 @@
     "generated_at": "2026-10-10T17:27:34.716720",
     "extractor_version": "2.0.0",
     "archive_path_school_type_mismatch": false,
-    "archive_path_note": "Klasör ile metadata okul türü artık uyumludur. Kaynak Excel adı ve okul türü kullanıcı talebiyle Anadolu Lisesi olarak güncellendi. Mevcut ders içerikleri Anadolu Lisesi Excel dosyasıyla yeniden karşılaştırılarak doğrulanmadı."
+    "archive_path_note": "11.SINIF çalışma sayfası özgün 2026-2027 Anadolu Lisesi Excel dosyasıyla doğrudan karşılaştırıldı; kaynak içerikleri doğrulandı. Excel'deki özgün SDB/okuryazarlık noktalama ve boşlukları da korundu. 37. haftanın 5 ders saati kaynakta yazılı olmadığından varsayım olarak tutuluyor.",
+    "source_verification": {
+      "status": "verified_against_original_anadolu_workbook",
+      "verified_on": "2026-10-10",
+      "source_workbook_sha256": "24b7d5de542681bdf3ff60503014342ecbcaeb6bf196532409fc0ce4af883d4f",
+      "worksheet": "11.SINIF",
+      "checked_range": "A1:N47",
+      "content_text_comparisons": 141,
+      "week_label_comparisons": 37,
+      "theme_cell_comparisons": 40,
+      "merged_ranges_checked": 49,
+      "summary": "37 haftanın tarihleri, temalar, E/F/G kazanım ve süreç metinleri, H–N pedagojik hücreleri, özel günler ve 3+2 ders ayrımları özgün Anadolu Lisesi Excel'iyle karşılaştırıldı; kaynakla fark gösteren dört I/K hücresi düzeltilip doğrulandı.",
+      "limitations": [
+        "37. haftadaki 5 saat kaynak Excel'de sayısal yazmıyor; tahmini saat olarak işaretli.",
+        "12 Mart ve 29 Mayıs etkinliklerinin haftalara dağılımı kaynakta bulunduğu biçimde korundu."
+      ]
+    }
   },
   "general_explanations": {
     "differentiation": {
@@ -99,7 +115,7 @@
       },
       "interdisciplinary_components": {
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -197,7 +213,7 @@
       },
       "interdisciplinary_components": {
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB1.3",
@@ -206,7 +222,17 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35"
+          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_texts": [
+            {
+              "source_cell_range": "I26:I29",
+              "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme"
+            },
+            {
+              "source_cell_range": "I31:I35",
+              "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme"
+            }
+          ]
         },
         "values": {
           "text": "D4. Dostluk \nD5. Duyarlılık\nD7. Estetik\nD14. Saygı \nD19. Vatanseverlik",
@@ -245,7 +271,7 @@
       },
       "interdisciplinary_components": {
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -269,7 +295,7 @@
           "source_cell_range": "J37:J45"
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -326,7 +352,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -433,7 +459,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           4
         ],
@@ -570,7 +596,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -764,7 +790,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           5
         ],
@@ -895,7 +921,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -1007,7 +1033,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           6
         ],
@@ -1138,7 +1164,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -1338,7 +1364,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           7
         ],
@@ -1469,7 +1495,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -1663,7 +1689,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           8
         ],
@@ -1794,7 +1820,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -1977,7 +2003,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           9
         ],
@@ -2115,7 +2141,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -2321,7 +2347,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           10
         ],
@@ -2458,7 +2484,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -2711,7 +2737,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           11
         ],
@@ -2849,7 +2875,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim                                                                 SDB2.2. İş Birliği                                                                  SDB2.3. Sosyal Farkındalık                                               SDB3.1. Uyum                                                                      SDB3.2 Esneklik                                                                   SDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB2.1",
@@ -2980,7 +3006,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           12,
           13
@@ -3235,7 +3261,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           15
         ],
@@ -3576,7 +3602,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           16
         ],
@@ -3828,7 +3854,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           17
         ],
@@ -4161,7 +4187,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           18
         ],
@@ -4488,7 +4514,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           19
         ],
@@ -4804,7 +4830,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           20
         ],
@@ -5143,7 +5169,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           21
         ],
@@ -5529,7 +5555,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           22
         ],
@@ -5793,7 +5819,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           23,
           24
@@ -5921,11 +5947,11 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H26:H29",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB1.3",
@@ -5934,7 +5960,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I26:I29",
           "is_merged": true
         },
         "values": {
@@ -5946,7 +5972,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J26:J29",
           "is_merged": true
         },
         "literacy_skills": {
@@ -5956,7 +5982,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K26:K29",
           "is_merged": true
         },
         "differentiation": {
@@ -6032,7 +6058,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           26
         ],
@@ -6159,11 +6185,11 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H26:H29",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB1.3",
@@ -6172,7 +6198,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I26:I29",
           "is_merged": true
         },
         "values": {
@@ -6184,7 +6210,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J26:J29",
           "is_merged": true
         },
         "literacy_skills": {
@@ -6194,7 +6220,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K26:K29",
           "is_merged": true
         },
         "differentiation": {
@@ -6357,7 +6383,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           27
         ],
@@ -6484,11 +6510,11 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H26:H29",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB1.3",
@@ -6497,7 +6523,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I26:I29",
           "is_merged": true
         },
         "values": {
@@ -6509,7 +6535,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J26:J29",
           "is_merged": true
         },
         "literacy_skills": {
@@ -6519,7 +6545,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K26:K29",
           "is_merged": true
         },
         "differentiation": {
@@ -6600,7 +6626,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           28
         ],
@@ -6734,11 +6760,11 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H26:H29",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme",
           "codes": [
             "SDB1.2",
             "SDB1.3",
@@ -6747,7 +6773,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I26:I29",
           "is_merged": true
         },
         "values": {
@@ -6759,7 +6785,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J26:J29",
           "is_merged": true
         },
         "literacy_skills": {
@@ -6769,7 +6795,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K26:K29",
           "is_merged": true
         },
         "differentiation": {
@@ -6938,7 +6964,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           29
         ],
@@ -7084,7 +7110,7 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H31:H35",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
@@ -7097,7 +7123,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I31:I35",
           "is_merged": true
         },
         "values": {
@@ -7109,7 +7135,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J31:J35",
           "is_merged": true
         },
         "literacy_skills": {
@@ -7119,7 +7145,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K31:K35",
           "is_merged": true
         },
         "differentiation": {
@@ -7282,7 +7308,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           31
         ],
@@ -7415,7 +7441,7 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H31:H35",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
@@ -7428,7 +7454,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I31:I35",
           "is_merged": true
         },
         "values": {
@@ -7440,7 +7466,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J31:J35",
           "is_merged": true
         },
         "literacy_skills": {
@@ -7450,7 +7476,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K31:K35",
           "is_merged": true
         },
         "differentiation": {
@@ -7602,7 +7628,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           32
         ],
@@ -7729,7 +7755,7 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H31:H35",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
@@ -7742,7 +7768,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I31:I35",
           "is_merged": true
         },
         "values": {
@@ -7754,7 +7780,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J31:J35",
           "is_merged": true
         },
         "literacy_skills": {
@@ -7764,7 +7790,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K31:K35",
           "is_merged": true
         },
         "differentiation": {
@@ -7939,7 +7965,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           33
         ],
@@ -8066,7 +8092,7 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H31:H35",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
@@ -8079,7 +8105,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I31:I35",
           "is_merged": true
         },
         "values": {
@@ -8091,7 +8117,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J31:J35",
           "is_merged": true
         },
         "literacy_skills": {
@@ -8101,7 +8127,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K31:K35",
           "is_merged": true
         },
         "differentiation": {
@@ -8323,7 +8349,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           34
         ],
@@ -8450,7 +8476,7 @@
       "pedagogical_context": {
         "assessment_and_evaluation": {
           "text": "Metin Tahlili (Anlama)\nOkuma ve Dinleme/İzleme\n\n• Kısa cevaplı sorular\n• Gözlem formu\n• Çıkış kartı\n• Öğrenme günlüğü\n• Çalışma kâğıdı\n• Zihin haritası\n• Kavram haritası\n• Balık kılçığı\nBu temada okumayı yönetme sürecinde kısa cevaplı sorular ve çalışma kâğıdı; anlam\noluşturma sürecinde edebiyat halkası (okuma çemberi), kavram haritası; çözümleme\nsürecinde açık uçlu sorular, çalışma kâğıdı; yansıtmada ise çıkış kartları kullanılabilir.\nDinlemeyi/izlemeyi yönetme sürecinde kısa cevaplı sorular, gözlem formları; anlam oluşturma\nsürecinde kısa cevaplı sorular, balık kılçığı ve zihin haritaları çözümleme sürecinde\nkavram haritası; yansıtmada öğrenme günlüğü kullanılabilir.\n\nEdebiyat Atölyesi (Anlatma)\nKonuşma ve Yazma\n\n• Konuşma becerisi için incelenen romanın kişi kadrosundan seçilen bir kişiyle hayalî\nbir mülakat yapmaya yönelik performans görevi\n• Yazma becerisi için dinlediği/izlediği metinden seçtiği bir diyaloğu, metnin bağlamına\nuygun olarak başka bir türe dönüştürmeye yönelik performans görevi\nÖğrencilerin hazırladıkları mülakatlar; içeriğe uygunluk, özgünlük, açıklık, akıcılık, dilin etkili\nkullanımı vb. ölçütler bağlamında dereceli puanlama anahtarı ile değerlendirilir. Diyalog\noluşturmaya yönelik yazılı anlatımlar; içerik, akıcılık, duruluk, yalınlık, beden dili, zamanı ve\nmekânı etkili kullanma gibi ölçütler kullanılarak dereceli puanlama anahtarı ile değerelendirilir.\nÖz değerlendirme, öğretmen ve akran değerlendirmesi yapılarak çeşitlilik sağlanabilir.Dinlediği/izlediği metinden seçilen ve metnin bağlamına uygun yeniden yazılan diyalog,\ndereceli puanlama anahtarı ile puanlanır. Puanlama anahtarında dil ve üslup kullanımı,\nözgünlük, konuya uygunluk, öznel ve nesnel ifadelere yer verme, başlık kullanımı, yazım\nve noktalama gibi ölçütlere yer verilir.\nTema sonu değerlendirmede çıkış kartlarından yararlanılır.",
-          "source_cell_range": "H26:H29, H31:H35",
+          "source_cell_range": "H31:H35",
           "is_merged": true
         },
         "social_emotional_learning_skills": {
@@ -8463,7 +8489,7 @@
             "SDB2.3",
             "SDB3.3"
           ],
-          "source_cell_range": "I26:I29, I31:I35",
+          "source_cell_range": "I31:I35",
           "is_merged": true
         },
         "values": {
@@ -8475,7 +8501,7 @@
             "D14",
             "D19"
           ],
-          "source_cell_range": "J26:J29, J31:J35",
+          "source_cell_range": "J31:J35",
           "is_merged": true
         },
         "literacy_skills": {
@@ -8485,7 +8511,7 @@
             "OB4",
             "OB5"
           ],
-          "source_cell_range": "K26:K29, K31:K35",
+          "source_cell_range": "K31:K35",
           "is_merged": true
         },
         "differentiation": {
@@ -8585,7 +8611,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           35,
           36
@@ -8724,7 +8750,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -8750,7 +8776,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -8831,7 +8857,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           37
         ],
@@ -8975,7 +9001,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -9001,7 +9027,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -9169,7 +9195,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           38
         ],
@@ -9306,7 +9332,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -9332,7 +9358,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -9418,7 +9444,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           39
         ],
@@ -9549,7 +9575,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -9575,7 +9601,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -9750,7 +9776,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           40
         ],
@@ -9888,7 +9914,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -9914,7 +9940,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -10083,7 +10109,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           41
         ],
@@ -10227,7 +10253,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -10253,7 +10279,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -10411,7 +10437,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           42
         ],
@@ -10548,7 +10574,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -10574,7 +10600,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -10755,7 +10781,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           43
         ],
@@ -10886,7 +10912,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -10912,7 +10938,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -11140,7 +11166,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           44
         ],
@@ -11271,7 +11297,7 @@
           "is_merged": true
         },
         "social_emotional_learning_skills": {
-          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3. Sorumlu Karar Verme",
+          "text": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme",
           "codes": [
             "SDB1.1",
             "SDB1.2",
@@ -11297,7 +11323,7 @@
           "is_merged": true
         },
         "literacy_skills": {
-          "text": "OB2. Dijital Okuryazarlık \nOB5. Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
+          "text": "OB2. Dijital Okuryazarlık \nOB5.Kültür Okuryazarlığı\nOB9. Sanat Okuryazarlığı",
           "codes": [
             "OB2",
             "OB5",
@@ -11403,7 +11429,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           45,
           46
@@ -11589,7 +11615,7 @@
         }
       ],
       "source_metadata": {
-        "worksheet": "11. SINIF",
+        "worksheet": "11.SINIF",
         "physical_rows": [
           47
         ],

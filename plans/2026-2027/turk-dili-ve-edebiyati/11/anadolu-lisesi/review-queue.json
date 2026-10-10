@@ -494,12 +494,15 @@
       "cells": [
         "I4:I12"
       ],
-      "description": "I4 hücresinde 'SDB3.2 Esneklik' ifadesinde 3.2 sonrasında nokta bulunmamakta ve kodlar satır başı yerine çoklu boşluklarla ayrılmıştır. Takip eden temalarda ise satır başı (\\n) kullanılmıştır.",
+      "description": "Anadolu Lisesi Excel I4 hücresinde 'SDB2.3.Sosyal Farkındalık' bitişik yazımı ve çok sayıda hizalama boşluğu bulunur; I37 hücresinde 'SDB3.3.Sorumlu Karar Verme' bitişik yazımı vardır. Aynı temanın I26 ve I31 hücreleri arasında virgül/noktalama farkları bulunur. Kodların ayrıştırılmış biçimi korunurken kaynak metinlerdeki bu farklılıklar aynen saklandı.",
       "source_raw_values": {
-        "I4": "SDB1.2. Kendini Düzenleme (Öz Düzenleme) SDB2.1. İletişim... SDB3.2 Esneklik... SDB3.3. Sorumlu Karar Verme"
+        "I4": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB2.1. İletişim                                  \nSDB2.2. İş Birliği                                                     SDB2.3.Sosyal Farkındalık                       \nSDB3.1. Uyum                                  \nSDB3.2. Esneklik                             \nSDB3.3. Sorumlu Karar Verme",
+        "I26": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma),\nSDB2.1. İletişim, \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık, \nSDB3.3. Sorumlu Karar Verme",
+        "I31": "SDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB1.3. Kendine Uyarlama (Öz Yansıtma)\nSDB2.1. İletişim \nSDB2.2. İş Birliği\nSDB2.3. Sosyal Farkındalık \nSDB3.3. Sorumlu Karar Verme",
+        "I37": "SDB1.1. Kendini Tanıma (Öz Farkındalık) \nSDB1.2. Kendini Düzenleme (Öz Düzenleme)\nSDB 2.1. İletişim\nSDB 2.2. İş Birliği \nSDB2.3. Sosyal Farkındalık \nSDB 3.2. Esneklik \nSDB3.3.Sorumlu Karar Verme"
       },
-      "resolution_applied": "Özgün hücre metni aynen korundu; 'codes' dizisi içerisine ayrıştırılan standart kodlar eklendi.",
-      "status": "formatting_noted"
+      "resolution_applied": "Hücrelerin özgün metinleri JSON tema/hafta alanlarına birebir aktarıldı. 3. temanın I26 ve I31 birleştirilmiş bloklarının metinleri ayrı source_cell_texts kayıtlarıyla temsil edildi.",
+      "status": "source_formatting_preserved"
     },
     {
       "id": "RQ-012",
@@ -513,15 +516,15 @@
       "cells": [
         "A1"
       ],
-      "description": "Fen Lisesi çalışma sayfasında A1 başlığı '... 11. SINIF FEN LİSESİ TÜRK DİLİ VE EDEBİYATI ...' ifadesini içermektedir. Sayfa sekme adı '11. SINIF' (boşluklu) olarak adlandırılmıştır. Anadolu Lisesi çalışma sayfasında ise başlıkta 'FEN LİSESİ' ibaresi yoktur ve sekme adı '11.SINIF'tır.",
-      "resolution_applied": "Bu kayıt ilk aktarımın Fen Lisesi çalışma sayfasından yapıldığını belgeler. Anadolu Lisesi klasöründeki metadata, sonraki kullanıcı talebiyle Anadolu Lisesi olarak değiştirildi; ders metinleri yeniden aktarılmadı.",
-      "status": "verified_correct"
+      "description": "Özgün Anadolu Lisesi Excel'inde 11.SINIF sekmesi ve Fen Lisesi ibaresi içermeyen 11. sınıf çerçeve planı başlığı doğrulandı. Önceki Fen Lisesi kaynaklı ilk aktarım izi ile Anadolu Lisesi kaynağı arasındaki kimlik ayrımı kayıt altındadır.",
+      "resolution_applied": "Anadolu Lisesi Excel 11.SINIF/A1 belgesi doğrudan okundu. 37 haftanın source_metadata.worksheet alanı 11.SINIF olarak düzeltildi.",
+      "status": "anadolu_source_verified"
     },
     {
       "id": "RQ-013",
-      "category": "source_identity_relabel_pending_validation",
-      "severity": "medium",
-      "title": "Anadolu Lisesi kaynak kimliği güncellendi; içerik kökeni yeniden doğrulanmadı",
+      "category": "original_anadolu_workbook_content_verification",
+      "severity": "info",
+      "title": "Özgün Anadolu Lisesi Excel'i ile içerik doğrulaması tamamlandı",
       "weeks": [],
       "rows": [
         1
@@ -529,9 +532,15 @@
       "cells": [
         "A1"
       ],
-      "description": "Dosya Anadolu Lisesi klasöründedir. metadata.school_type, source_file, worksheet_name ve document_title alanları kullanıcı talebiyle Anadolu Lisesi kaynağına göre düzeltildi. Önceki Fen Lisesi metadata uyuşmazlığı giderildi; ancak ders içeriklerinin gerçek Anadolu Lisesi çalışma sayfası ile birebir karşılaştırması bu düzenleme kapsamında yapılmadı.",
-      "resolution_applied": "Kaynak adı ve okul türü metadata'sı güncellendi, archive_path_school_type_mismatch=false. Kaynak içeriklerini yeniden üretmeden koruduk; özgün Anadolu Excel ile pedagojik veri karşılaştırması ileride ayrıca yapılabilir.",
-      "status": "metadata_corrected_content_unverified"
+      "description": "11.SINIF çalışma sayfasındaki kaynak metinler, haftalar, ders saatleri, temalar, kazanımlar, süreç bileşenleri, pedagojik alanlar ve anma günleri Anadolu Lisesi JSON'u ile karşılaştırıldı. Dört hücredeki kaynak noktalama/boşluk ayrımları giderildi; farklı hafta bloklarında yer alan I26 ve I31 metinleri ayrı korundu.",
+      "resolution_applied": "Kaynak SHA-256 24b7d5de542681bdf3ff60503014342ecbcaeb6bf196532409fc0ce4af883d4f; 141 metin hücresi, 37 hafta etiketi, 40 tema/satır hücresi ve 49 birleşik aralık incelendi. İçerik farkları düzeltildi; 37. haftanın varsayılan 5 saati ile kaynak takvim yerleşimleri ayrıca işaretli kalır.",
+      "status": "verified_against_original_anadolu_workbook"
     }
-  ]
+  ],
+  "source_verification": {
+    "status": "verified_against_original_anadolu_workbook",
+    "verified_on": "2026-10-10",
+    "source_workbook_sha256": "24b7d5de542681bdf3ff60503014342ecbcaeb6bf196532409fc0ce4af883d4f",
+    "worksheet": "11.SINIF"
+  }
 }

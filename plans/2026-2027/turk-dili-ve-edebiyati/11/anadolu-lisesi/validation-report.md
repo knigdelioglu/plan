@@ -1,19 +1,30 @@
 # 11. Sınıf Türk Dili ve Edebiyatı Yıllık Planı Veri Doğrulama ve Aktarım Raporu
 
-> **Metadata düzeltmesi (2026-10-10):** Bu klasördeki `annual-plan.json` dosyasının `school_type` değeri **Anadolu Lisesi**; `source_file` değeri **`2026-2027 ANADOLU LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx`** olarak kullanıcı talebiyle güncellendi. Belge başlığı ve çalışma sayfası adı buna uyumlu hâle getirildi. Bu rapordaki ilk aktarım ve içerik karşılaştırma bulguları önceki **Fen Lisesi kaynağına** ilişkindir; ders içerikleri Anadolu Lisesi Excel'iyle bu işlemde yeniden doğrulanmadı. Kaynak türü kimlik uyuşmazlığı giderildi, içerik kökeni yeniden doğrulama için RQ-013'te takip ediliyor.
+> **Özgün Anadolu Lisesi Excel doğrulaması (2026-10-10):** `11.SINIF` çalışma sayfası doğrudan incelendi; 37 hafta, derslerin E/F/G sütunu, H–N pedagojik alanlar ve özel günler JSON ile karşılaştırıldı. Dört kaynak metin farkı giderildi; Fen Lisesi'nden kalan kaynak sekmesi referansları düzeltildi. Kaynak SHA-256: `24b7d5de542681bdf3ff60503014342ecbcaeb6bf196532409fc0ce4af883d4f`. 37. haftanın 5 saati yine kaynak dışı varsayım olarak gösterilir.
 
-**Belge Başlığı:** 2026-2027 EĞİTİM ÖĞRETİM YILI 11. SINIF FEN LİSESİ TÜRK DİLİ VE EDEBİYATI DERSİ ÇERÇEVE YILLIK PLANI  
-**Kaynak Dosya:** `2026-2027 FEN LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx`  
-**Çalışma Sayfası:** `11. SINIF`  
-**Üretim Tarihi:** 2026-10-10T17:27:34  
+**Belge Başlığı:** 2026-2027 EĞİTİM ÖĞRETİM YILI 11. SINIF TÜRK DİLİ VE EDEBİYATI DERSİ ÇERÇEVE YILLIK PLANI  
+**Kaynak Dosya:** `2026-2027 ANADOLU LİSESİ 9,10,11, 12. SINIF TASLAK YILLIK PLAN son.xlsx`  
+**Çalışma Sayfası:** `11.SINIF`  
+**İlk Üretim Tarihi:** 2026-10-10T17:27:34  
+**Anadolu Kaynak Doğrulama Tarihi:** 2026-10-10  
 **Veri Şeması Standardı:** JSON Schema Draft 2020-12  
-**Doğrulama Sonucu:** Eksiksiz Aktarıldı — %100 Hücre ve Pedagojik Bütünlük Doğrulandı  
+**Doğrulama Sonucu:** Anadolu Lisesi Kaynağıyla Doğrudan Doğrulandı — 180 Saat Kaynakta Açık, 37. Hafta 5 Saat Varsayımsal  
+
+---
+
+## Özgün Anadolu Lisesi kaynak karşılaştırması (2026-10-10)
+
+- **Kaynak:** Yukarıda adı geçen özgün XLSX dosyasının `11.SINIF` çalışma sayfası, `A1:N47`.
+- **Kaynak dosya SHA-256:** `24b7d5de542681bdf3ff60503014342ecbcaeb6bf196532409fc0ce4af883d4f`. Kullanıcının bu sohbette sunduğu adında `(1)` bulunan ikinci kopya, aynı SHA-256 değeriyle ilk kopyanın birebir aynısıdır.
+- **Kapsam:** 37 hafta etiketi/tarih aralığı ve 40 tema/satır hücresi; E/F/G kaynaklarının tüm 36 öğretim satırı (dört `3+2` hücresindeki iki ders bölümü metinleri yeniden birleştirilerek); H–K pedagojik bölümler; L sütunundaki 11 hücre, M ve N genel açıklamaları. Toplam **141 kaynak metin hücresi**, **37 hafta etiketi**, **40 tema hücresi** doğrudan karşılaştırıldı. XLSX içindeki **49 birleştirilmiş hücre aralığı** ayrıca kontrol edildi.
+- **Düzeltilen farklılıklar:** `I4` ve `I37` noktalama/boşluk farkları, `I26` ile `I31` blokları arasında farklı kaynak noktalaması, `K37` içindeki `OB5.Kültür` bitişik yazımı. Üçüncü temadaki `I26:I29` ve `I31:I35` metinleri ayrı ayrı saklandı. 37 haftanın `source_metadata.worksheet` değeri gerçek `11.SINIF` sekme adına getirildi.
+- **Sonuç:** Kaynağa göre alan eşleşmeleri tamamlandı. Bu doğrulama okul/zümre tarafından verilen **resmî onay** değil, özgün dosyaya karşı **veri doğrulamasıdır**. 37. hafta saat varsayımı ile 12 Mart ve 29 Mayıs özel günlerinin planlama yerleşimleri korunmuştur.
 
 ---
 
 ## 1. Yönetici Özeti ve Temel Doğrulama Metrikleri
 
-Bu çalışma, Millî Eğitim Bakanlığı Türkiye Yüzyılı Maarif Modeli kapsamında hazırlanan **11. Sınıf Fen Lisesi Türk Dili ve Edebiyatı Dersi Çerçeve Yıllık Planı**'nın Excel formatından yüksek doğruluklu, hafta merkezli ve ders bölümlerini destekleyen dijital JSON formatına aktarımını ve çok katmanlı doğrulamasını belgelemektedir.
+Bu çalışma, Millî Eğitim Bakanlığı Türkiye Yüzyılı Maarif Modeli kapsamında hazırlanan **11. Sınıf Anadolu Lisesi Türk Dili ve Edebiyatı Dersi Çerçeve Yıllık Planı**'nın Excel formatından yüksek doğruluklu, hafta merkezli ve ders bölümlerini destekleyen dijital JSON formatına aktarımını ve çok katmanlı doğrulamasını belgelemektedir.
 
 Aktarım süreci salt bir programatik hücre okuma işlemi olarak ele alınmamış; **Computer Use** araçları kullanılarak elektronik tablo uygulamasındaki görsel hiyerarşi, birleştirilmiş hücreler, çok satırlı haftalar ve takvimsel yerleşim incelenerek doğrulanmıştır. Yapılan bağımsız inceleme doğrultusunda ders saatleri ayrımı, birleştirilmiş hücrelerin kaynak izlenebilirliği, kaynak dışı varsayımların ayıklanması ve takvimsel uyuşmazlıklar tam bir şeffaflıkla yapılandırılmıştır.
 
@@ -33,7 +44,7 @@ Aktarım süreci salt bir programatik hücre okuma işlemi olarak ele alınmamı
 | **Birleştirilmiş Hücre Aralıkları** | 49 Aralık | **49 Aralık** | Tümü çözümlendi ve metadata ile ilişkilendirildi |
 | **Ay Sütununda Devam Hücresi Sayısı** | 25 Hafta | **25 Hafta** | Çapa hücresi (`anchor_cell`) ve aralık ile tam izlenebilir |
 | **JSON Schema Doğrulaması** | Draft 2020-12 | **Geçerli (0 Hata)** | `jsonschema.validate` ile tam uyum |
-| **İnceleme Kuyruğu (Review Queue)** | 13 Madde | **13 Yapılandırılmış Madde** | Kaynak/klasör okul türü uyuşmazlığı açık kayıt olarak eklendi |
+| **İnceleme Kuyruğu (Review Queue)** | 13 Madde | **13 Yapılandırılmış Madde** | RQ-013 Anadolu kaynağıyla doğrulandı; diğer kaynak varsayımları korundu |
 
 ---
 
@@ -236,22 +247,22 @@ Süreç bileşenleri (G sütunu) aktarımında en üst düzey kaynak sadakati sa
 | **RQ-009** | `global_merged_cells` | Düşük | M ve N Sütunlarının Tablo Boyunca Birleştirilmesi | 1-37 (`M4:M47, N4:N47`) | Çözümlendi |
 | **RQ-010** | `theme_merged_pedagogical_cells` | Düşük | H, I, J, K Sütunlarının Tema Boyunca Birleştirilmesi | 1-36 (`H4:H12 vb.`) | Çözümlendi |
 | **RQ-011** | `code_formatting` | Düşük | 1. Tema SDB Becerileri Kod Yazım Düzensizliği | 1-9 (`I4:I12`) | Belgelendi |
-| **RQ-012** | `workbook_metadata_difference` | Düşük | Fen Lisesi ile Anadolu Lisesi Sekme ve Başlık Farkı | Genel (`A1`) | Kaynak Farkı Doğrulandı |
-| **RQ-013** | `source_identity_relabel_pending_validation` | Orta | Anadolu Lisesi Kimliği Güncellendi; İçerik Yeniden Doğrulanmadı | Genel (`A1`) | Metadata Düzeltildi |
+| **RQ-012** | `workbook_metadata_difference` | Düşük | Anadolu Lisesi Kaynak Kimliği ve Sekme Adı | Genel (`A1`) | Doğrulandı |
+| **RQ-013** | `original_anadolu_workbook_content_verification` | Bilgi | Anadolu Lisesi Özgün Excel İçerik Kontrolü | Genel (`A1:N47`) | Doğrulandı |
 
 ---
 
-### Arşiv konumu ve okul türü uyarısı
+### Arşiv konumu ve okul türü doğrulaması
 
-Bu klasördeki JSON'un `metadata.school_type` ve `source_file` alanları Anadolu Lisesi kaynağına göre güncellenmiştir. Önceki klasör/metadata uyuşmazlığı giderildi. Ancak bu, ders içeriklerinin özgün Anadolu Lisesi Excel'iyle yeniden doğrulandığı anlamına gelmez. RQ-013 bu doğrulama sınırını belgelendirir.
+Bu klasördeki JSON'un `metadata.school_type`, `source_file`, `document_title` ve `worksheet_name` alanları gerçek Anadolu Lisesi Excel'iyle örtüşmektedir. Kaynak hücre metinleri doğrudan karşılaştırılmış ve RQ-013 tamamlanmıştır. Bu yalnızca kaynak doğruluğudur; resmî makam/zümre onayı değildir.
 
 ---
 
 ## 8. Teslim Edilen Dosyalar
 
-Aşağıdaki dosyalar hem `/Volumes/Lacie/MacBook Klasörleri/grade-11-annual-plan/output/grade-11/` hem de `/Users/kadir/Desktop/output/grade-11/` dizinlerinde eksiksiz ve güncel olarak teslim edilmiştir:
+Aşağıdaki dosyalar GitHub deposunun `plans/2026-2027/turk-dili-ve-edebiyati/11/anadolu-lisesi/` dizininde birlikte tutulmaktadır:
 
-1. `annual-plan.json` — 11. Sınıf Fen Lisesi eksiksiz, hafta merkezli, ders bölümlerini destekleyen yıllık plan verisi.
+1. `annual-plan.json` — 11. Sınıf Anadolu Lisesi kaynağıyla doğrulanmış, hafta merkezli yıllık plan verisi.
 2. `annual-plan.schema.json` — JSON Schema Draft 2020-12 standardına uygun resmi veri şeması.
 3. `validation-report.md` — Bu kapsamlı doğrulama ve kanıt raporu.
 4. `review-queue.json` — 13 yapılandırılmış inceleme maddesini içeren denetim kuyruğu.
