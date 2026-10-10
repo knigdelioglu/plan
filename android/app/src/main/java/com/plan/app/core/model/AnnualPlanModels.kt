@@ -37,14 +37,17 @@ data class PlanMetadata(
     val totalTeachingWeeks: Int = 37,
     @SerialName("weekly_lesson_hours")
     val weeklyLessonHours: Int = 5,
+    // Missing source fields must not be silently synthesized.
     @SerialName("verified_lesson_hours")
-    val verifiedLessonHours: Int = 180,
+    val verifiedLessonHours: Int? = null,
     @SerialName("assumed_lesson_hours")
-    val assumedLessonHours: Int = 5,
+    val assumedLessonHours: Int? = null,
     @SerialName("total_annual_hours_verified")
-    val totalAnnualHoursVerified: Int = 180,
+    val totalAnnualHoursVerified: Int? = null,
     @SerialName("total_annual_hours_assumed")
-    val totalAnnualHoursAssumed: Int = 185,
+    val totalAnnualHoursAssumed: Int? = null,
+    @SerialName("total_annual_hours")
+    val totalAnnualHours: Int? = null,
     @SerialName("hours_accounting")
     val hoursAccounting: HoursAccounting? = null,
     @SerialName("source_range")
@@ -212,6 +215,8 @@ data class WeekThemeRef(
 data class SpecialDaysAndWeeks(
     val present: Boolean = false,
     val raw: String? = null,
+    // Fen export names this field "text".
+    val text: String? = null,
     @SerialName("source_cell")
     val sourceCell: String? = null,
     val events: List<SpecialDayEvent> = emptyList(),
@@ -297,8 +302,21 @@ data class LearningOutcome(
 
 @Serializable
 data class ProcessComponent(
+    @SerialName("main_code")
+    val mainCode: String = "",
+    val title: String = "",
+    @SerialName("sub_components")
+    val subComponents: List<ProcessSubComponent> = emptyList()
+)
+
+@Serializable
+data class ProcessSubComponent(
+    @SerialName("sub_code")
+    val subCode: String = "",
     val code: String = "",
-    val text: String = ""
+    val letter: String = "",
+    val title: String = "",
+    val items: List<String> = emptyList()
 )
 
 @Serializable
