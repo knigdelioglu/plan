@@ -12,8 +12,13 @@ permissions:
 
 jobs:
   compose-ui-tests:
+    name: Compose UI (${{ matrix.display }})
     runs-on: ubuntu-latest
     timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        display: [compact, tablet-portrait, tablet-landscape]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -35,7 +40,17 @@ jobs:
           profile: pixel_5
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
-          script: cd android && ./gradlew connectedDebugAndroidTest --no-daemon --stacktrace
+          script: |
+            if [ "${{ matrix.display }}" = "tablet-portrait" ]; then
+              adb shell wm size 1200x1920
+              adb shell wm density 240
+            elif [ "${{ matrix.display }}" = "tablet-landscape" ]; then
+              adb shell wm size 1920x1200
+              adb shell wm density 240
+            fi
+            adb shell wm size
+            adb shell wm density
+            cd android && ./gradlew connectedDebugAndroidTest --no-daemon --stacktrace
       - name: Upload UI test reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
