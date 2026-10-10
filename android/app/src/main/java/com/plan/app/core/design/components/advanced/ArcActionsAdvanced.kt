@@ -279,7 +279,7 @@ fun ArcExpandingSearch(
 
     Row(
         modifier = modifier.animateContentSize(
-            animationSpec = ArcMotionTokens.respectMotionPreference(
+            animationSpec = ArcMotionTokens.respectFiniteMotionPreference(
                 reducedMotion, ArcMotionTokens.Springs.morph<IntSize>()
             )
         ),
