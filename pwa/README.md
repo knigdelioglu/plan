@@ -1,48 +1,53 @@
-# Haftalık Plan PWA — Çalışma Alanı
+# Haftalık Plan PWA
 
-Bu klasör `knigdelioglu/plan` deposunun **uygulama alanıdır**. Yıllık planların asıl veri kaynağı `../plans/` altındadır; burada değiştirilmez.
+`knigdelioglu/plan` deposunun **yalnızca `pwa/**` altında geliştirilen** React uygulaması. Kaynak yıllık plan JSON'ları `../plans/**` altında tutulur ve uygulama bunları değiştirmez.
 
-## Hedef
+## Başlangıç
 
-Öğretmenlerin seçtikleri öğretim yılı/ders/okul türü/sınıf için haftalık planı görüntülediği, her şubede işlenen ders saatlerini ve kaldığı yeri ayrı takip edebildiği, çevrimdışı çalışabilen PWA.
+Node.js 22+ önerilir. Depo kökünden:
 
-## Öngörülen teknoloji
-
-- React 19 + TypeScript + Vite
-- Arc Library tasarım temeli ve kaynak bileşenleri (`src/components/arc/`)
-- IndexedDB tabanlı kişisel şube ve ilerleme kayıtları
-- Service worker ile PWA çevrimdışı desteği
-
-## Klasörler
-
-```text
-pwa/
-├── AGENTS.md                 # PWA ajan kuralları; plans/ salt okunur
-├── README.md
-├── public/
-│   └── data/                 # Derleme sırasında üretilen, PWA'ya özgü salt okunur plan kataloğu
-├── scripts/                  # Arşivden okuyan dönüşüm / doğrulama betikleri
-├── src/
-│   ├── app/                  # Uygulama kabuğu, yönlendirme ve sağlayıcılar
-│   ├── components/
-│   │   └── arc/              # Kurulan/uyarlanan Arc bileşenlerinin kaynakları
-│   ├── features/
-│   │   ├── catalog/          # Yıl / ders / sınıf / okul türü seçimi
-│   │   ├── classes/          # Öğretmenin şubeleri
-│   │   ├── weeks/            # Haftalık plan görünümü
-│   │   └── progress/         # Şube bazlı ilerleme
-│   ├── lib/
-│   │   ├── data/             # Plan okuma ve uyarlama
-│   │   └── storage/          # Yerel öğretmen verisi
-│   ├── styles/               # Arc Foundation ve uygulama teması
-│   └── types/                # Uygulama tipleri
-└── tests/                    # PWA testleri
+```bash
+cd pwa
+npm install
+npm run dev
 ```
 
-**Durum:** Bu aşamada yalnızca klasör iskeleti ve çalışma kapsamları hazırlanmıştır. Henüz npm paketi, çalışan PWA, derleme veya dağıtım kurulumu yoktur.
+Dev sunucusu başlamadan önce `scripts/build-plan-catalog.mjs` yalnızca `../plans` verilerini **okuyup** `pwa/public/data/catalog.json` üretir. Yayımlanabilir olan planlar kaynak okul türü / sınıf / yıl ile eşleşen ve hafta-ders saati temel kontrollerinden geçen kayıtlardır. Çelişkili kaynaklar uygulamaya alınmaz.
 
-## Kapsam kuralları
+```bash
+npm run test
+npm run typecheck
+npm run build
+npm run preview
+```
 
-PWA geliştirirken `plans/**` salt okunurdur. Veri arşivi üzerinde çalışırken de `pwa/**` değiştirilemez. İlgili kurallar [PWA AGENTS.md](AGENTS.md) ve [kökteki SCOPES.md](../SCOPES.md) içindedir.
+GitHub Pages gibi bir alt yola dağıtım için örnek: `BASE_PATH=/plan/ npm run build`. Dağıtım iş akışı henüz kurulmadı.
 
-11. sınıf Anadolu Lisesi klasöründeki JSON'un kaynağı Fen Lisesidir; doğrulanmış Anadolu planı gibi gösterilemez.
+## Kabuğun mevcut işlevleri
+
+- Responsive yan gezinme ve mobil alt gezinme: **Haftam / Sınıflarım / Planlar**
+- Arc Library MIT kaynak bileşenleri, ortak foundation.css, hareket ve koyu/açık tema
+- Kaynak JSON'lardan okunan plan kataloğu; haftalar, ders bölümleri, kazanımlar ve tatiller
+- Plan ve hafta seçimi; gerçek veriden ders bölümü ayrıntısı; okul türü uyuşmazlığını dışlama
+- Manifest + hizmet çalışanı hazırlığıyla çevrimdışı önbellekleme
+- Şube ekleme, gerçek ilerleme kayıtları ve IndexedDB **henüz bu sürümde yoktur**; ekranda bunlar çalışıyormuş gibi gösterilmez
+
+## Arc Library
+
+MIT lisanslı kaynaklar [kuratlielia/arc-library](https://github.com/kuratlielia/arc-library) deposundan alınmıştır; lisans `src/components/arc/LICENSE` dosyasındadır. İlk alınan bileşenler: Button, Badge, Tabs, Segmented Control, Progress. Diğerleri ihtiyaç oldukça `components.json` içindeki `@uiarc` registry'sinden eklenebilir.
+
+## Mimari
+
+```text
+src/app/                      uygulama kabuğu ve ekran yönlendirmesi
+src/components/arc/           özgün Arc kaynak bileşenleri ve foundation
+src/features/weeks/           haftalık içerik
+src/features/catalog/         kaynak plan kataloğu
+src/features/classes/         gelecekteki şube takibi
+src/features/progress/        gelecekteki ilerleme kaydı
+src/lib/motion-tokens.ts      Arc hareket değişkenleri
+scripts/build-plan-catalog.mjs  salt okunur veri dönüştürme
+public/data/catalog.json      üretilmiş PWA katalog verisi
+```
+
+Bu çalışma alanında yalnızca `pwa/**` yazılabilir. Ayrıntılı sınırlar [AGENTS.md](AGENTS.md) ve [../SCOPES.md](../SCOPES.md) içindedir.
