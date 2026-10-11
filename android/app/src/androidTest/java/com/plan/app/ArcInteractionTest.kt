@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
@@ -22,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
@@ -208,9 +210,12 @@ class ArcInteractionTest {
         }
         rule.onNodeWithText("Sınıflar").assertIsDisplayed()
         rule.onNodeWithText("Plan").assertIsDisplayed()
-        rule.onNodeWithContentDescription("Panel genişliğini değiştir")
-            .performKeyInput { pressKey(Key.DirectionRight) }
-        rule.runOnIdle { assertTrue(ratio > 0.5f) }
+        val divider = rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+        // Key events target the focused Compose node, not merely the queried semantics node.
+        divider.performSemanticsAction(SemanticsActions.RequestFocus)
+        divider.assertIsFocused()
+        divider.performKeyInput { pressKey(Key.DirectionRight) }
+        rule.runOnIdle { assertTrue("Right arrow must expand the focused panel", ratio > 0.5f) }
         rule.onNodeWithContentDescription("Panel genişliğini değiştir")
             .performKeyInput { pressKey(Key.MoveHome) }
         rule.runOnIdle { assertTrue(ratio < 0.32f) }
@@ -236,8 +241,12 @@ class ArcInteractionTest {
             }
         }
         val divider = rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+        val initialDescription = divider.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+        divider.performSemanticsAction(SemanticsActions.RequestFocus)
+        divider.assertIsFocused()
         divider.performKeyInput { pressKey(Key.DirectionRight) }
         val beforeRestore = divider.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+        assertTrue("Key action should resize before restoration is tested", beforeRestore != initialDescription)
         restoration.emulateSavedInstanceStateRestore()
         val afterRestore = rule.onNodeWithContentDescription("Panel genişliğini değiştir")
             .fetchSemanticsNode().config[SemanticsProperties.StateDescription]
