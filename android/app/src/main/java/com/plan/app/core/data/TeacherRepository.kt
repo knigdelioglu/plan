@@ -2,6 +2,7 @@ package com.plan.app.core.data
 
 import android.content.Context
 import android.util.AtomicFile
+import android.os.Trace
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.DrawingStroke
 import com.plan.app.core.model.LessonProgress
@@ -227,14 +228,21 @@ class TeacherRepository(private val context: Context? = null) {
         val file = stateFile()
         val bytes = json.encodeToString(TeacherSnapshot.serializer(), state).toByteArray(Charsets.UTF_8)
         if (context != null) {
-            val atomic = AtomicFile(file)
-            val stream = atomic.startWrite()
+            // Visible in Perfetto/Android Studio system traces on a real tablet.
+            // Do not use Trace in the context=null JVM test code path.
+            Trace.beginSection("PlanTeacherAtomicWrite")
             try {
-                stream.write(bytes)
-                atomic.finishWrite(stream)
-            } catch (error: Exception) {
-                atomic.failWrite(stream)
-                throw error
+                val atomic = AtomicFile(file)
+                val stream = atomic.startWrite()
+                try {
+                    stream.write(bytes)
+                    atomic.finishWrite(stream)
+                } catch (error: Exception) {
+                    atomic.failWrite(stream)
+                    throw error
+                }
+            } finally {
+                Trace.endSection()
             }
         } else {
             val tmp = File(file.path + ".new")
