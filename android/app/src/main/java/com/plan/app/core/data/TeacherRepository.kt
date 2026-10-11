@@ -80,6 +80,7 @@ class TeacherRepository(private val context: Context? = null) {
         }
     }
 
+    @Synchronized
     fun selectClassroom(id: String) {
         require(snapshot.classrooms.any { it.id == id }) { "Sınıf bulunamadı: $id" }
         change(snapshot.copy(
@@ -88,6 +89,7 @@ class TeacherRepository(private val context: Context? = null) {
         ))
     }
 
+    @Synchronized
     fun selectWeek(weekNumber: Int) {
         require(weekNumber > 0)
         change(snapshot.copy(
@@ -96,10 +98,13 @@ class TeacherRepository(private val context: Context? = null) {
         ))
     }
 
+    @Synchronized
     fun selectViewMode(mode: PlannerViewMode) =
         change(snapshot.copy(viewMode = PlannerViewMode.fromSaved(mode)))
+    @Synchronized
     fun setDarkMode(enabled: Boolean) = change(snapshot.copy(darkMode = enabled))
 
+    @Synchronized
     fun addClassroom(
         name: String,
         schoolType: String,
@@ -116,6 +121,7 @@ class TeacherRepository(private val context: Context? = null) {
         return classroom
     }
 
+    @Synchronized
     fun toggleLessonProgress(classroomId: String, weekNumber: Int, lessonIndex: Int): Boolean {
         val next = !isLessonCompleted(classroomId, weekNumber, lessonIndex)
         setLessonProgress(classroomId, weekNumber, lessonIndex, next)
@@ -126,6 +132,7 @@ class TeacherRepository(private val context: Context? = null) {
      * Swipe and checkbox actions set an explicit desired state instead of blindly
      * toggling. Repeating a gesture is safe and does not rewrite the snapshot.
      */
+    @Synchronized
     fun setLessonProgress(
         classroomId: String, weekNumber: Int, lessonIndex: Int, completed: Boolean
     ): Boolean {
@@ -158,6 +165,7 @@ class TeacherRepository(private val context: Context? = null) {
             }.sumOf { it.hours }
         }
 
+    @Synchronized
     fun saveNote(
         classroomId: String,
         weekNumber: Int,
@@ -167,6 +175,9 @@ class TeacherRepository(private val context: Context? = null) {
         drawingStrokes: List<DrawingStroke> = emptyList()
     ): TeacherNote {
         val existing = getNote(classroomId, weekNumber, lessonIndex)
+        if (existing != null && existing.text == text &&
+            existing.noteType == type && (type == NoteType.TEXT || existing.drawingPoints == drawingStrokes)
+        ) return existing
         val note = (existing ?: TeacherNote(
             id = "note-" + java.util.UUID.randomUUID(),
             classroomId = classroomId,
