@@ -18,11 +18,12 @@ class P2NoteLifecycleTest {
         val marker = "Yaşam döngüsü kayıt testi"
         rule.onNodeWithTag("teacher-note-input").performTextInput(marker)
 
+        val appContext = rule.activity.applicationContext
         // Move to stopped before the 650ms idle writer is required to fire.
         // MainActivity.onPause/onStop must synchronously finish the atomic save.
         rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
 
-        val repository = TeacherRepository(rule.activity.applicationContext)
+        val repository = TeacherRepository(appContext)
         val keyClass = repository.activeClassroomId.value
         val keyWeek = repository.activeWeekNumber.value
         val saved = repository.getNote(keyClass, keyWeek, null)?.text.orEmpty()
