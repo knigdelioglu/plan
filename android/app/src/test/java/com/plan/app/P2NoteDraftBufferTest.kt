@@ -62,10 +62,9 @@ class P2NoteDraftBufferTest {
     @Test
     fun interruptedBatchRetriesOnlyUncommittedEntries() {
         val saved = mutableListOf<String>()
+        var failSecond = true
         val buffer = NoteDraftBuffer { _, text ->
-            if (text == "second" && saved.none { it == "second" }) {
-                throw java.io.IOException("temporary")
-            }
+            if (text == "second" && failSecond) throw java.io.IOException("temporary")
             saved += text
         }
         buffer.stage(NoteDraftKey("A", 1), "first")
@@ -75,6 +74,10 @@ class P2NoteDraftBufferTest {
         assertTrue(buffer.hasPending())
         // The failed entry remains; the successful first one is not repeated.
         assertEquals("second", buffer.currentText(NoteDraftKey("A", 2), "old"))
+        failSecond = false
+        assertEquals(1, buffer.flush())
+        assertEquals(listOf("first", "second"), saved)
+        assertFalse(buffer.hasPending())
     }
 
     @Test
