@@ -1,8 +1,13 @@
 package com.plan.app
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.test.assertExists
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
@@ -12,6 +17,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.input.key.Key
 import com.plan.app.core.design.theme.ArcTheme
@@ -53,18 +59,25 @@ class PlanSearchPanelTest {
         var selectedWeek = 0
         rule.setContent {
             ArcTheme(reducedMotionOverride = true) {
-                PlanSearchPanel(
-                    query = query,
-                    results = searchPlan(plan, query),
-                    onQueryChange = { query = it },
-                    onSelectWeek = { selectedWeek = it }
-                )
+                // The actual planner hosts search in a scrollable workspace; mirror
+                // that contract so the IME cannot make a valid result untappable.
+                Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                    PlanSearchPanel(
+                        query = query,
+                        results = searchPlan(plan, query),
+                        onQueryChange = { query = it },
+                        onSelectWeek = { selectedWeek = it }
+                    )
+                }
             }
         }
 
         rule.onNodeWithContentDescription("Ara").performClick()
         rule.onNode(hasSetTextAction()).performTextInput("TDE2.1")
-        rule.onNodeWithTag("plan-search-week-3").assertIsDisplayed()
+        val result = rule.onNodeWithTag("plan-search-week-3")
+        result.assertExists()
+        result.performScrollTo()
+        result.assertIsDisplayed()
         rule.onNodeWithText("3. Hafta · EKİM").assertIsDisplayed()
         rule.onNodeWithTag("plan-search-week-3").performClick()
         rule.runOnIdle { assertEquals(3, selectedWeek) }
