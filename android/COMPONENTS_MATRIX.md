@@ -2,6 +2,10 @@
 
 Bu belge, `arc-library` (Elia Kuratli, MIT Lisansı) kaynaklı 70 potansiyel bileşenin, 2 tasarım paketinin ve 9 bloğun **kaynak/envanter haritasıdır**. Bir satırın burada bulunması bileşenin Arc ile davranış eşdeğerliğini, uygulamada kullanıldığını veya cihazda test edildiğini kanıtlamaz.
 
+**Envanter tarihi: 11 Ekim 2026.** Referans [Arc Library GitHub ana dalındaki README](https://github.com/kuratlielia/arc-library#readme) 108 bileşen ve 22 blok bildiriyor. Bu yerel Compose uyarlama matrisi 70 bileşen ve 9 blok kapsıyor; sayım farkı 38 bileşen ve 13 bloktur. Bu yalnızca sayısal kapsam farkıdır, isim isim birebir eşleme veya davranış eşdeğerliği iddiası değildir. Arc upstream React 19/Motion web kodudur; buradaki Kotlin/Compose dosyalarının varlığı native davranışın eşdeğer olduğunu göstermez.
+
+`Uygulamadaki Kullanım Alanı` sütunu amaçlanan kullanım bağlamını anlatır; gerçekleşen kullanım, davranış uyumu ve test kanıtı için [P2_AUDIT.md](P2_AUDIT.md) içindeki tarihli durum tablosuna bakın.
+
 **Gerçek P2 kapsam ve durum belgesi:** [P2_AUDIT.md](P2_AUDIT.md). Kişisel öğretmen uygulaması yalnızca **Haftalık, Aylık, Temalar, İlerleme** sekmelerini kullanır. Gereksiz denetim, karşılaştırma, JSON içe aktarma, yardım ve imza ekranları ürünün parçası değildir. Kod karşılıkları ortak kütüphanede bulunabilir; üründe kullanılacakmış gibi yorumlanmamalıdır.
 
 ---

@@ -6,11 +6,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.junit4.StateRestorationTester
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTextInputSelection
+import androidx.compose.ui.text.TextRange
 import com.plan.app.core.design.components.core.ArcCalendar
 import com.plan.app.core.design.components.extended.ArcRichTextEditor
 import com.plan.app.core.design.theme.ArcTheme
@@ -31,6 +34,20 @@ class ArcNoteAndCalendarStateTest {
         rule.onNodeWithContentDescription("Kalın").performClick()
         rule.onNodeWithTag("teacher-note-input").assertTextEquals("Ders notu****")
         rule.onNodeWithText("0 karakter").assertDoesNotExist()
+    }
+
+    @Test fun formattingKeepsSelectionAndEditingReplacesOnlySelectedText() {
+        var note by mutableStateOf("Ders notu")
+        rule.setContent {
+            ArcTheme(reducedMotionOverride = true) {
+                ArcRichTextEditor(value = note, onValueChange = { note = it })
+            }
+        }
+        rule.onNodeWithTag("teacher-note-input").performTextInputSelection(TextRange(5, 9))
+        rule.onNodeWithContentDescription("Kalın").performClick()
+        rule.onNodeWithTag("teacher-note-input").assertTextEquals("Ders **notu**")
+        rule.onNodeWithTag("teacher-note-input").performTextInput("söz")
+        rule.onNodeWithTag("teacher-note-input").assertTextEquals("Ders **söz**")
     }
 
     @Test fun browsedMonthSurvivesSavedInstanceStateRestoration() {
