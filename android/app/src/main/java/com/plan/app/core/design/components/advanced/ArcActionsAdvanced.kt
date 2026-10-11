@@ -70,6 +70,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -362,7 +364,15 @@ fun ArcExpandingSearch(
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     val focusRequester = remember { FocusRequester() }
+    val focusManager = LocalFocusManager.current
+    val keyboardController = LocalSoftwareKeyboardController.current
     val reducedMotion = LocalReducedMotion.current
+    val closeSearch = {
+        keyboardController?.hide()
+        focusManager.clearFocus(force = true)
+        expanded = false
+        onQueryChange("")
+    }
 
     LaunchedEffect(expanded) {
         if (expanded) focusRequester.requestFocus()
@@ -375,8 +385,7 @@ fun ArcExpandingSearch(
             )
         ).onPreviewKeyEvent { event ->
             if (expanded && event.type == KeyEventType.KeyDown && event.key == Key.Escape) {
-                expanded = false
-                onQueryChange("")
+                closeSearch()
                 true
             } else false
         },
@@ -405,10 +414,7 @@ fun ArcExpandingSearch(
                     focusRequester = focusRequester
                 )
                 IconButton(
-                    onClick = {
-                        expanded = false
-                        onQueryChange("")
-                    },
+                    onClick = closeSearch,
                     modifier = Modifier.size(32.dp)
                 ) {
                     Icon(

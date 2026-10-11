@@ -118,4 +118,25 @@ class PlanSearchPanelTest {
         rule.onNodeWithContentDescription("Ara").assertIsDisplayed()
         rule.onNodeWithTag("plan-search-results").assertDoesNotExist()
     }
+
+    @Test fun closeButtonClosesSearchAndClearsTheQuery() {
+        var query by mutableStateOf("")
+        rule.setContent {
+            ArcTheme(reducedMotionOverride = true) {
+                PlanSearchPanel(
+                    query = query,
+                    results = searchPlan(plan, query),
+                    onQueryChange = { query = it },
+                    onSelectWeek = {}
+                )
+            }
+        }
+
+        rule.onNodeWithContentDescription("Ara").performClick()
+        rule.onNode(hasSetTextAction()).performTextInput("TDE2.1")
+        rule.onNodeWithContentDescription("Kapat").performClick()
+
+        rule.onNodeWithContentDescription("Ara").assertIsDisplayed()
+        rule.onNodeWithTag("plan-search-results").assertDoesNotExist()
+    }
 }

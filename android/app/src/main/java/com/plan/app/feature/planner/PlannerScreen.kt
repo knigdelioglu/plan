@@ -645,8 +645,13 @@ private fun WeeklyLessonPlanView(
                                         color = if (isCompleted) colors.textSecondary else colors.foreground
                                     )
                                     Text(
-                                        text = "${lesson.hours} Ders Saati" +
-                                            (lesson.hoursSourceStatus?.let { " ($it)" } ?: ""),
+                                        text = buildString {
+                                            append("${lesson.hours} Ders Saati")
+                                            localizedHoursSourceStatus(lesson.hoursSourceStatus)?.let {
+                                                append(" · ")
+                                                append(it)
+                                            }
+                                        },
                                         style = ArcTheme.typography.labelSmall,
                                         color = colors.textMuted
                                     )
@@ -971,6 +976,15 @@ private fun ThematicCurriculumView(currentPlan: com.plan.app.core.model.AnnualPl
         Text(text = "Tematik Öğretim Programı (4 Tema)", style = ArcTheme.typography.titleLarge, color = colors.foreground)
 
         themes.forEach { theme ->
+            var assessmentExpanded by rememberSaveable(theme.themeCode) { mutableStateOf(false) }
+            val assessmentText = theme.assessmentAndEvaluation?.text?.trim().orEmpty()
+            val assessmentPreview = assessmentText.take(200).let { excerpt ->
+                if (assessmentText.length > excerpt.length) {
+                    "${excerpt.substringBeforeLast(' ', excerpt).trimEnd()}…"
+                } else {
+                    assessmentText
+                }
+            }
             ArcCard(modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.padding(ArcSpacing.space5)) {
                     Row(
@@ -994,14 +1008,36 @@ private fun ThematicCurriculumView(currentPlan: com.plan.app.core.model.AnnualPl
                         fontWeight = FontWeight.Bold
                     )
                     Text(
-                        text = theme.assessmentAndEvaluation?.text?.take(200) + "...",
+                        text = when {
+                            assessmentText.isBlank() -> "Ölçme değerlendirme bilgisi kaynakta belirtilmemiştir."
+                            assessmentExpanded || assessmentText.length <= 200 -> assessmentText
+                            else -> assessmentPreview
+                        },
                         style = ArcTheme.typography.bodySmall,
                         color = colors.foreground
                     )
+                    if (assessmentText.length > 200) {
+                        ArcButton(
+                            onClick = { assessmentExpanded = !assessmentExpanded },
+                            variant = ArcButtonVariant.SUBTLE
+                        ) {
+                            Text(
+                                if (assessmentExpanded) "Daha az göster" else "Metnin tamamını gör",
+                                style = ArcTheme.typography.labelMedium
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+private fun localizedHoursSourceStatus(status: String?): String? = when (status) {
+    "verified_from_cell" -> "Kaynak hücresinden doğrulandı"
+    "verified_from_cell_distribution" -> "Kaynak hücre dağılımından doğrulandı"
+    "assumed_from_curriculum_standard" -> "Ders çizelgesi standardına göre varsayıldı"
+    else -> null
 }
 
 @Composable

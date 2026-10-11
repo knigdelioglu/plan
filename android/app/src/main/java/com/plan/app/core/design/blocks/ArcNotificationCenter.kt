@@ -1,7 +1,6 @@
 package com.plan.app.core.design.blocks
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -93,12 +92,12 @@ fun ArcNotificationCenter(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    Text(
-                        text = "Tümünü Temizle",
-                        style = ArcTheme.typography.labelSmall,
-                        color = colors.textSecondary,
-                        modifier = Modifier.clickable { onClearAll() }
-                    )
+                    ArcButton(
+                        onClick = onClearAll,
+                        variant = ArcButtonVariant.SUBTLE
+                    ) {
+                        Text("Tümünü Temizle", style = ArcTheme.typography.labelMedium)
+                    }
                 }
                 Spacer(modifier = Modifier.height(ArcSpacing.space2))
             }
@@ -124,13 +123,20 @@ fun ArcNotificationCenter(
                                         style = ArcTheme.typography.titleMedium,
                                         color = colors.foreground
                                     )
+                                    val typeLabel = when (item.type) {
+                                        NotificationType.INFO -> "Bilgi"
+                                        NotificationType.ACADEMIC_BREAK -> "Ara Tatil"
+                                        NotificationType.SPECIAL_DAY -> "Özel Gün"
+                                        NotificationType.VALIDATION_NOTICE -> "Doğrulama"
+                                        NotificationType.SYSTEM -> "Sistem"
+                                    }
                                     val variant = when (item.type) {
                                         NotificationType.ACADEMIC_BREAK -> ArcBadgeVariant.WARNING
                                         NotificationType.SPECIAL_DAY -> ArcBadgeVariant.SUCCESS
                                         NotificationType.VALIDATION_NOTICE -> ArcBadgeVariant.ACCENT
                                         else -> ArcBadgeVariant.NEUTRAL
                                     }
-                                    ArcBadge(text = item.type.name, variant = variant)
+                                    ArcBadge(text = typeLabel, variant = variant)
                                 }
                                 Spacer(modifier = Modifier.height(2.dp))
                                 Text(
