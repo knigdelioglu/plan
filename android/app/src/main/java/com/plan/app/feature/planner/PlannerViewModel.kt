@@ -16,6 +16,11 @@ import com.plan.app.core.model.PlanFilter
 import com.plan.app.core.model.PlanWeek
 import com.plan.app.core.model.PlannerViewMode
 import com.plan.app.core.model.TeacherNote
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -36,6 +41,62 @@ class PlannerViewModel @JvmOverloads constructor(
     val viewMode: StateFlow<PlannerViewMode> = teacherRepository.viewMode
     val progressList: StateFlow<List<LessonProgress>> = teacherRepository.progressList
     val notesList: StateFlow<List<TeacherNote>> = teacherRepository.notesList
+
+    private val noteDrafts = NoteDraftBuffer { key, text ->
+        teacherRepository.saveNote(key.classroomId, key.weekNumber, null, text, NoteType.TEXT)
+    }
+    private var pendingNoteJob: Job? = null
+    private val _noteSaveState = MutableStateFlow(NoteSaveState.SAVED)
+    val noteSaveState: StateFlow<NoteSaveState> = _noteSaveState.asStateFlow()
+
+    companion object {
+        private const val NOTE_IDLE_SAVE_MS = 650L
+    }
+
+    /**
+     * No disk operation during a keystroke. The draft is immediately available
+     * to the current screen and remains tied to its original classroom/week.
+     */
+    fun updateTeacherNoteDraft(classroomId: String, weekNumber: Int, text: String) {
+        require(weekNumber > 0)
+        if (!noteDrafts.stage(NoteDraftKey(classroomId, weekNumber), text)) return
+        _noteSaveState.value = NoteSaveState.PENDING
+        pendingNoteJob?.cancel()
+        pendingNoteJob = viewModelScope.launch {
+            delay(NOTE_IDLE_SAVE_MS)
+            withContext(NonCancellable + Dispatchers.IO) { persistPendingNotesSafely() }
+        }
+    }
+
+    fun noteTextFor(classroomId: String, weekNumber: Int, persistedText: String): String =
+        noteDrafts.currentText(NoteDraftKey(classroomId, weekNumber), persistedText)
+
+    private fun persistPendingNotesSafely(): Boolean {
+        return try {
+            noteDrafts.flush()
+            _noteSaveState.value =
+                if (noteDrafts.hasPending()) NoteSaveState.PENDING else NoteSaveState.SAVED
+            true
+        } catch (_: Exception) {
+            // Repository exposes the detailed storage error. Do not discard draft.
+            _noteSaveState.value = NoteSaveState.FAILED
+            false
+        }
+    }
+
+    /**
+     * A lifecycle/navigation boundary is deliberately synchronous: return only
+     * after AtomicFile has finished the write. A failed write retains the draft.
+     */
+    fun flushPendingTeacherNotes(): Boolean {
+        pendingNoteJob?.cancel()
+        return persistPendingNotesSafely()
+    }
+
+    override fun onCleared() {
+        flushPendingTeacherNotes()
+        super.onCleared()
+    }
 
     val isDarkMode: StateFlow<Boolean> = teacherRepository.darkMode
     val storageError: StateFlow<String?> = teacherRepository.storageError
@@ -92,16 +153,19 @@ class PlannerViewModel @JvmOverloads constructor(
     }
 
     fun selectClassroom(id: String) {
+        flushPendingTeacherNotes()
         teacherRepository.selectClassroom(id)
         loadActivePlan()
     }
 
     fun selectWeek(weekNumber: Int) {
+        flushPendingTeacherNotes()
         val maxWeek = _currentPlan.value?.weeks?.maxOfOrNull { it.weekNumber } ?: 1
         teacherRepository.selectWeek(weekNumber.coerceIn(1, maxWeek))
     }
 
     fun selectViewMode(mode: PlannerViewMode) {
+        if (mode != viewMode.value) flushPendingTeacherNotes()
         teacherRepository.selectViewMode(mode)
     }
 
@@ -189,3 +253,5 @@ class PlannerViewModel @JvmOverloads constructor(
         }.getOrNull()
     }
 }
+
+enum class NoteSaveState { SAVED, PENDING, FAILED }

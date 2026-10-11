@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -854,8 +855,11 @@ private fun TeacherNotesAndPedagogicalSection(
     }
     // Never reuse a note editor state between two classrooms at the same week.
     var noteText by remember(activeClassroomId, activeWeek.weekNumber) {
-        mutableStateOf(existingNote?.text ?: "")
+        mutableStateOf(viewModel.noteTextFor(
+            activeClassroomId, activeWeek.weekNumber, existingNote?.text ?: ""
+        ))
     }
+    val noteSaveState by viewModel.noteSaveState.collectAsState()
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space3)) {
         Text(
@@ -907,10 +911,27 @@ private fun TeacherNotesAndPedagogicalSection(
                 value = noteText,
                 onValueChange = {
                     noteText = it
-                    viewModel.saveTeacherNote(it, NoteType.TEXT)
+                    viewModel.updateTeacherNoteDraft(activeClassroomId, activeWeek.weekNumber, it)
                 }
             )
         }
+        Text(
+            text = when (noteSaveState) {
+                NoteSaveState.SAVED -> "Notlar kaydedildi"
+                NoteSaveState.PENDING -> "Notlar kaydediliyor…"
+                NoteSaveState.FAILED -> "Kayıt başarısız. Not taslağı korunuyor; tekrar denemek için dokunun."
+            },
+            modifier = Modifier
+                .then(if (noteSaveState == NoteSaveState.FAILED) {
+                    Modifier
+                        .heightIn(min = 48.dp)
+                        .clickable(onClickLabel = "Notları kaydetmeyi yeniden dene") {
+                            viewModel.flushPendingTeacherNotes()
+                        }
+                } else Modifier),
+            style = ArcTheme.typography.labelSmall,
+            color = if (noteSaveState == NoteSaveState.FAILED) colors.danger else colors.textSecondary
+        )
 
         // Signature UI intentionally removed for this personal weekly planner.
     }

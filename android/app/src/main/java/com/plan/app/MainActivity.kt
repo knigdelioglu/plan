@@ -13,6 +13,17 @@ import com.plan.app.feature.planner.PlannerViewModel
 class MainActivity : ComponentActivity() {
     private val viewModel: PlannerViewModel by viewModels()
 
+    // Flush while the Activity is still alive, before Android may reclaim it.
+    override fun onPause() {
+        viewModel.flushPendingTeacherNotes()
+        super.onPause()
+    }
+
+    override fun onStop() {
+        viewModel.flushPendingTeacherNotes()
+        super.onStop()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
