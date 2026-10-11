@@ -71,9 +71,13 @@ class PlannerViewModel @JvmOverloads constructor(
     fun noteTextFor(classroomId: String, weekNumber: Int, persistedText: String): String =
         noteDrafts.currentText(NoteDraftKey(classroomId, weekNumber), persistedText)
 
-    private fun persistPendingNotesSafely(): Boolean {
+    private fun persistPendingNotesSafely(drainAll: Boolean = false): Boolean {
         return try {
-            noteDrafts.flush()
+            // An edit may arrive while the previous version is being committed.
+            // A lifecycle/navigation flush must also write that newer revision.
+            do {
+                noteDrafts.flush()
+            } while (drainAll && noteDrafts.hasPending())
             _noteSaveState.value =
                 if (noteDrafts.hasPending()) NoteSaveState.PENDING else NoteSaveState.SAVED
             true
@@ -90,7 +94,7 @@ class PlannerViewModel @JvmOverloads constructor(
      */
     fun flushPendingTeacherNotes(): Boolean {
         pendingNoteJob?.cancel()
-        return persistPendingNotesSafely()
+        return persistPendingNotesSafely(drainAll = true)
     }
 
     override fun onCleared() {
@@ -153,19 +157,20 @@ class PlannerViewModel @JvmOverloads constructor(
     }
 
     fun selectClassroom(id: String) {
-        flushPendingTeacherNotes()
+        // Never abandon the editing context if the note cannot be persisted.
+        if (!flushPendingTeacherNotes()) return
         teacherRepository.selectClassroom(id)
         loadActivePlan()
     }
 
     fun selectWeek(weekNumber: Int) {
-        flushPendingTeacherNotes()
+        if (!flushPendingTeacherNotes()) return
         val maxWeek = _currentPlan.value?.weeks?.maxOfOrNull { it.weekNumber } ?: 1
         teacherRepository.selectWeek(weekNumber.coerceIn(1, maxWeek))
     }
 
     fun selectViewMode(mode: PlannerViewMode) {
-        if (mode != viewMode.value) flushPendingTeacherNotes()
+        if (mode != viewMode.value && !flushPendingTeacherNotes()) return
         teacherRepository.selectViewMode(mode)
     }
 

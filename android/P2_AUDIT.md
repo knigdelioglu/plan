@@ -57,3 +57,14 @@ Bu bileşenlerin bazıları hâlen yeniden kullanılabilir `core/design` kaynakl
 - [Android CI — başarılı](https://github.com/knigdelioglu/plan/actions/runs/38086715735) içinde birim testleri ve debug APK derlemesi çalıştırıldı.
 
 **Sınır:** Bu emülatör bir Samsung Galaxy tablet veya DeX oturumu değildir. DeX'in pencere davranışı, gerçek S-Pen, TalkBack ve performans testleri henüz tamamlanmış sayılmaz. Tüm 70 Arc bileşeninin davranış eşdeğerliği de bu testlerle kanıtlanmamıştır.
+
+## P2 altıncı aşama — eşzamanlı yazma ve not kurtarma
+
+- `NoteDraftBuffer` artık **iki kilit** kullanıyor: kısa süreli taslak kilidi ve ayrı yazıcı kilidi. AtomicFile yazması sürerken yazılan yeni harfler disk işleminin bitmesini beklemiyor.
+- Yazma sürerken aynı sınıf/haftaya gelen daha güncel sürüm eski kayıt tamamlandığında **tampondan silinmiyor**. Birbirine paralel flush işlemleri yazıcı kilidiyle doğru sırada ilerliyor.
+- Uygulama durdurulurken veya sınıf/hafta değiştirilirken devam eden sürümler tamamen diske geçirilene kadar flush yineleniyor; hata durumunda taslak elde tutuluyor ve ekran geçişi engelleniyor.
+- `P2NoteDraftConcurrencyTest` geciktirilmiş disk, eşzamanlı düzenleme/flush ve 100 KB üstü başarısız kaydın yeniden denenmesini test ediyor.
+- `P2NoteLifecycleTest`, Android Activity durmuşken yeni bir `TeacherRepository` açarak notun atomik kayıtta bulunduğunu denetliyor.
+- `PlanTeacherAtomicWrite` sistem izleme işareti (Android Studio Profiler / Perfetto) eklendi. Bu, gerçek cihazda dosyaya yazma süresini ölçmek için altyapıdır; **ölçülmüş bir performans sonucu değildir**.
+
+**Sınır:** Ani process kill/force-stop, 650 ms'lik bekleme sırasında Android'in lifecycle callback'lerini çalıştırmayabilir. Bu durumda henüz diske geçmemiş bir taslağın korunacağı iddia edilmiyor. Tam sıfır veri kaybı garantisi için duraklama tamponu yerine her düzenlemeyi kalıcı journal'a yazma gereklidir; bu da performans/güvenilirlik dengesini yeniden değerlendirmeyi gerektirir. Fiziksel Galaxy Tab A11+ üzerinde ölçüm yapılmadı.

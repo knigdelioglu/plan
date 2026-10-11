@@ -1,45 +1,45 @@
 package com.plan.app.feature.planner
 
 /**
- * One pending edit per classroom/week. Keeps the last draft in RAM until a
- * successful durable write. Never removes a draft when the writer throws.
+ * Latest pending teacher note per classroom/week.
  *
- * This is intentionally independent of Android, so loss/retry paths can be
- * verified deterministically by JVM unit tests.
+ * Staging must never wait for a slow AtomicFile disk write. A dedicated write
+ * lock serializes flushes while the small state lock protects only map access.
+ * New edits arriving during a write are retained and can be flushed again.
  */
 data class NoteDraftKey(val classroomId: String, val weekNumber: Int)
 
 class NoteDraftBuffer(private val persist: (NoteDraftKey, String) -> Unit) {
+    private val pendingLock = Any()
+    private val writeLock = Any()
     private val pending = LinkedHashMap<NoteDraftKey, String>()
 
-    @Synchronized
-    fun stage(key: NoteDraftKey, text: String): Boolean {
-        if (pending[key] == text) return false
+    fun stage(key: NoteDraftKey, text: String): Boolean = synchronized(pendingLock) {
+        if (pending[key] == text) return@synchronized false
         pending[key] = text
-        return true
+        true
     }
 
-    @Synchronized
     fun currentText(key: NoteDraftKey, persistedText: String): String =
-        pending[key] ?: persistedText
+        synchronized(pendingLock) { pending[key] ?: persistedText }
 
-    @Synchronized
-    fun hasPending(): Boolean = pending.isNotEmpty()
+    fun hasPending(): Boolean = synchronized(pendingLock) { pending.isNotEmpty() }
 
     /**
-     * The buffer lock serializes writers and new edits. If one write fails,
-     * that entry and all later entries remain pending for the next retry.
+     * A flush commits the entries that existed when it acquired the writer lock.
+     * It never removes an edit made while its older value was being written.
+     * The caller retries if hasPending() remains true.
      */
-    @Synchronized
-    fun flush(): Int {
+    fun flush(): Int = synchronized(writeLock) {
+        val batch = synchronized(pendingLock) { pending.toList() }
         var written = 0
-        val iterator = pending.entries.iterator()
-        while (iterator.hasNext()) {
-            val entry = iterator.next()
-            persist(entry.key, entry.value)
-            iterator.remove()
+        for ((key, value) in batch) {
+            persist(key, value) // May block on storage: NEVER hold pendingLock here.
+            synchronized(pendingLock) {
+                if (pending[key] == value) pending.remove(key)
+            }
             written++
         }
-        return written
+        written
     }
 }
