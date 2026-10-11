@@ -49,10 +49,15 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.isShiftPressed
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.stateDescription
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.ProgressBarRangeInfo
+import androidx.compose.ui.semantics.customActions
+import androidx.compose.ui.semantics.progressBarRangeInfo
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.unit.Dp
@@ -212,10 +217,12 @@ fun ArcResizablePanels(
     firstPanel: @Composable () -> Unit,
     secondPanel: @Composable () -> Unit
 ) {
+    val safeInitialRatio = initialSplitRatio.takeIf { it.isFinite() }?.coerceIn(0f, 1f) ?: 0.4f
     var internalSplitRatio by rememberSaveable {
-        mutableFloatStateOf(initialSplitRatio.coerceIn(0f, 1f))
+        mutableFloatStateOf(safeInitialRatio)
     }
-    val splitRatio = controlledSplitRatio ?: internalSplitRatio
+    val splitRatio = (controlledSplitRatio ?: internalSplitRatio)
+        .takeIf { it.isFinite() }?.coerceIn(0f, 1f) ?: safeInitialRatio
     fun updateSplitRatio(newRatio: Float) {
         internalSplitRatio = newRatio
         onSplitRatioChange?.invoke(newRatio)
@@ -249,18 +256,36 @@ fun ArcResizablePanels(
                     .semantics {
                         contentDescription = "Panel genişliğini değiştir"
                         stateDescription = "Sol panel ${firstPanelWidth.value.toInt()} dp"
+                        progressBarRangeInfo = ProgressBarRangeInfo(
+                            splitRatio.coerceIn(minimumRatio, maximumRatio),
+                            minimumRatio..maximumRatio,
+                            0
+                        )
+                        customActions = listOf(
+                            CustomAccessibilityAction("Sol paneli daralt") {
+                                updateSplitRatio((splitRatio - 20f / usableWidth.value).coerceIn(minimumRatio, maximumRatio))
+                                true
+                            },
+                            CustomAccessibilityAction("Sol paneli genişlet") {
+                                updateSplitRatio((splitRatio + 20f / usableWidth.value).coerceIn(minimumRatio, maximumRatio))
+                                true
+                            }
+                        )
                     }
                     .onKeyEvent { event ->
                         if (event.type != KeyEventType.KeyDown) return@onKeyEvent false
-                        val step = when (event.key) {
-                            Key.DirectionLeft -> -20f
-                            Key.DirectionRight -> 20f
+                        val step = if (event.isShiftPressed) 64f else 20f
+                        when (event.key) {
+                            Key.DirectionLeft -> updateSplitRatio(
+                                (splitRatio - step / usableWidth.value).coerceIn(minimumRatio, maximumRatio)
+                            )
+                            Key.DirectionRight -> updateSplitRatio(
+                                (splitRatio + step / usableWidth.value).coerceIn(minimumRatio, maximumRatio)
+                            )
+                            Key.MoveHome -> updateSplitRatio(minimumRatio)
+                            Key.MoveEnd -> updateSplitRatio(maximumRatio)
                             else -> return@onKeyEvent false
                         }
-                        updateSplitRatio(
-                            (splitRatio + step / usableWidth.value)
-                                .coerceIn(minimumRatio, maximumRatio)
-                        )
                         true
                     }
                     .focusable()

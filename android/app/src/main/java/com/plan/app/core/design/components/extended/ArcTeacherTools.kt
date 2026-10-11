@@ -41,9 +41,23 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.isCtrlPressed
+import androidx.compose.ui.input.key.isMetaPressed
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -270,7 +284,20 @@ fun ArcRichTextEditor(
                         },
                         modifier = Modifier.fillMaxWidth().heightIn(min = 132.dp)
                             .focusRequester(inputFocus)
+                            .onPreviewKeyEvent { event ->
+                                if (event.type != KeyEventType.KeyDown ||
+                                    !(event.isCtrlPressed || event.isMetaPressed)
+                                ) return@onPreviewKeyEvent false
+                                val format = when (event.key) {
+                                    Key.B -> NoteFormat.BOLD
+                                    Key.I -> NoteFormat.ITALIC
+                                    else -> return@onPreviewKeyEvent false
+                                }
+                                apply(format)
+                                true
+                            }
                             .testTag("teacher-note-input"),
+                        visualTransformation = teacherNoteVisualTransformation(colors.textSecondary),
                         textStyle = ArcTheme.typography.bodyMedium.copy(color = colors.foreground),
                         cursorBrush = SolidColor(colors.accent),
                         decorationBox = { inner ->
@@ -295,4 +322,31 @@ fun ArcRichTextEditor(
             }
         }
     }
+}
+
+/** Styles existing Markdown while keeping displayed offsets identical to stored note text. */
+private fun teacherNoteVisualTransformation(secondaryColor: Color) = VisualTransformation { value ->
+    val styled = AnnotatedString.Builder(value.text)
+    Regex("\\*\\*(.+?)\\*\\*").findAll(value.text).forEach { match ->
+        val start = match.range.first + 2
+        val end = match.range.last - 1
+        if (start < end) styled.addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, end)
+    }
+    Regex("(?<!\\*)\\*([^*\\n]+)\\*(?!\\*)").findAll(value.text).forEach { match ->
+        val start = match.range.first + 1
+        val end = match.range.last
+        if (start < end) styled.addStyle(SpanStyle(fontStyle = FontStyle.Italic), start, end)
+    }
+    var lineStart = 0
+    value.text.lineSequence().forEach { line ->
+        if (line.startsWith("> ") && line.length > 2) {
+            styled.addStyle(
+                SpanStyle(color = secondaryColor, fontStyle = FontStyle.Italic),
+                lineStart + 2,
+                lineStart + line.length
+            )
+        }
+        lineStart += line.length + 1
+    }
+    TransformedText(styled.toAnnotatedString(), OffsetMapping.Identity)
 }

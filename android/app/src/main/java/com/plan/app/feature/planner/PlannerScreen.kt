@@ -65,41 +65,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.plan.app.core.design.blocks.ArcChangelogFeed
 import com.plan.app.core.design.blocks.ArcCommandPalette
-import com.plan.app.core.design.blocks.ArcComparisonTable
 import com.plan.app.core.design.blocks.ArcEmptyStatesBlock
-import com.plan.app.core.design.blocks.ArcFaqSection
-import com.plan.app.core.design.blocks.ArcFileUpload
 import com.plan.app.core.design.blocks.ArcNotificationCenter
 import com.plan.app.core.design.blocks.ArcPageHeader
 import com.plan.app.core.design.blocks.ArcStatsBand
 import com.plan.app.core.design.blocks.CommandItem
 import com.plan.app.core.design.components.advanced.ArcActivityHeatmap
-import com.plan.app.core.design.components.advanced.ArcCarousel
-import com.plan.app.core.design.components.advanced.ArcConfirmMorph
-import com.plan.app.core.design.components.advanced.ArcCopyButton
-import com.plan.app.core.design.components.advanced.ArcDatePicker
-import com.plan.app.core.design.components.advanced.ArcExpandingSearch
-import com.plan.app.core.design.components.advanced.ArcFloatingButtonGroup
-import com.plan.app.core.design.components.advanced.ArcHoldToConfirm
-import com.plan.app.core.design.components.advanced.ArcInlineEdit
 import com.plan.app.core.design.components.advanced.ArcInput
-import com.plan.app.core.design.components.advanced.ArcMetricCard
-import com.plan.app.core.design.components.advanced.ArcMorphSelect
-import com.plan.app.core.design.components.advanced.ArcMultiSelect
-import com.plan.app.core.design.components.advanced.ArcRadioGroup
-import com.plan.app.core.design.components.advanced.ArcSplitButton
-import com.plan.app.core.design.components.advanced.ArcStepper
 import com.plan.app.core.design.components.advanced.ArcSwipeActions
-import com.plan.app.core.design.components.advanced.ArcSwitch
-import com.plan.app.core.design.components.advanced.ArcTextarea
 import com.plan.app.core.design.components.advanced.ArcThemeSwitch
-import com.plan.app.core.design.components.advanced.ArcTimeline
-import com.plan.app.core.design.components.advanced.ArcToastStack
 import com.plan.app.core.design.components.advanced.ArcTreeView
-import com.plan.app.core.design.components.advanced.QueuedToast
-import com.plan.app.core.design.components.advanced.TimelineMilestone
 import com.plan.app.core.design.components.advanced.TreeNode
 import com.plan.app.core.design.components.core.ArcActionButton
 import com.plan.app.core.design.components.core.ArcAlert
@@ -111,36 +87,20 @@ import com.plan.app.core.design.components.core.ArcButtonVariant
 import com.plan.app.core.design.components.core.ArcCalendar
 import com.plan.app.core.design.components.core.ArcCard
 import com.plan.app.core.design.components.core.ArcCheckbox
-import com.plan.app.core.design.components.core.ArcChipGroup
 import com.plan.app.core.design.components.core.ArcDialog
 import com.plan.app.core.design.components.core.ArcDrawer
 import com.plan.app.core.design.components.core.ArcExpandableCard
-import com.plan.app.core.design.components.core.ArcFilterToolbar
 import com.plan.app.core.design.components.core.ArcResizablePanels
-import com.plan.app.core.design.components.core.ArcScrollArea
 import com.plan.app.core.design.components.core.ArcSegmentedControl
 import com.plan.app.core.design.components.core.ArcSelect
-import com.plan.app.core.design.components.core.ArcTabs
-import com.plan.app.core.design.components.core.ArcTooltip
-import com.plan.app.core.design.components.core.RadioCardOption
-import com.plan.app.core.design.components.extended.ArcAnimatedCounter
 import com.plan.app.core.design.components.extended.ArcBarChart
-import com.plan.app.core.design.components.extended.ArcCardStack
 import com.plan.app.core.design.components.extended.ArcDonutChart
-import com.plan.app.core.design.components.extended.ArcExpandingButtonGroup
-import com.plan.app.core.design.components.extended.ArcJsonViewer
 import com.plan.app.core.design.components.extended.ArcLineChart
-import com.plan.app.core.design.components.extended.ArcPagination
 import com.plan.app.core.design.components.extended.ArcRichTextEditor
-import com.plan.app.core.design.components.extended.ArcSortableDataTable
-import com.plan.app.core.design.components.extended.ArcTextMorph
-import com.plan.app.core.design.components.extended.ArcTextReveal
 import com.plan.app.core.design.components.extended.ArcUsageMeter
 import com.plan.app.core.design.components.extended.ArcUserMenu
 import com.plan.app.core.design.components.extended.BarChartItem
 import com.plan.app.core.design.components.extended.DonutSlice
-import com.plan.app.core.design.components.extended.ExpandingAction
-import com.plan.app.core.design.components.extended.TableColumn
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
@@ -371,12 +331,6 @@ private fun LeftSidebar(
                 }
             }
 
-            // Quick Search
-            ArcExpandingSearch(
-                query = viewModel.filter.collectAsState().value.query,
-                onQueryChange = { viewModel.setFilterQuery(it) }
-            )
-
             // Mini Calendar
             ArcCalendar(
                 selectedWeek = activeWeekNumber,
@@ -473,6 +427,8 @@ private fun CenterWorkspace(
     val currentPlan by viewModel.currentPlan.collectAsState()
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
     val progress by viewModel.progressList.collectAsState()
+    val filter by viewModel.filter.collectAsState()
+    val searchResults = viewModel.searchResults()
     val completedHours = currentPlan?.weeks.orEmpty().sumOf { week ->
         week.lessons.filter { lesson ->
             progress.any {
@@ -490,6 +446,13 @@ private fun CenterWorkspace(
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)
     ) {
+        PlanSearchPanel(
+            query = filter.query,
+            results = searchResults,
+            onQueryChange = viewModel::setFilterQuery,
+            onSelectWeek = viewModel::openSearchResult
+        )
+
         // Top Page Header (Block 1)
         ArcPageHeader(
             title = currentClass?.name ?: "11. Sınıf TDE",
@@ -583,7 +546,10 @@ private fun WeeklyLessonPlanView(
     if (activeWeek == null) {
         val plan = viewModel.classrooms.collectAsState().value
             .firstOrNull { it.id == activeClassroomId }
-        ArcEmptyStatesBlock.PlanNotAvailable(plan?.gradeLevel ?: 11, plan?.courseName ?: "Türk Dili ve Edebiyatı", {})
+        ArcEmptyStatesBlock.PlanNotAvailable(
+            gradeLevel = plan?.gradeLevel ?: 11,
+            courseName = plan?.courseName ?: "Türk Dili ve Edebiyatı"
+        )
         return
     }
 

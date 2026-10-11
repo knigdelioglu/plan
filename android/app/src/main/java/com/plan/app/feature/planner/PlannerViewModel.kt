@@ -160,6 +160,7 @@ class PlannerViewModel @JvmOverloads constructor(
         // Never abandon the editing context if the note cannot be persisted.
         if (!flushPendingTeacherNotes()) return
         teacherRepository.selectClassroom(id)
+        resetFilter()
         loadActivePlan()
     }
 
@@ -176,6 +177,13 @@ class PlannerViewModel @JvmOverloads constructor(
 
     fun setFilterQuery(query: String) {
         _filter.value = _filter.value.copy(query = query)
+    }
+
+    fun searchResults(): List<PlanSearchResult> = searchPlan(_currentPlan.value, _filter.value.query)
+
+    fun openSearchResult(weekNumber: Int) {
+        selectWeek(weekNumber)
+        selectViewMode(PlannerViewMode.WEEK)
     }
 
     fun setFilterTheme(themeNumber: Int?) {

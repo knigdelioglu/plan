@@ -1,6 +1,6 @@
 # Android P2 — Bileşen ve ürün doğruluk denetimi
 
-> Kapsam: `feat/android-p2-tablet-a11y-simplification-20261010` (ilk P2 aşaması).
+> Kapsam: güncel `origin/main` tabanında 11 Ekim 2026 bağımsız kod doğrulaması; önceki aşama bulguları aşağıda tarihsel kayıt olarak korunur.
 > Kaynak veri: `plans/**` **değişmez**. Android uygulaması Kotlin + Jetpack Compose'tur.
 
 ## Ürün sınırları
@@ -9,7 +9,11 @@ Kişisel öğretmen uygulamasında yalnızca **Haftalık, Aylık, Temalar, İler
 
 ## Ölçüm metodolojisi
 
-`COMPONENTS_MATRIX.md` içindeki 70 Arc bileşeni ile `PlannerScreen.kt` içindeki doğrudan fonksiyon çağrılarını kıyasladık. Sonuç: **25/70** bileşen ana ekrandan doğrudan çağrılıyor; **45/70** doğrudan çağrılmıyor. Bu sayım bir bileşenin başka bir bileşen içinde dolaylı kullanılmadığını kanıtlamaz ve **Arc ile davranış eşdeğerliği testi değildir**. Kaynak dosyanın varlığı "uygulamada çalışıyor" anlamına gelmez.
+`COMPONENTS_MATRIX.md` tarihli envanterinde 70 bileşen ve 9 blok bulunur. Güncel Arc Library GitHub README'si 108 bileşen ve 22 blok bildirir; yerel envanter ile kaynak arasındaki sayısal fark 38 bileşen ve 13 bloktur. Adlandırma birebir olmadığı ve upstream kod React/web olduğu için bu fark bir eksik uygulama listesi veya parite kanıtı değildir.
+
+11 Ekim 2026 kod taramasında 70/70 bileşen ve 9/9 blok için Android kaynak karşılığı bulundu. Statik çağrı taraması `PlannerScreen` girişinden 24/70 bileşeni doğrudan, 28/70 bileşeni doğrudan veya erişilebilir Compose çağrıları üzerinden üründe erişilebilir buldu; geri kalanlar yalnızca ortak kaynakta bulunuyor. Tarama dinamik çağrıları kanıtlamaz. Önceki rapordaki 25/70 sayısı güncel değildir.
+
+Kaynakta bulunma, üründe erişilebilir olma, upstream ile davranış uyumu, otomatik test ve gerçek cihaz doğrulaması ayrı ölçümlerdir. Aşağıdaki özellik tablosu yalnızca bu istekte incelenen bileşenlerin kanıtını verir.
 
 P2 kriterleri her önemli bileşen için ayrı doğrulanacak: 1) kaynak davranış karşılaştırması, 2) ürün içinde gerçek kullanım, 3) erişilebilirlik/klavye/dokunma, 4) kompakt ve tablet pencere testi, 5) CI birim testleri, 6) cihaz/emülatör Compose UI testleri.
 
@@ -34,6 +38,24 @@ P2 kriterleri her önemli bileşen için ayrı doğrulanacak: 1) kaynak davranı
 - `Changelog Feed`
 - `Comparison Table`
 - `FAQ Section`
+
+## 11 Ekim 2026 — Arc entegrasyon bulguları
+
+| Native uyarlama | Kaynakta var | Üründe kullanım | Arc davranışına göre durum | Otomatik kanıt | Gerçek cihaz |
+|---|---|---|---|---|---|
+| `ArcExpandingSearch` / `PlanSearchPanel` | Evet | `PlannerScreen` çalışma alanında | Upstream'ın yerel sonuç listesi yaklaşımına uyarlandı: plan haftaları, tema/konu/metin/kazanım/kod araması, hafta seçimi, boş durum, Escape ve temizleme. Upstream gruplama/anahtar sözcük sıralaması ve ok tuşuyla sonuç seçimi yok. | JVM plan arama testleri + Compose sonuç/boş durum testi | Galaxy/DeX doğrulaması yok |
+| `PlanNotAvailable` | Evet | Haftalık görünümde | Gerçek eylem bulunmadığında eylem düğmesi gizleniyor; sahte plan üretimi veya sınıf değiştirme yok. | Compose boş durum testi | Galaxy/DeX doğrulaması yok |
+| `ArcRichTextEditor` | Evet | Haftalık öğretmen notu | Seçim biçimlendirmesi, imleç koruması, Markdown görüntü stili ve Ctrl/Cmd+B/I eklendi. Markdown metin saklama biçimi korunuyor. Upstream HTML çıktısı, slash menüsü ve undo/redo eklenmedi. | Compose metin seçimi/biçimlendirme testi; mevcut Activity durdurma ve yeni repository kayıt testi | S-Pen ve TalkBack cihaz testi yok |
+| `ArcResizablePanels` | Evet | Geniş tablet/DeX iki paneli | İki panel için dp sınırı, kaydedilen oran, dokunma/fare sürükleme, ok tuşları, Shift ile büyük adım, Home/End ve TalkBack ayarlama eylemleri var. Upstream'ın birden çok paneli, daraltma/geri yükleme, çift tık sıfırlama ve Escape ile sürükleme iptali yok. | Compose klavye/limit testi; önceki responsive pencere emülatör testi | Fiziksel tablet/DeX testi yok |
+| `ArcSwipeActions` | Evet | Haftalık ders bölümleri | Eşik artık kayıt yapmıyor, yön eylemini açıyor; kullanıcı düğmeye dokunarak uygular. Ekran okuyucu eylemleri ve ders checkbox'ı alternatif. Upstream menü/full-swipe yaklaşımı yok. | Compose açma-onay/idempotent davranış testi + repository idempotence unit testi | Dokunma, TalkBack ve DeX cihaz testi yok |
+
+### Test kapsamı ile ilgili sınırlar
+
+- Bu dalda `testDebugUnitTest` (35 test), `assembleDebug` ve `assembleDebugAndroidTest` başarılıdır.
+- `connectedDebugAndroidTest`, `SM-X230 - Android 16` cihazında 15/15 testi `No compose hierarchies found in the app` hatasıyla başarısız bitirdi; arama testlerini JUnit4 v2 ile tek başına çalıştırmak da aynı sonucu verdi. Test assertion'ları çalışmadığı için bu sonuç değişen etkileşimlerin başarısı veya başarısızlığı olarak yorumlanamaz. Cihaz loglarında uygulama çökmesi görülmedi; CI emülatör koşusu ayrıca gereklidir.
+- Eski PR'larda geçen Actions bağlantıları bu dala ait test sonucu sayılmaz. PR Actions çalışmaları aşağıda eklenecektir.
+- Responsive UI suite kompakt, portre ve yatay emülatör pencerelerinde çalışabilir; bu gerçek ekran döndürmenin, Samsung DeX'in, TalkBack'in veya S-Pen'in fiziksel cihazda doğrulandığını göstermez.
+- 70 bileşenin tamamının upstream davranış paritesi test edilmemiştir. Güncel uygulama kapsamı 28/70 erişilebilir bileşendir; diğer bileşenler kullanım oranı için eklenmemiştir.
 
 Bu bileşenlerin bazıları hâlen yeniden kullanılabilir `core/design` kaynakları olarak bulunabilir. Uygulamada varmış gibi belgelemek doğru değildir.
 

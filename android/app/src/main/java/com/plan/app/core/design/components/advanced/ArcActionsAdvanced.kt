@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -48,19 +49,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.semantics.CustomAccessibilityAction
 import androidx.compose.ui.semantics.customActions
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -231,9 +241,11 @@ fun ArcSwipeActions(
     content: @Composable () -> Unit
 ) {
     var offsetX by remember { mutableFloatStateOf(0f) }
+    var revealedDirection by remember { mutableIntStateOf(0) }
     val density = LocalDensity.current
     val triggerPx = with(density) { 72.dp.toPx() }
-    val maxOffset = triggerPx * 1.5f
+    val revealWidth = 132.dp
+    val revealPx = with(density) { revealWidth.toPx() }
     val reducedMotion = LocalReducedMotion.current
     val animatedOffset by animateFloatAsState(
         targetValue = offsetX,
@@ -260,23 +272,80 @@ fun ArcSwipeActions(
             }
             .pointerInput(onSwipeLeft, onSwipeRight, triggerPx) {
                 detectHorizontalDragGestures(
-                    onDragStart = { offsetX = 0f },
+                    onDragStart = { offsetX = revealedDirection * revealPx },
                     onHorizontalDrag = { change, amount ->
                         change.consume()
-                        offsetX = (offsetX + amount).coerceIn(-maxOffset, maxOffset)
+                        offsetX = (offsetX + amount).coerceIn(-revealPx, revealPx)
                     },
                     onDragEnd = {
-                        val result = offsetX
-                        offsetX = 0f
-                        if (result <= -triggerPx) onSwipeLeft()
-                        else if (result >= triggerPx) onSwipeRight()
+                        revealedDirection = when {
+                            offsetX <= -triggerPx -> -1
+                            offsetX >= triggerPx -> 1
+                            else -> 0
+                        }
+                        offsetX = revealedDirection * revealPx
                     },
-                    onDragCancel = { offsetX = 0f }
+                    onDragCancel = {
+                        offsetX = revealedDirection * revealPx
+                    }
                 )
             }
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = revealWidth),
+            horizontalArrangement = if (revealedDirection < 0) Arrangement.End else Arrangement.Start,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (revealedDirection > 0) {
+                SwipeActionButton(
+                    label = onSwipeRightLabel,
+                    testTag = "arc-swipe-action-right",
+                    background = ArcTheme.colors.dangerSubtle,
+                    foreground = ArcTheme.colors.danger,
+                    onClick = {
+                        onSwipeRight()
+                        revealedDirection = 0
+                        offsetX = 0f
+                    }
+                )
+            }
+            if (revealedDirection < 0) {
+                SwipeActionButton(
+                    label = onSwipeLeftLabel,
+                    testTag = "arc-swipe-action-left",
+                    background = ArcTheme.colors.successSubtle,
+                    foreground = ArcTheme.colors.success,
+                    onClick = {
+                        onSwipeLeft()
+                        revealedDirection = 0
+                        offsetX = 0f
+                    }
+                )
+            }
+        }
         Box(modifier = Modifier.offset { IntOffset(animatedOffset.roundToInt(), 0) }) {
             content()
+        }
+    }
+}
+
+@Composable
+private fun SwipeActionButton(
+    label: String,
+    testTag: String,
+    background: Color,
+    foreground: Color,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier.width(132.dp).heightIn(min = 72.dp)
+            .testTag(testTag)
+            .clickable(onClickLabel = label, onClick = onClick),
+        color = background,
+        shape = ArcRadius.md
+    ) {
+        Box(contentAlignment = Alignment.Center, modifier = Modifier.padding(8.dp)) {
+            Text(label, color = foreground, fontSize = 12.sp, fontWeight = FontWeight.Medium)
         }
     }
 }
@@ -291,15 +360,26 @@ fun ArcExpandingSearch(
     onQueryChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val focusRequester = remember { FocusRequester() }
     val reducedMotion = LocalReducedMotion.current
+
+    LaunchedEffect(expanded) {
+        if (expanded) focusRequester.requestFocus()
+    }
 
     Row(
         modifier = modifier.animateContentSize(
             animationSpec = ArcMotionTokens.respectFiniteMotionPreference(
                 reducedMotion, ArcMotionTokens.Springs.morph<IntSize>()
             )
-        ),
+        ).onPreviewKeyEvent { event ->
+            if (expanded && event.type == KeyEventType.KeyDown && event.key == Key.Escape) {
+                expanded = false
+                onQueryChange("")
+                true
+            } else false
+        },
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (!expanded) {
@@ -321,7 +401,8 @@ fun ArcExpandingSearch(
                 ArcSearchField(
                     query = query,
                     onQueryChange = onQueryChange,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(1f),
+                    focusRequester = focusRequester
                 )
                 IconButton(
                     onClick = {

@@ -11,18 +11,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
-import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.junit4.v2.createComposeRule
+import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
+import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.test.swipeLeft
 import androidx.compose.ui.test.swipeRight
+import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.platform.testTag
 import com.plan.app.core.design.components.core.ArcCheckbox
 import com.plan.app.core.design.components.core.ArcExpandableCard
@@ -30,10 +37,13 @@ import com.plan.app.core.design.components.core.ArcSegmentedControl
 import com.plan.app.core.design.components.advanced.ArcActivityHeatmap
 import com.plan.app.core.design.components.advanced.ArcSwipeActions
 import com.plan.app.core.design.components.core.ArcCalendar
+import com.plan.app.core.design.blocks.ArcEmptyStatesBlock
+import com.plan.app.core.design.components.core.ArcResizablePanels
 import com.plan.app.core.model.PlanWeek
 import com.plan.app.core.model.AcademicCalendarBreak
 import com.plan.app.core.design.theme.ArcTheme
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
@@ -156,11 +166,91 @@ class ArcInteractionTest {
             .fetchSemanticsNode().config[SemanticsActions.CustomActions]
         assertEquals(listOf("İşlendi", "İşaretini kaldır"), actions.map { it.label })
         rule.onNodeWithTag("swipe-progress").performTouchInput { swipeLeft() }
+        rule.onNodeWithText("Tamamlanmadı").assertExists()
+        rule.onNodeWithTag("arc-swipe-action-left").assertIsDisplayed()
+        rule.onNodeWithTag("arc-swipe-action-left").performClick()
         rule.onNodeWithText("Tamamlandı").assertExists()
         rule.onNodeWithTag("swipe-progress").performTouchInput { swipeLeft() }
         rule.onNodeWithText("Tamamlandı").assertExists()
+        rule.onNodeWithTag("arc-swipe-action-left").performClick()
+        rule.onNodeWithText("Tamamlandı").assertExists()
         rule.onNodeWithTag("swipe-progress").performTouchInput { swipeRight() }
+        rule.onNodeWithText("Tamamlandı").assertExists()
+        rule.onNodeWithTag("arc-swipe-action-right").performClick()
         rule.onNodeWithText("Tamamlanmadı").assertExists()
+    }
+
+    @Test
+    fun unavailablePlanDoesNotShowAnActionThatCannotBeCompleted() {
+        rule.setContent {
+            ArcTheme(reducedMotionOverride = true) {
+                ArcEmptyStatesBlock.PlanNotAvailable(10, "Türk Dili ve Edebiyatı")
+            }
+        }
+        rule.onNodeWithText("10. Sınıf Planı Arşivde Bulunmuyor").assertIsDisplayed()
+        rule.onNodeWithText("11. Sınıf Planına Geç").assertDoesNotExist()
+    }
+
+    @Test
+    fun resizablePanelsRespondToKeyboardAndStayWithinAvailableWidth() {
+        var ratio by mutableStateOf(0.5f)
+        rule.setContent {
+            ArcTheme(reducedMotionOverride = true) {
+                ArcResizablePanels(
+                    modifier = Modifier.width(360.dp).height(200.dp),
+                    initialSplitRatio = ratio,
+                    controlledSplitRatio = ratio,
+                    onSplitRatioChange = { ratio = it },
+                    minFirstPanelWidth = 100.dp,
+                    minSecondPanelWidth = 120.dp,
+                    firstPanel = { Text("Sınıflar") },
+                    secondPanel = { Text("Plan") }
+                )
+            }
+        }
+        rule.onNodeWithText("Sınıflar").assertIsDisplayed()
+        rule.onNodeWithText("Plan").assertIsDisplayed()
+        val divider = rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+        // Key events target the focused Compose node, not merely the queried semantics node.
+        divider.performSemanticsAction(SemanticsActions.RequestFocus)
+        divider.assertIsFocused()
+        divider.performKeyInput { pressKey(Key.DirectionRight) }
+        rule.runOnIdle { assertTrue("Right arrow must expand the focused panel", ratio > 0.5f) }
+        rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+            .performKeyInput { pressKey(Key.MoveHome) }
+        rule.runOnIdle { assertTrue(ratio < 0.32f) }
+        rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+            .performKeyInput { pressKey(Key.MoveEnd) }
+        rule.runOnIdle { assertTrue(ratio > 0.64f) }
+    }
+
+
+    @Test
+    fun resizablePanelRatioSurvivesSavedStateRestoration() {
+        val restoration = StateRestorationTester(rule)
+        restoration.setContent {
+            ArcTheme(reducedMotionOverride = true) {
+                ArcResizablePanels(
+                    modifier = Modifier.width(360.dp).height(200.dp),
+                    initialSplitRatio = 0.5f,
+                    minFirstPanelWidth = 100.dp,
+                    minSecondPanelWidth = 120.dp,
+                    firstPanel = { Text("Sınıflar") },
+                    secondPanel = { Text("Plan") }
+                )
+            }
+        }
+        val divider = rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+        val initialDescription = divider.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+        divider.performSemanticsAction(SemanticsActions.RequestFocus)
+        divider.assertIsFocused()
+        divider.performKeyInput { pressKey(Key.DirectionRight) }
+        val beforeRestore = divider.fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+        assertTrue("Key action should resize before restoration is tested", beforeRestore != initialDescription)
+        restoration.emulateSavedInstanceStateRestore()
+        val afterRestore = rule.onNodeWithContentDescription("Panel genişliğini değiştir")
+            .fetchSemanticsNode().config[SemanticsProperties.StateDescription]
+        assertEquals(beforeRestore, afterRestore)
     }
 
 }

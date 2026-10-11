@@ -28,7 +28,7 @@ object ArcEmptyStatesBlock {
     fun PlanNotAvailable(
         gradeLevel: Int,
         courseName: String,
-        onSelectAvailablePlan: () -> Unit,
+        onSelectAvailablePlan: (() -> Unit)? = null,
         modifier: Modifier = Modifier
     ) {
         ArcCard(modifier = modifier.fillMaxWidth()) {
@@ -42,9 +42,11 @@ object ArcEmptyStatesBlock {
                         tint = ArcTheme.colors.textSecondary
                     )
                 },
-                action = {
-                    ArcButton(onClick = onSelectAvailablePlan) {
-                        Text("11. Sınıf Planına Geç")
+                action = onSelectAvailablePlan?.let { onSelect ->
+                    {
+                        ArcButton(onClick = onSelect) {
+                            Text("11. Sınıf Planına Geç")
+                        }
                     }
                 }
             )
