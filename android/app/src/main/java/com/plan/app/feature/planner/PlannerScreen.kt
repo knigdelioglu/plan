@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -922,7 +923,11 @@ private fun TeacherNotesAndPedagogicalSection(
             },
             modifier = Modifier
                 .then(if (noteSaveState == NoteSaveState.FAILED) {
-                    Modifier.clickable { viewModel.flushPendingTeacherNotes() }
+                    Modifier
+                        .heightIn(min = 48.dp)
+                        .clickable(onClickLabel = "Notları kaydetmeyi yeniden dene") {
+                            viewModel.flushPendingTeacherNotes()
+                        }
                 } else Modifier),
             style = ArcTheme.typography.labelSmall,
             color = if (noteSaveState == NoteSaveState.FAILED) colors.danger else colors.textSecondary
