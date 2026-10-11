@@ -6,6 +6,8 @@ import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.knigdelioglu.arc.compose.foundation.ArcAccent
+import com.knigdelioglu.arc.compose.foundation.ArcTheme as DesignSystemTheme
 import com.plan.app.core.design.theme.ArcTheme
 import com.plan.app.feature.planner.PlannerScreen
 import com.plan.app.feature.planner.PlannerViewModel
@@ -28,8 +30,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val isDark by viewModel.isDarkMode.collectAsState()
-            ArcTheme(darkTheme = isDark) {
-                PlannerScreen(viewModel = viewModel)
+            DesignSystemTheme(darkTheme = isDark, accent = ArcAccent.Neutral) {
+                ArcTheme(darkTheme = isDark) {
+                    PlannerScreen(viewModel = viewModel)
+                }
             }
         }
     }

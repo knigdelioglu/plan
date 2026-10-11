@@ -24,6 +24,8 @@ import com.plan.app.core.design.components.extended.ArcAnimatedCounter
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.knigdelioglu.arc.compose.datavis.ArcStatItem
+import com.knigdelioglu.arc.compose.datavis.ArcStatsBand as DesignSystemStatsBand
 
 /**
  * Arc Block 8 / 9: Stats Band
@@ -40,76 +42,25 @@ fun ArcStatsBand(
     currentWeekNumber: Int = 1,
     modifier: Modifier = Modifier
 ) {
-    val colors = ArcTheme.colors
     val progressPercent = if (annualHours > 0) ((completedHours.toFloat() / annualHours) * 100).toInt() else 0
-
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = ArcRadius.panel,
-        color = colors.surface,
-        border = BorderStroke(1.dp, colors.borderSubtle)
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = ArcSpacing.space6, vertical = ArcSpacing.space4)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Stat 1: Hafta
-            Column {
-                Text(text = "Aktif Hafta", style = ArcTheme.typography.labelSmall, color = colors.textMuted)
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    ArcAnimatedCounter(targetValue = currentWeekNumber, style = ArcTheme.typography.titleLarge)
-                    Text(text = "/ $totalWeeks", style = ArcTheme.typography.bodySmall, color = colors.textSecondary)
-                }
-            }
-
-            Box(modifier = Modifier.width(1.dp).height(32.dp))
-
-            // Stat 2: Ders Bölümü
-            Column {
-                Text(text = "Ders Bölümleri", style = ArcTheme.typography.labelSmall, color = colors.textMuted)
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(text = "$totalLessons", style = ArcTheme.typography.titleLarge, fontWeight = FontWeight.Bold, color = colors.foreground)
-                    Text(text = "bölüm (3+2)", style = ArcTheme.typography.bodySmall, color = colors.textSecondary)
-                }
-            }
-
-            Box(modifier = Modifier.width(1.dp).height(32.dp))
-
-            // Stat 3: Saat Muhasebesi
-            Column {
-                Text(text = "Yıllık Ders Saati", style = ArcTheme.typography.labelSmall, color = colors.textMuted)
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        text = if (verifiedHours != null && assumedHours != null) "$verifiedHours + $assumedHours" else annualHours.toString(),
-                        style = ArcTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.foreground
-                    )
-                    ArcBadge(
-                        text = if (verifiedHours != null) "$verifiedHours doğrulanmış" else "Kaynak toplam",
-                        variant = if (verifiedHours != null) ArcBadgeVariant.SUCCESS else ArcBadgeVariant.NEUTRAL
-                    )
-                }
-            }
-
-            Box(modifier = Modifier.width(1.dp).height(32.dp))
-
-            // Stat 4: Tamamlanma
-            Column {
-                Text(text = "Sınıf İlerlemesi", style = ArcTheme.typography.labelSmall, color = colors.textMuted)
-                Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    ArcAnimatedCounter(
-                        targetValue = progressPercent,
-                        style = ArcTheme.typography.titleLarge,
-                        color = colors.accent,
-                        suffix = "%"
-                    )
-                    Text(text = "($completedHours sa)", style = ArcTheme.typography.bodySmall, color = colors.textSecondary)
-                }
-            }
-        }
+    val hoursValue = if (verifiedHours != null && assumedHours != null) {
+        "$verifiedHours + $assumedHours"
+    } else {
+        annualHours.toString()
     }
+    val hoursDetail = when {
+        verifiedHours != null && assumedHours != null -> "$verifiedHours doğrulanmış · $assumedHours varsayımsal"
+        verifiedHours != null -> "$verifiedHours doğrulanmış"
+        else -> "Kaynak toplamı"
+    }
+
+    DesignSystemStatsBand(
+        stats = listOf(
+            ArcStatItem("Aktif Hafta", "$currentWeekNumber / $totalWeeks"),
+            ArcStatItem("Ders Bölümleri", totalLessons.toString(), "bölüm (3+2)"),
+            ArcStatItem("Yıllık Ders Saati", hoursValue, hoursDetail),
+            ArcStatItem("Sınıf İlerlemesi", "$progressPercent%", "$completedHours sa tamamlandı")
+        ),
+        modifier = modifier
+    )
 }

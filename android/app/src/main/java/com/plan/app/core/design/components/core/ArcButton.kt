@@ -38,6 +38,10 @@ import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.knigdelioglu.arc.compose.controls.ArcActionButton as DesignSystemActionButton
+import com.knigdelioglu.arc.compose.controls.ArcButton as DesignSystemButton
+import com.knigdelioglu.arc.compose.controls.ArcButtonSize as DesignSystemButtonSize
+import com.knigdelioglu.arc.compose.controls.ArcButtonVariant as DesignSystemButtonVariant
 
 enum class ArcButtonVariant {
     PRIMARY,
@@ -69,78 +73,18 @@ fun ArcButton(
     trailingIcon: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    val colors = ArcTheme.colors
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val reducedMotion = LocalReducedMotion.current
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) 0.97f else 1.0f,
-        animationSpec = ArcMotionTokens.respectMotionPreference(
-            reducedMotion, ArcMotionTokens.Springs.Snappy
-        ),
-        label = "button_scale"
-    )
-
-    val (bgColor, contentColor, borderStroke) = when (variant) {
-        ArcButtonVariant.PRIMARY -> Triple(
-            if (enabled) colors.accent else colors.surfaceMuted,
-            if (enabled) colors.accentForeground else colors.textMuted,
-            null
-        )
-        ArcButtonVariant.SECONDARY -> Triple(
-            if (enabled) colors.surfaceMuted else colors.surfaceMuted.copy(alpha = 0.5f),
-            if (enabled) colors.foreground else colors.textMuted,
-            BorderStroke(1.dp, colors.border)
-        )
-        ArcButtonVariant.SUBTLE -> Triple(
-            if (enabled) Color.Transparent else Color.Transparent,
-            if (enabled) colors.foreground else colors.textMuted,
-            null
-        )
-        ArcButtonVariant.OUTLINE -> Triple(
-            Color.Transparent,
-            if (enabled) colors.foreground else colors.textMuted,
-            BorderStroke(1.dp, if (enabled) colors.borderStrong else colors.border)
-        )
-        ArcButtonVariant.DANGER -> Triple(
-            if (enabled) colors.danger else colors.surfaceMuted,
-            if (enabled) Color.White else colors.textMuted,
-            null
-        )
-    }
-
-    Surface(
+    DesignSystemButton(
         onClick = onClick,
-        enabled = enabled && !loading,
-        modifier = modifier
-            .scale(scale)
-            .height(size.height),
+        modifier = modifier.height(size.height),
+        variant = variant.toDesignSystemVariant(),
+        size = size.toDesignSystemSize(),
+        enabled = enabled,
+        loading = loading,
+        leadingIcon = leadingIcon,
+        trailingIcon = trailingIcon,
         shape = shape,
-        color = bgColor,
-        contentColor = contentColor,
-        border = borderStroke,
-        interactionSource = interactionSource
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = size.horizontalPadding),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally)
-        ) {
-            if (loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    color = contentColor,
-                    strokeWidth = 2.dp
-                )
-            } else {
-                leadingIcon?.invoke()
-                CompositionLocalProvider(LocalContentColor provides contentColor) {
-                    content()
-                }
-                trailingIcon?.invoke()
-            }
-        }
-    }
+        content = content
+    )
 }
 
 /**
@@ -156,42 +100,29 @@ fun ArcActionButton(
     variant: ArcButtonVariant = ArcButtonVariant.SECONDARY,
     content: @Composable () -> Unit
 ) {
-    val colors = ArcTheme.colors
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    val reducedMotion = LocalReducedMotion.current
-    val scale by animateFloatAsState(
-        targetValue = if (isPressed && enabled) 0.94f else 1.0f,
-        animationSpec = ArcMotionTokens.respectMotionPreference(
-            reducedMotion, ArcMotionTokens.Springs.Snappy
-        ),
-        label = "action_button_scale"
-    )
-
-    val (bgColor, contentColor, borderStroke) = when (variant) {
-        ArcButtonVariant.PRIMARY -> Triple(colors.accent, colors.accentForeground, null)
-        ArcButtonVariant.SECONDARY -> Triple(colors.surfaceMuted, colors.foreground, BorderStroke(1.dp, colors.border))
-        ArcButtonVariant.SUBTLE -> Triple(Color.Transparent, colors.foreground, null)
-        ArcButtonVariant.OUTLINE -> Triple(Color.Transparent, colors.foreground, BorderStroke(1.dp, colors.border))
-        ArcButtonVariant.DANGER -> Triple(colors.dangerSubtle, colors.danger, null)
-    }
-
-    Surface(
+    DesignSystemActionButton(
         onClick = onClick,
+        modifier = modifier.size(size),
+        variant = variant.toDesignSystemVariant(),
+        size = DesignSystemButtonSize.Md,
         enabled = enabled,
-        modifier = modifier
-            .scale(scale)
-            .size(size),
         shape = shape,
-        color = bgColor,
-        contentColor = contentColor,
-        border = borderStroke,
-        interactionSource = interactionSource
-    ) {
-        Box(contentAlignment = Alignment.Center) {
-            content()
-        }
-    }
+        content = content
+    )
+}
+
+private fun ArcButtonVariant.toDesignSystemVariant(): DesignSystemButtonVariant = when (this) {
+    ArcButtonVariant.PRIMARY -> DesignSystemButtonVariant.Primary
+    ArcButtonVariant.SECONDARY -> DesignSystemButtonVariant.Secondary
+    ArcButtonVariant.SUBTLE -> DesignSystemButtonVariant.Ghost
+    ArcButtonVariant.OUTLINE -> DesignSystemButtonVariant.Outline
+    ArcButtonVariant.DANGER -> DesignSystemButtonVariant.Danger
+}
+
+private fun ArcButtonSize.toDesignSystemSize(): DesignSystemButtonSize = when (this) {
+    ArcButtonSize.SM -> DesignSystemButtonSize.Sm
+    ArcButtonSize.MD -> DesignSystemButtonSize.Md
+    ArcButtonSize.LG -> DesignSystemButtonSize.Lg
 }
 
 /**

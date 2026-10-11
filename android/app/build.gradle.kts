@@ -6,6 +6,15 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+val composeDesignSystemSources = providers.gradleProperty("composeDesignSystemSources")
+    .orElse("../../compose-design-system/design-system/src/main/java")
+    .get()
+val composeDesignSystemSourceDir = rootProject.file(composeDesignSystemSources)
+check(composeDesignSystemSourceDir.isDirectory) {
+    "Compose design system sources not found at ${composeDesignSystemSourceDir.absolutePath}. " +
+        "Set -PcomposeDesignSystemSources to the library's design-system/src/main/java directory."
+}
+
 android {
     namespace = "com.plan.app"
     compileSdk = 36
@@ -32,6 +41,7 @@ android {
     sourceSets {
         getByName("main") {
             assets.directories.add("../../plans")
+            kotlin.directories.add(composeDesignSystemSourceDir.absolutePath)
         }
     }
 
@@ -59,6 +69,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.10.0")
 
     implementation("androidx.compose.foundation:foundation")
+    implementation("androidx.compose.animation:animation")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.compose.ui:ui")

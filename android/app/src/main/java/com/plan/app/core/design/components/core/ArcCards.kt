@@ -50,6 +50,7 @@ import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.knigdelioglu.arc.compose.display.ArcCard as DesignSystemCard
 
 /**
  * Arc Card Component (4 / 70)
@@ -65,14 +66,16 @@ fun ArcCard(
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    Surface(
-        modifier = modifier,
+    val cardModifier = if (onClick == null) modifier else modifier.clickable(
+        role = Role.Button,
+        onClick = onClick
+    )
+    DesignSystemCard(
+        modifier = cardModifier,
         shape = shape,
         color = backgroundColor,
-        border = BorderStroke(borderWidth, borderColor),
-        shadowElevation = elevation,
-        onClick = onClick ?: {},
-        enabled = onClick != null
+        border = if (borderWidth > 0.dp) BorderStroke(borderWidth, borderColor) else null,
+        shadowElevation = elevation
     ) {
         content()
     }

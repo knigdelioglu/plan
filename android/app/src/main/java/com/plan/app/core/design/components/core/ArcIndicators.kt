@@ -46,6 +46,8 @@ import androidx.compose.ui.window.Popup
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.knigdelioglu.arc.compose.display.ArcBadge as DesignSystemBadge
+import com.knigdelioglu.arc.compose.display.ArcBadgeVariant as DesignSystemBadgeVariant
 
 enum class ArcBadgeVariant {
     NEUTRAL,
@@ -66,6 +68,22 @@ fun ArcBadge(
     variant: ArcBadgeVariant = ArcBadgeVariant.NEUTRAL,
     leadingDot: Boolean = false
 ) {
+    if (!leadingDot && variant != ArcBadgeVariant.OUTLINE) {
+        DesignSystemBadge(
+            text = text,
+            modifier = modifier,
+            variant = when (variant) {
+                ArcBadgeVariant.NEUTRAL -> DesignSystemBadgeVariant.Default
+                ArcBadgeVariant.ACCENT -> DesignSystemBadgeVariant.Accent
+                ArcBadgeVariant.SUCCESS -> DesignSystemBadgeVariant.Success
+                ArcBadgeVariant.WARNING -> DesignSystemBadgeVariant.Warning
+                ArcBadgeVariant.DANGER -> DesignSystemBadgeVariant.Danger
+                ArcBadgeVariant.OUTLINE -> DesignSystemBadgeVariant.Default
+            }
+        )
+        return
+    }
+
     val colors = ArcTheme.colors
     val (bgColor, textColor, borderColor) = when (variant) {
         ArcBadgeVariant.NEUTRAL -> Triple(colors.surfaceMuted, colors.textSecondary, colors.border)

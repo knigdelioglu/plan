@@ -72,6 +72,13 @@ import com.plan.app.core.design.motion.LocalReducedMotion
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.knigdelioglu.arc.compose.controls.ArcCheckbox as DesignSystemCheckbox
+import com.knigdelioglu.arc.compose.controls.ArcInput as DesignSystemInput
+import com.knigdelioglu.arc.compose.controls.ArcSelect as DesignSystemSelect
+import com.knigdelioglu.arc.compose.controls.ArcSegmentedControl as DesignSystemSegmentedControl
+import com.knigdelioglu.arc.compose.display.ArcAlert as DesignSystemAlert
+import com.knigdelioglu.arc.compose.display.ArcAlertVariant as DesignSystemAlertVariant
+import com.knigdelioglu.arc.compose.display.ArcDialog as DesignSystemDialog
 
 /**
  * Arc Segmented Control Component (19 / 70)
@@ -84,44 +91,12 @@ fun <T> ArcSegmentedControl(
     title: (T) -> String,
     modifier: Modifier = Modifier
 ) {
-    val colors = ArcTheme.colors
-
-    Surface(
-        modifier = modifier,
-        shape = ArcRadius.pill,
-        color = colors.surfaceMuted,
-        border = BorderStroke(1.dp, colors.border)
-    ) {
-        Row(
-            modifier = Modifier
-                .horizontalScroll(rememberScrollState())
-                .selectableGroup()
-                .padding(3.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            options.forEach { opt ->
-                val isSelected = opt == selected
-                Box(
-                    modifier = Modifier
-                        .clip(ArcRadius.pill)
-                        .background(if (isSelected) colors.surface else Color.Transparent)
-                        .selectable(selected = isSelected, role = Role.Tab) { onSelect(opt) }
-                        .heightIn(min = 48.dp)
-                        .widthIn(min = 76.dp)
-                        .padding(horizontal = 14.dp, vertical = 8.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = title(opt),
-                        style = ArcTheme.typography.labelMedium,
-                        color = if (isSelected) colors.foreground else colors.textSecondary,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                    )
-                }
-            }
-        }
-    }
+    DesignSystemSegmentedControl(
+        items = options.map(title),
+        selectedIndex = options.indexOf(selected),
+        onSelectIndex = { index -> options.getOrNull(index)?.let(onSelect) },
+        modifier = modifier
+    )
 }
 
 /**
@@ -136,62 +111,14 @@ fun <T> ArcSelect(
     modifier: Modifier = Modifier,
     placeholder: String = "Seçiniz"
 ) {
-    var expanded by remember { mutableStateOf(false) }
-    val colors = ArcTheme.colors
-
-    Box(modifier = modifier) {
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clickable { expanded = true },
-            shape = ArcRadius.control,
-            color = colors.surface,
-            border = BorderStroke(1.dp, if (expanded) colors.accent else colors.border)
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = if (selectedItem != null) itemLabel(selectedItem) else placeholder,
-                    style = ArcTheme.typography.bodyMedium,
-                    color = if (selectedItem != null) colors.foreground else colors.textMuted
-                )
-                Icon(
-                    imageVector = Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    tint = colors.textSecondary
-                )
-            }
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            items.forEach { item ->
-                val isSelected = item == selectedItem
-                DropdownMenuItem(
-                    text = {
-                        Text(
-                            text = itemLabel(item),
-                            style = ArcTheme.typography.bodyMedium,
-                            color = if (isSelected) colors.accent else colors.foreground,
-                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal
-                        )
-                    },
-                    trailingIcon = if (isSelected) {
-                        { Icon(Icons.Default.Check, contentDescription = null, tint = colors.accent) }
-                    } else null,
-                    onClick = {
-                        onSelect(item)
-                        expanded = false
-                    }
-                )
-            }
-        }
-    }
+    DesignSystemSelect(
+        selectedItem = selectedItem,
+        items = items,
+        onItemSelected = onSelect,
+        modifier = modifier,
+        placeholder = placeholder,
+        labelProvider = itemLabel
+    )
 }
 
 /**
@@ -336,63 +263,25 @@ fun ArcSearchField(
     onSearchCommit: (() -> Unit)? = null,
     focusRequester: FocusRequester? = null
 ) {
-    val colors = ArcTheme.colors
-
-    Surface(
+    DesignSystemInput(
+        value = query,
+        onValueChange = onQueryChange,
         modifier = modifier.fillMaxWidth(),
-        shape = ArcRadius.pill,
-        color = colors.surfaceMuted,
-        border = BorderStroke(1.dp, colors.border)
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.Default.Search,
-                contentDescription = "Ara",
-                tint = colors.textSecondary,
-                modifier = Modifier.size(18.dp)
-            )
-
-            BasicTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                modifier = Modifier.weight(1f)
-                    .then(if (focusRequester != null) Modifier.focusRequester(focusRequester) else Modifier),
-                textStyle = ArcTheme.typography.bodyMedium.copy(color = colors.foreground),
-                cursorBrush = SolidColor(colors.accent),
-                singleLine = true,
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                keyboardActions = KeyboardActions(onSearch = { onSearchCommit?.invoke() }),
-                decorationBox = { innerTextField ->
-                    if (query.isEmpty()) {
-                        Text(
-                            text = placeholder,
-                            style = ArcTheme.typography.bodyMedium,
-                            color = colors.textMuted
-                        )
-                    }
-                    innerTextField()
-                }
-            )
-
-            if (query.isNotEmpty()) {
-                IconButton(
-                    onClick = { onQueryChange("") },
-                    modifier = Modifier.size(20.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Close,
-                        contentDescription = "Temizle",
-                        tint = colors.textSecondary,
-                        modifier = Modifier.size(16.dp)
-                    )
+        placeholder = placeholder,
+        leadingIcon = {
+            Icon(Icons.Default.Search, contentDescription = "Ara", tint = ArcTheme.colors.textSecondary)
+        },
+        trailingIcon = if (query.isNotEmpty()) {
+            {
+                IconButton(onClick = { onQueryChange("") }, modifier = Modifier.size(32.dp)) {
+                    Icon(Icons.Default.Close, contentDescription = "Temizle", tint = ArcTheme.colors.textSecondary)
                 }
             }
-        }
-    }
+        } else null,
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+        keyboardActions = KeyboardActions(onSearch = { onSearchCommit?.invoke() }),
+        inputModifier = focusRequester?.let { Modifier.focusRequester(it) } ?: Modifier
+    )
 }
 
 /**
@@ -406,46 +295,13 @@ fun ArcCheckbox(
     enabled: Boolean = true,
     label: String? = null
 ) {
-    val colors = ArcTheme.colors
-    val reducedMotion = LocalReducedMotion.current
-    val scale by animateFloatAsState(
-        targetValue = if (checked) 1f else 0.85f,
-        animationSpec = ArcMotionTokens.respectMotionPreference(
-            reducedMotion, ArcMotionTokens.Springs.Snappy
-        ),
-        label = "checkbox_scale"
+    DesignSystemCheckbox(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier.widthIn(min = 48.dp),
+        enabled = enabled,
+        label = label
     )
-
-    Box(
-        modifier = modifier
-            .size(48.dp)
-            .then(if (label != null) Modifier.semantics { contentDescription = label } else Modifier)
-            .toggleable(
-                value = checked,
-                enabled = enabled,
-                role = Role.Checkbox,
-                onValueChange = onCheckedChange
-            ),
-        contentAlignment = Alignment.Center
-    ) {
-        Surface(
-            modifier = Modifier.size(22.dp),
-            shape = RoundedCornerShape(6.dp),
-            color = if (checked) colors.controlOn else Color.Transparent,
-            border = BorderStroke(1.5.dp, if (checked) colors.controlOn else colors.controlTrack)
-        ) {
-            if (checked) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        tint = colors.controlGlyph,
-                        modifier = Modifier.size(15.dp).scale(scale)
-                    )
-                }
-            }
-        }
-    }
 }
 
 /**
@@ -480,44 +336,15 @@ fun ArcDialog(
     dismissButton: (@Composable () -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
-    if (isOpen) {
-        Dialog(
-            onDismissRequest = onDismissRequest,
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Surface(
-                modifier = modifier
-                    .fillMaxWidth(0.9f)
-                    .padding(ArcSpacing.space4),
-                shape = ArcRadius.panel,
-                color = ArcTheme.colors.surface,
-                border = BorderStroke(1.dp, ArcTheme.colors.border),
-                shadowElevation = 24.dp
-            ) {
-                Column(modifier = Modifier.padding(ArcSpacing.space6)) {
-                    Text(
-                        text = title,
-                        style = ArcTheme.typography.titleLarge,
-                        color = ArcTheme.colors.foreground
-                    )
-                    Spacer(modifier = Modifier.height(ArcSpacing.space3))
-                    content()
-                    Spacer(modifier = Modifier.height(ArcSpacing.space5))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        dismissButton?.invoke()
-                        if (dismissButton != null && confirmButton != null) {
-                            Spacer(modifier = Modifier.width(8.dp))
-                        }
-                        confirmButton?.invoke()
-                    }
-                }
-            }
-        }
-    }
+    DesignSystemDialog(
+        isOpen = isOpen,
+        onDismissRequest = onDismissRequest,
+        title = title,
+        modifier = modifier,
+        confirmButton = confirmButton,
+        dismissButton = dismissButton,
+        content = content
+    )
 }
 
 /**
@@ -538,50 +365,18 @@ fun ArcAlert(
     variant: ArcAlertVariant = ArcAlertVariant.INFO,
     action: (@Composable () -> Unit)? = null
 ) {
-    val colors = ArcTheme.colors
-    val (bgColor, accentColor, icon) = when (variant) {
-        ArcAlertVariant.INFO -> Triple(colors.accentSubtle, colors.accent, Icons.Default.Info)
-        ArcAlertVariant.WARNING -> Triple(colors.warningSubtle, colors.warning, Icons.Default.Warning)
-        ArcAlertVariant.DANGER -> Triple(colors.dangerSubtle, colors.danger, Icons.Default.Close)
-        ArcAlertVariant.SUCCESS -> Triple(colors.successSubtle, colors.success, Icons.Default.Check)
-    }
-
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        shape = ArcRadius.control,
-        color = bgColor,
-        border = BorderStroke(1.dp, accentColor.copy(alpha = 0.3f))
-    ) {
-        Row(
-            modifier = Modifier.padding(ArcSpacing.space4),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(ArcSpacing.space3)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = accentColor,
-                modifier = Modifier.size(20.dp)
-            )
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = title,
-                    style = ArcTheme.typography.titleMedium,
-                    color = colors.foreground
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = message,
-                    style = ArcTheme.typography.bodyMedium,
-                    color = colors.textSecondary
-                )
-                if (action != null) {
-                    Spacer(modifier = Modifier.height(ArcSpacing.space2))
-                    action()
-                }
-            }
-        }
-    }
+    DesignSystemAlert(
+        title = title,
+        message = message,
+        modifier = modifier,
+        variant = when (variant) {
+            ArcAlertVariant.INFO -> DesignSystemAlertVariant.Info
+            ArcAlertVariant.WARNING -> DesignSystemAlertVariant.Warning
+            ArcAlertVariant.DANGER -> DesignSystemAlertVariant.Danger
+            ArcAlertVariant.SUCCESS -> DesignSystemAlertVariant.Success
+        },
+        action = action
+    )
 }
 
 /**
