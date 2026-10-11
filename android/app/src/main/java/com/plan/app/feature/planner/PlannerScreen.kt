@@ -124,7 +124,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     val filter by viewModel.filter.collectAsState()
 
     val currentClass = classrooms.firstOrNull { it.id == activeClassroomId } ?: classrooms.firstOrNull()
-    val activeWeek = viewModel.getActiveWeek()
+    // Derive from collected Compose state so the lesson content follows week navigation.
+    val activeWeek = currentPlan?.weeks?.firstOrNull { it.weekNumber == activeWeekNumber }
     val colors = ArcTheme.colors
 
     var showNewClassDialog by rememberSaveable { mutableStateOf(false) }
@@ -790,7 +791,7 @@ private fun WeekNavigationButtons(
                 onClick = { viewModel.selectWeek(weekNumber - 1) },
                 enabled = weekNumber > 1,
                 variant = ArcButtonVariant.SECONDARY,
-                modifier = Modifier.fillMaxWidth()
+                modifier = if (compact) Modifier.fillMaxWidth() else Modifier
             ) {
                 Text(if (compact) "← Önceki" else "← Önceki Hafta")
             }
@@ -800,7 +801,7 @@ private fun WeekNavigationButtons(
                 onClick = { viewModel.selectWeek(weekNumber + 1) },
                 enabled = weekNumber < lastWeekNumber,
                 variant = ArcButtonVariant.SECONDARY,
-                modifier = Modifier.fillMaxWidth()
+                modifier = if (compact) Modifier.fillMaxWidth() else Modifier
             ) {
                 Text(if (compact) "Sonraki →" else "Sonraki Hafta →")
             }
