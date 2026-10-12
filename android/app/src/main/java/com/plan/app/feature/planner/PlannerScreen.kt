@@ -545,6 +545,7 @@ private fun CenterWorkspace(
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
+    val today by viewModel.currentDate.collectAsState()
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
     val progress by viewModel.progressList.collectAsState()
     val filter by viewModel.filter.collectAsState()
@@ -562,7 +563,7 @@ private fun CenterWorkspace(
     var showSearch by rememberSaveable { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showViews by rememberSaveable { mutableStateOf(false) }
-    val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), LocalDate.now())
+    val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), today)
     val completion = timeline.fraction
 
     Column(
@@ -1200,6 +1201,7 @@ private fun AnalyticsAndChartsView(
 ) {
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
     val progress by viewModel.progressList.collectAsState()
+    val today by viewModel.currentDate.collectAsState()
     val completedHours = currentPlan?.weeks.orEmpty().sumOf { w ->
         w.lessons.filter { l ->
             progress.any {
@@ -1208,7 +1210,7 @@ private fun AnalyticsAndChartsView(
             }
         }.sumOf { it.hours }
     }
-    val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), LocalDate.now())
+    val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), today)
     val verifiedHours = currentPlan?.metadata?.verifiedLessonHours
     val assumedHours = currentPlan?.metadata?.assumedLessonHours
     val annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
