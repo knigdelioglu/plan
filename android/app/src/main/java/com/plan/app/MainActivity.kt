@@ -1,6 +1,11 @@
 package com.plan.app
 
 import android.os.Bundle
+import android.os.Build
+import android.graphics.Color as AndroidColor
+import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import androidx.compose.runtime.SideEffect
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -33,8 +38,17 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Draw beneath Android's system bars; Compose handles safe drawing insets.
+        enableEdgeToEdge()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Avoid Android's automatic light scrim over three-button navigation.
+            window.isNavigationBarContrastEnforced = false
+        }
         setContent {
             val isDark by viewModel.isDarkMode.collectAsState()
+            // The app's preference is independent of the device-wide night mode.
+            // Re-apply platform icon appearance on every Compose theme change.
+            SideEffect { syncSystemBars(isDark) }
             DesignSystemTheme(darkTheme = isDark, accent = ArcAccent.Neutral) {
                 ArcTheme(darkTheme = isDark) {
                     PlannerScreen(viewModel = viewModel)
@@ -42,4 +56,18 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun syncSystemBars(dark: Boolean) {
+        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        // "light" means DARK icons on a LIGHT background.
+        controller.isAppearanceLightStatusBars = !dark
+        controller.isAppearanceLightNavigationBars = !dark
+
+        // Before Android 10, the navigation bar cannot rely on transparent
+        // edge-to-edge rendering on all navigation modes.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            @Suppress("DEPRECATION")
+            window.navigationBarColor = if (dark) AndroidColor.rgb(9, 9, 11) else AndroidColor.WHITE
+        }
+    }
+
 }
