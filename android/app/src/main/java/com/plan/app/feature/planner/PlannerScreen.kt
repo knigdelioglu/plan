@@ -811,22 +811,22 @@ private fun WeeklyLessonPlanView(
                             }
                         }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = lesson.learningOutcomes.take(2).joinToString("  ·  ") { it.code },
-                                style = ArcTheme.typography.labelSmall,
-                                color = colors.textSecondary,
-                                modifier = Modifier.weight(1f)
-                            )
-                            ArcButton(
-                                onClick = { lessonDetailsVisible = !lessonDetailsVisible },
-                                variant = ArcButtonVariant.SUBTLE
+                        // Outcomes are essential lesson information and do not depend on details.
+                        if (lesson.learningOutcomes.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(ArcSpacing.space2))
+                            LessonLearningOutcomes(outcomes = lesson.learningOutcomes)
+                        }
+                        if (lesson.textsAndMaterials.isNotEmpty() || lesson.processComponents.isNotEmpty()) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.End
                             ) {
-                                Text(if (lessonDetailsVisible) "Gizle" else "Ayrıntılar")
+                                ArcButton(
+                                    onClick = { lessonDetailsVisible = !lessonDetailsVisible },
+                                    variant = ArcButtonVariant.SUBTLE
+                                ) {
+                                    Text(if (lessonDetailsVisible) "Gizle" else "Ayrıntılar")
+                                }
                             }
                         }
                         if (lessonDetailsVisible) {
@@ -846,30 +846,6 @@ private fun WeeklyLessonPlanView(
                                     style = ArcTheme.typography.bodySmall,
                                     color = colors.foreground
                                 )
-                            }
-                            Spacer(modifier = Modifier.height(ArcSpacing.space2))
-                        }
-
-                        // Learning Outcomes
-                        if (lesson.learningOutcomes.isNotEmpty()) {
-                            Text(
-                                text = "Öğrenme Çıktıları (Kazanımlar):",
-                                style = ArcTheme.typography.labelSmall,
-                                color = colors.textSecondary,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            lesson.learningOutcomes.forEach { outcome ->
-                                Row(
-                                    modifier = Modifier.padding(vertical = 2.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                                ) {
-                                    ArcBadge(text = outcome.code, variant = ArcBadgeVariant.ACCENT)
-                                    Text(
-                                        text = outcome.text,
-                                        style = ArcTheme.typography.bodySmall,
-                                        color = colors.foreground
-                                    )
-                                }
                             }
                             Spacer(modifier = Modifier.height(ArcSpacing.space2))
                         }
