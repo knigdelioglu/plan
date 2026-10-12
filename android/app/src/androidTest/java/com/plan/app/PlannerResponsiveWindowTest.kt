@@ -2,6 +2,7 @@ package com.plan.app
 
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.onNodeWithText
 import com.plan.app.feature.planner.PlannerWindowMode
 import com.plan.app.feature.planner.PlannerWindowPolicy
@@ -24,6 +25,8 @@ class PlannerResponsiveWindowTest {
         val expected = if (mode == PlannerWindowMode.TWO_PANE) "planner-two-pane"
             else "planner-compact"
         rule.onNodeWithTag(expected).assertExists()
+        rule.onNodeWithTag("planner-view-toggle").assertExists()
+        rule.onNodeWithTag("planner-view-toggle").performClick()
         rule.onNodeWithText("Haftalık").assertExists()
         rule.onNodeWithText("Aylık").assertExists()
         rule.onNodeWithText("Temalar").assertExists()
