@@ -18,7 +18,7 @@ if [[ -e "$target" && ! -d "$target/.git" ]]; then
   exit 1
 fi
 if [[ ! -d "$target/.git" ]]; then
-  git clone --filter=blob:none --no-checkout https://github.com/knigdelioglu/compose-design-system.git "$target"
+  git clone --filter=blob:none https://github.com/knigdelioglu/compose-design-system.git "$target"
 fi
 if [[ -n "$(git -C "$target" status --porcelain)" ]]; then
   echo "Refusing to replace local edits in $target. Commit or move them first." >&2
