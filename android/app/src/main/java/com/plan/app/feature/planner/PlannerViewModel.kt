@@ -17,6 +17,7 @@ import com.plan.app.core.model.PlanWeek
 import com.plan.app.core.model.PlannerViewMode
 import com.plan.app.core.model.TeacherNote
 import kotlinx.coroutines.Dispatchers
+import java.time.LocalDate
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.delay
@@ -41,6 +42,9 @@ class PlannerViewModel @JvmOverloads constructor(
     val viewMode: StateFlow<PlannerViewMode> = teacherRepository.viewMode
     val progressList: StateFlow<List<LessonProgress>> = teacherRepository.progressList
     val notesList: StateFlow<List<TeacherNote>> = teacherRepository.notesList
+
+    private val _currentDate = MutableStateFlow(LocalDate.now())
+    val currentDate: StateFlow<LocalDate> = _currentDate.asStateFlow()
 
     private val noteDrafts = NoteDraftBuffer { key, text ->
         teacherRepository.saveNote(key.classroomId, key.weekNumber, null, text, NoteType.TEXT)
@@ -140,8 +144,23 @@ class PlannerViewModel @JvmOverloads constructor(
     )
     val notifications: StateFlow<List<NotificationItem>> = _notifications.asStateFlow()
 
+    private var lastAutoSelectedDate: LocalDate = LocalDate.now()
+
     init {
         loadActivePlan()
+    }
+
+    /**
+     * Keep a manually browsed week until the calendar day actually changes.
+     * A fresh app launch always resolves the week from the plan dates.
+     */
+    fun onAppResumed() {
+        val today = LocalDate.now()
+        if (today != lastAutoSelectedDate && flushPendingTeacherNotes()) {
+            _currentDate.value = today
+            lastAutoSelectedDate = today
+            loadActivePlan()
+        }
     }
 
     fun toggleDarkMode() {
@@ -261,9 +280,17 @@ class PlannerViewModel @JvmOverloads constructor(
             ?: classrooms.value.firstOrNull()
         // Only the active classroom's plan is loaded: no hidden comparisons,
         // raw JSON inspection, or validation reports on every classroom change.
-        _currentPlan.value = runCatching {
+        val plan = runCatching {
             currentClass?.let(planRepository::loadAnnualPlan)
         }.getOrNull()
+        _currentPlan.value = plan
+        val today = LocalDate.now()
+        _currentDate.value = today
+        lastAutoSelectedDate = today
+        val relevant = plan?.let { PlanTimeline.relevantWeek(it.weeks, today) }
+        if (relevant != null && relevant != activeWeekNumber.value) {
+            teacherRepository.selectWeek(relevant)
+        }
     }
 }
 
