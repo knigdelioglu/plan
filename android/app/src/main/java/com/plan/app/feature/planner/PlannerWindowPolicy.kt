@@ -4,8 +4,8 @@ package com.plan.app.feature.planner
 enum class PlannerWindowMode { COMPACT, TWO_PANE }
 
 object PlannerWindowPolicy {
-    const val TwoPaneThresholdDp = 950f
-    const val MinSidebarDp = 390f
+    const val TwoPaneThresholdDp = 840f
+    const val MinSidebarDp = 280f
     const val MinWorkspaceDp = 480f
     const val DividerDp = 24f
 
