@@ -2,6 +2,9 @@ package com.plan.app
 
 import androidx.compose.ui.test.junit4.v2.createAndroidComposeRule
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.performTextInput
 import androidx.lifecycle.Lifecycle
 import com.plan.app.core.data.TeacherRepository
@@ -16,6 +19,8 @@ class P2NoteLifecycleTest {
     @Test
     fun fastTypingIsDurableWhenAppImmediatelyGoesToBackground() {
         val marker = "Yaşam döngüsü kayıt testi"
+        rule.onNodeWithText("Öğretmen notları ve pedagojik açıklamalar")
+            .performScrollTo().performClick()
         rule.onNodeWithTag("teacher-note-input").performTextInput(marker)
 
         val appContext = rule.activity.applicationContext
