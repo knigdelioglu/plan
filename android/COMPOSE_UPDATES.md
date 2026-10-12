@@ -1,16 +1,39 @@
 # Plan ↔ Compose Design System entegrasyonu
 
-Plan, ortak kütüphanenin Kotlin/Jetpack Compose kaynaklarını derleme sırasında kullanır. Uygulama bileşenleri `com.plan.app.core.design` altında uyumluluk katmanları üzerinden erişir.
+Plan'ın Compose kaynakları `.github/compose-design-system.ref` dosyasındaki **tam commit SHA** ile sürümlenir. Bu revizyon Plan'ın Android CI, emülatör testleri ve APK yayımlamasında aynı olmalıdır.
 
-- **Tek commit kaynağı:** `.github/compose-design-system.ref` (40 karakterli sabit commit SHA).
-- **Tek checkout/yol yapılandırması:** `.github/actions/checkout-compose-design-system/action.yml`. CI, Android UI testleri ve APK yayımı aynı action'ı çağırır.
-- **CI'de kaynak dizini:** checkout'tan sonra `ORG_GRADLE_PROJECT_composeDesignSystemSources` Gradle özelliği otomatik ayarlanır.
-- **Yerel geliştirme:** `plan` ve `compose-design-system` depoları kardeş klasörlerse Gradle'ın `../../compose-design-system/design-system/src/main/java` varsayılanı kullanılabilir. Farklı konumda `-PcomposeDesignSystemSources=<dizin>` verilir.
+## CI ve GitHub Actions
 
-## Güncelleme kuralı
+- `.github/actions/checkout-compose-design-system/action.yml` tek checkout işlemi olarak kullanılır; ref dosyasını okur, gerçek checkout commit'ini kontrol eder ve `ORG_GRADLE_PROJECT_composeDesignSystemSources` değişkenini ayarlar.
+- Android CI ve üç emülatör testi ref veya checkout action değişince çalışır.
+- Release iş akışı **APK'nın `output-metadata.json` dosyasından sürüm numarasını okur**. Artık tag, APK ismi ve SHA-256 dosya adı workflow'a ayrı ayrı yazılmaz.
+- Aynı sürüm etiketi daha önce yayımlandıysa yeniden yayımlama **hata vererek durur**. Yeni paket için `android/app/build.gradle.kts` içindeki `versionCode` ve `versionName` artırılır.
+- `main` dalındaki uygulama sürümü veya release workflow'u değişince yayımlama tetiklenir; elle çalıştırmak için `workflow_dispatch` de desteklenir.
 
-Sadece pin dosyasını yeni doğrulanmış **tam commit SHA** ile güncelle. Android derleme/birim testleri ve üç farklı ekran boyutundaki UI testleri başarılı olmadan ana dala alma; daha sonra yeni APK gerekiyorsa sürüm numarasını ve release akışını yükselt.
+## Yerel geliştirme
+
+**Önerilen kullanım** (Plan deposunun kök klasöründen):
+
+```bash
+bash android/scripts/prepare-compose-design-system.sh
+cd android
+./gradlew testDebugUnitTest assembleDebug
+```
+
+Hazırlama betiği ortak Compose deposunun **ayrı ve izole** kopyasını `android/.compose-deps/` altında hazırlar, kirli çalışma alanının üzerine yazmaz ve pin dosyasındaki SHA'yı doğrular. Bu klasör Git tarafından izlenmez.
+
+Gradle önce bu sabitlenmiş kopyayı bulur; yoksa eski kardeş `compose-design-system` deposunu kullanmayı dener. **Kaynak yolu ayrıca belirtilmemişse** Gradle git HEAD ile pin dosyasını karşılaştırır. Yanlış sürümle yerel APK üretilmesine izin verilmez.
+
+Başka bir kaynağı özellikle denemek için `-PcomposeDesignSystemSources=<tam-kaynak-yolu>` kullanılabilir. Bu açık tercih, git SHA kontrolünü devre dışı bırakır; deneysel derleme ile doğrulanmış sürümü karıştırmayın.
+
+## Güncelleme
+
+1. `.github/compose-design-system.ref` dosyasına doğrulanmış yeni Compose commit SHA'sını yaz.
+2. Android CI ve telefon/dikey tablet/yatay tablet testlerini kontrol et.
+3. Dağıtılacak değişiklikler için Android sürüm numarasını artır; Release yeni sürümü APK'dan otomatik okuyacaktır.
+
+**Otomatik yükseltme yoktur:** Compose deposuna yeni commit atılması Plan'ın pin dosyasını kendiliğinden değiştirmez. Bu yaklaşım, doğrulanmamış tasarım değişikliklerinin üretim APK'sına sessizce geçmesini önler.
 
 ## 12 Ekim 2026
 
-`f43ef2d0302fee1d5cfa50bd089441f96fe21018` ile yuvarlatılmış kontrollerin ripple sınırları ve gereksiz dikdörtgen dokunma efektleri düzenlendi. Plan'ın ortak `ArcCheckbox`, `ArcSelect` ve diğer kaynak bileşenleri bu sürümden derlenir. Plan'ın yerel `ArcSwitch` bileşeninde de yuvarlatılmış etkileşim alanı korunur. Tasarım farkları ve sistemin yönettiği alanlar için ayrıca cihaz testi gereklidir.
+`f43ef2d0302fee1d5cfa50bd089441f96fe21018`: yuvarlatılmış kontrollerin dokunma/ripple sınırları düzeltildi. Plan'ın ortak `ArcCheckbox`, `ArcSelect` ve diğer kaynak bileşenleri bu sürümden derlenir. Plan'ın kendi `ArcSwitch` uygulamasında da yuvarlatılmış etkileşim sınırı bulunur. Ripple görünümünün gerçek piksel sonucu emülatör/cihaz üzerinde ayrıca incelenebilir.

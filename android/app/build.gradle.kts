@@ -6,13 +6,42 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
-val composeDesignSystemSources = providers.gradleProperty("composeDesignSystemSources")
-    .orElse("../../compose-design-system/design-system/src/main/java")
-    .get()
-val composeDesignSystemSourceDir = rootProject.file(composeDesignSystemSources)
+// GitHub Actions passes an explicitly verified checkout location. Local builds
+// default to an isolated, pinned cache rather than an arbitrary sibling checkout.
+val explicitComposeSources = providers.gradleProperty("composeDesignSystemSources").orNull
+val preparedComposeSources = rootProject.file(".compose-deps/compose-design-system/design-system/src/main/java")
+val siblingComposeSources = rootProject.file("../../compose-design-system/design-system/src/main/java")
+val composeDesignSystemSourceDir = when {
+    explicitComposeSources != null -> rootProject.file(explicitComposeSources)
+    preparedComposeSources.isDirectory -> preparedComposeSources
+    else -> siblingComposeSources
+}
 check(composeDesignSystemSourceDir.isDirectory) {
-    "Compose design system sources not found at ${composeDesignSystemSourceDir.absolutePath}. " +
-        "Set -PcomposeDesignSystemSources to the library's design-system/src/main/java directory."
+    "Compose design system sources missing at ${composeDesignSystemSourceDir.absolutePath}. " +
+        "Run: bash android/scripts/prepare-compose-design-system.sh, or supply -PcomposeDesignSystemSources=<path>."
+}
+
+// Fail closed for implicit local sources: otherwise a successful local APK could
+// silently use a different component revision than the published/CI APK.
+if (explicitComposeSources == null) {
+    val pinnedRevision = rootProject.file("../.github/compose-design-system.ref").readText().trim()
+    check(Regex("[a-f0-9]{40}").matches(pinnedRevision)) {
+        "Invalid Compose revision in .github/compose-design-system.ref"
+    }
+    val checkout = composeDesignSystemSourceDir.parentFile.parentFile.parentFile.parentFile
+    val actualRevision = runCatching {
+        val process = ProcessBuilder("git", "-C", checkout.absolutePath, "rev-parse", "HEAD")
+            .redirectErrorStream(true)
+            .start()
+        val result = process.inputStream.bufferedReader().use { it.readText().trim() }
+        if (process.waitFor() == 0) result else null
+    }.getOrNull()
+    check(actualRevision == pinnedRevision) {
+        "Local Compose checkout ${checkout.absolutePath} is ${actualRevision ?: "unknown"}, " +
+            "but Plan is pinned to $pinnedRevision. " +
+            "Run: bash android/scripts/prepare-compose-design-system.sh " +
+            "or explicitly provide -PcomposeDesignSystemSources=<path> for intentional local development."
+    }
 }
 
 android {
@@ -23,8 +52,8 @@ android {
         applicationId = "com.plan.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "1.0.4"
+        versionCode = 6
+        versionName = "1.0.5"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -36,3 +36,12 @@ jobs:
       - name: Unit tests and debug APK
         working-directory: android
         run: ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace
+      - name: Verify release APK metadata and checksum
+        run: python3 android/scripts/prepare-release.py
+      - name: Smoke-test local pinned Compose source resolution
+        shell: bash
+        working-directory: android
+        run: |
+          mkdir -p .compose-deps
+          ln -s "$GITHUB_WORKSPACE/compose-design-system" .compose-deps/compose-design-system
+          env -u ORG_GRADLE_PROJECT_composeDesignSystemSources ./gradlew :app:help --no-daemon --stacktrace
