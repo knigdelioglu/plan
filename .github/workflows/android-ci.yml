@@ -36,3 +36,5 @@ jobs:
       - name: Unit tests and debug APK
         working-directory: android
         run: ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace
+      - name: Verify release APK metadata and checksum
+        run: python3 android/scripts/prepare-release.py
