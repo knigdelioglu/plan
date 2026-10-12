@@ -25,10 +25,10 @@ class P2MotionAndWindowPolicyTest {
 
     @Test
     fun responsiveBreakpointsKeepSmallTabletsAndDexWindowsUsable() {
-        listOf(360f, 600f, 840f, 949f).forEach {
+        listOf(360f, 600f, 839f).forEach {
             assertEquals(PlannerWindowMode.COMPACT, PlannerWindowPolicy.modeFor(it))
         }
-        listOf(950f, 1200f, 1920f).forEach {
+        listOf(840f, 950f, 1200f, 1920f).forEach {
             assertEquals(PlannerWindowMode.TWO_PANE, PlannerWindowPolicy.modeFor(it))
         }
     }
