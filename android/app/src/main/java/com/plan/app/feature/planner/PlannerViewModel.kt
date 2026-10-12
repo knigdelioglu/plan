@@ -107,6 +107,7 @@ class PlannerViewModel @JvmOverloads constructor(
     }
 
     val isDarkMode: StateFlow<Boolean> = teacherRepository.darkMode
+    val fontScalePercent: StateFlow<Int> = teacherRepository.fontScalePercent
     val storageError: StateFlow<String?> = teacherRepository.storageError
     val availablePlans: List<PlanRepository.PlanRef>
         get() = planRepository.availablePlans()
@@ -165,6 +166,10 @@ class PlannerViewModel @JvmOverloads constructor(
 
     fun toggleDarkMode() {
         teacherRepository.setDarkMode(!isDarkMode.value)
+    }
+
+    fun setFontScalePercent(percent: Int) {
+        teacherRepository.setFontScalePercent(percent)
     }
 
     fun setCommandPaletteOpen(open: Boolean) {

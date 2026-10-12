@@ -6,6 +6,9 @@ import android.graphics.Color as AndroidColor
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -46,12 +49,22 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             val isDark by viewModel.isDarkMode.collectAsState()
+            val fontScalePercent by viewModel.fontScalePercent.collectAsState()
+            val systemDensity = LocalDensity.current
             // The app's preference is independent of the device-wide night mode.
             // Re-apply platform icon appearance on every Compose theme change.
             SideEffect { syncSystemBars(isDark) }
-            DesignSystemTheme(darkTheme = isDark, accent = ArcAccent.Neutral) {
-                ArcTheme(darkTheme = isDark) {
-                    PlannerScreen(viewModel = viewModel)
+            // Keep the device's accessibility font scaling and scale sp, not dp.
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    systemDensity.density,
+                    systemDensity.fontScale * (fontScalePercent / 100f)
+                )
+            ) {
+                DesignSystemTheme(darkTheme = isDark, accent = ArcAccent.Neutral) {
+                    ArcTheme(darkTheme = isDark) {
+                        PlannerScreen(viewModel = viewModel)
+                    }
                 }
             }
         }

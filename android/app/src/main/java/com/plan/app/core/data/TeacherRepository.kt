@@ -5,6 +5,7 @@ import android.util.AtomicFile
 import android.os.Trace
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.DrawingStroke
+import com.plan.app.core.model.FontScalePreference
 import com.plan.app.core.model.LessonProgress
 import com.plan.app.core.model.NoteType
 import com.plan.app.core.model.PlanWeek
@@ -33,6 +34,7 @@ private data class TeacherSnapshot(
     val activeWeekNumber: Int = 1,
     val viewMode: PlannerViewMode = PlannerViewMode.WEEK,
     val darkMode: Boolean = false,
+    val fontScalePercent: Int = FontScalePreference.DEFAULT_PERCENT,
     val weeksByClassroom: Map<String, Int> = emptyMap()
 )
 
@@ -59,6 +61,8 @@ class TeacherRepository(private val context: Context? = null) {
     val viewMode: StateFlow<PlannerViewMode> = _viewMode.asStateFlow()
     private val _darkMode = MutableStateFlow(snapshot.darkMode)
     val darkMode: StateFlow<Boolean> = _darkMode.asStateFlow()
+    private val _fontScalePercent = MutableStateFlow(snapshot.fontScalePercent)
+    val fontScalePercent: StateFlow<Int> = _fontScalePercent.asStateFlow()
     private val _storageError = MutableStateFlow<String?>(null)
     val storageError: StateFlow<String?> = _storageError.asStateFlow()
 
@@ -74,6 +78,7 @@ class TeacherRepository(private val context: Context? = null) {
             _activeWeekNumber.value = next.activeWeekNumber
             _viewMode.value = next.viewMode
             _darkMode.value = next.darkMode
+            _fontScalePercent.value = next.fontScalePercent
             _storageError.value = null
         } catch (error: Exception) {
             _storageError.value = "Kişisel veriler kaydedilemedi: " + (error.message ?: "Depolama hatası")
@@ -104,6 +109,12 @@ class TeacherRepository(private val context: Context? = null) {
         change(snapshot.copy(viewMode = PlannerViewMode.fromSaved(mode)))
     @Synchronized
     fun setDarkMode(enabled: Boolean) = change(snapshot.copy(darkMode = enabled))
+
+    @Synchronized
+    fun setFontScalePercent(percent: Int) {
+        require(FontScalePreference.isValid(percent)) { "Geçersiz yazı boyutu: $percent" }
+        if (snapshot.fontScalePercent != percent) change(snapshot.copy(fontScalePercent = percent))
+    }
 
     @Synchronized
     fun addClassroom(
@@ -212,6 +223,7 @@ class TeacherRepository(private val context: Context? = null) {
         _activeWeekNumber.value = 1
         _viewMode.value = PlannerViewMode.WEEK
         _darkMode.value = false
+        _fontScalePercent.value = FontScalePreference.DEFAULT_PERCENT
         stateFile().delete()
         File(stateFile().path + ".bak").delete()
         File(stateFile().path + ".new").delete()
@@ -265,7 +277,8 @@ class TeacherRepository(private val context: Context? = null) {
             require(parsed.version == 1) { "Bilinmeyen öğretmen veri sürümü" }
             return parsed.copy(
                 classrooms = parsed.classrooms.ifEmpty { defaults },
-                viewMode = PlannerViewMode.fromSaved(parsed.viewMode)
+                viewMode = PlannerViewMode.fromSaved(parsed.viewMode),
+                fontScalePercent = FontScalePreference.normalize(parsed.fontScalePercent)
             )
         }
         val base = file.parentFile

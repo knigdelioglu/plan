@@ -1,5 +1,6 @@
 package com.plan.app.feature.planner
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.focusable
@@ -37,6 +38,7 @@ import androidx.compose.material.icons.filled.Flag
 import androidx.compose.material.icons.filled.Keyboard
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -77,7 +79,6 @@ import com.plan.app.core.design.blocks.CommandItem
 import com.plan.app.core.design.components.advanced.ArcActivityHeatmap
 import com.plan.app.core.design.components.advanced.ArcInput
 import com.plan.app.core.design.components.advanced.ArcSwipeActions
-import com.plan.app.core.design.components.advanced.ArcThemeSwitch
 import com.plan.app.core.design.components.core.ArcActionButton
 import com.plan.app.core.design.components.core.ArcAlert
 import com.plan.app.core.design.components.core.ArcAlertVariant
@@ -132,6 +133,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     val colors = ArcTheme.colors
 
     var showNewClassDialog by rememberSaveable { mutableStateOf(false) }
+    var showSettings by rememberSaveable { mutableStateOf(false) }
+    BackHandler(enabled = showSettings) { showSettings = false }
     // Hoisted above the compact/two-pane branch: DeX resize does not reset it.
     var sidebarRatio by rememberSaveable { mutableFloatStateOf(0.29f) }
     var sidebarCollapsed by rememberSaveable { mutableStateOf(false) }
@@ -181,6 +184,15 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             }
             .focusable()
     ) {
+        if (showSettings) {
+            PlannerSettingsScreen(
+                fontScalePercent = viewModel.fontScalePercent.collectAsState().value,
+                onFontScaleChange = viewModel::setFontScalePercent,
+                isDarkMode = isDarkMode,
+                onToggleDarkMode = viewModel::toggleDarkMode,
+                onBack = { showSettings = false }
+            )
+        } else {
         // A narrow week strip and a toggleable monthly calendar allow smaller sidebars.
         val isTabletLandscape =
             PlannerWindowPolicy.modeFor(maxWidth.value) == PlannerWindowMode.TWO_PANE
@@ -208,6 +220,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                         activeWeek = activeWeek,
                         currentClass = currentClass,
                         viewMode = viewMode,
+                        onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true },
                         onToggleSidebar = { sidebarCollapsed = !sidebarCollapsed },
                         sidebarVisible = true
                     )
@@ -220,6 +233,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                     activeWeek = activeWeek,
                     currentClass = currentClass,
                     viewMode = viewMode,
+                    onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true },
                     onToggleSidebar = { sidebarCollapsed = false },
                     sidebarVisible = false
                 )
@@ -237,7 +251,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                         viewModel = viewModel,
                         activeWeek = activeWeek,
                         currentClass = currentClass,
-                        viewMode = viewMode
+                        viewMode = viewMode,
+                        onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true }
                     )
                 }
             }
@@ -303,6 +318,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                 }
             }
         }
+        } // planner view
     }
 }
 
@@ -538,12 +554,12 @@ private fun CenterWorkspace(
     activeWeek: PlanWeek?,
     currentClass: Classroom?,
     viewMode: PlannerViewMode,
+    onOpenSettings: () -> Unit,
     onToggleSidebar: (() -> Unit)? = null,
     sidebarVisible: Boolean = true
 ) {
     val colors = ArcTheme.colors
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
-    val isDarkMode by viewModel.isDarkMode.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
     val today by viewModel.currentDate.collectAsState()
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
@@ -610,7 +626,12 @@ private fun CenterWorkspace(
             IconButton(onClick = { viewModel.setNotificationCenterOpen(true) }, modifier = Modifier.size(40.dp)) {
                 Icon(Icons.Default.Notifications, contentDescription = "Bildirimler", tint = colors.textSecondary)
             }
-            ArcThemeSwitch(isDark = isDarkMode, onToggle = { viewModel.toggleDarkMode() })
+            IconButton(
+                onClick = onOpenSettings,
+                modifier = Modifier.size(40.dp).testTag("settings-open-button")
+            ) {
+                Icon(Icons.Default.Settings, contentDescription = "Ayarlar", tint = colors.textSecondary)
+            }
         }
 
         if (showSearch || filter.query.isNotBlank()) {
