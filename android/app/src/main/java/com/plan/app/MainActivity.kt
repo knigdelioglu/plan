@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    @Suppress("DEPRECATION")
     private fun syncSystemBars(dark: Boolean) {
         val controller = WindowCompat.getInsetsController(window, window.decorView)
         // "light" means DARK icons on a LIGHT background.
@@ -65,7 +66,6 @@ class MainActivity : ComponentActivity() {
         // Before Android 10, the navigation bar cannot rely on transparent
         // edge-to-edge rendering on all navigation modes.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-            @Suppress("DEPRECATION")
             window.navigationBarColor = if (dark) AndroidColor.rgb(9, 9, 11) else AndroidColor.WHITE
         }
     }
