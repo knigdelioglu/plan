@@ -16,6 +16,11 @@ class MainActivity : ComponentActivity() {
     private val viewModel: PlannerViewModel by viewModels()
 
     // Flush while the Activity is still alive, before Android may reclaim it.
+    override fun onResume() {
+        super.onResume()
+        viewModel.onAppResumed()
+    }
+
     override fun onPause() {
         viewModel.flushPendingTeacherNotes()
         super.onPause()
