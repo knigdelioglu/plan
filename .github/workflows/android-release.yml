@@ -46,7 +46,7 @@ jobs:
           elements = metadata["elements"]
           assert len(elements) == 1, "Expected exactly one APK"
           version = elements[0]["versionName"]
-          assert re.fullmatch(r"[0-9]+\\.[0-9]+\\.[0-9]+", version), "Unexpected APK version"
+          assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version), "Unexpected APK version"
           name = f"Plan-v{version}-debug.apk"
           source = output / elements[0]["outputFile"]
           assert source.is_file() and source.stat().st_size > 0, "APK missing"
@@ -56,7 +56,7 @@ jobs:
           shutil.copy2(source, dist / name)
           subprocess.run(["sha256sum", name], cwd=dist, check=True, stdout=(dist / (name + ".sha256")).open("w"))
           with pathlib.Path(os.environ["GITHUB_ENV"]).open("a") as env:
-              env.write(f"RELEASE_VERSION={version}\\nRELEASE_APK={name}\\n")
+              env.write(f"RELEASE_VERSION={version}\nRELEASE_APK={name}\n")
           print(f"Verified {name} against Gradle APK output metadata")
           PY
       - name: Publish GitHub Release
@@ -70,9 +70,9 @@ jobs:
             exit 1
           fi
           sha="$(cat .github/compose-design-system.ref)"
-          gh release create "$tag" \\
-            "dist/$RELEASE_APK" \\
-            "dist/$RELEASE_APK.sha256" \\
-            --target "$GITHUB_SHA" \\
-            --title "Plan Android $tag (test APK)" \\
+          gh release create "$tag" \
+            "dist/$RELEASE_APK" \
+            "dist/$RELEASE_APK.sha256" \
+            --target "$GITHUB_SHA" \
+            --title "Plan Android $tag (test APK)" \
             --notes "Compose Design System commit: $sha. APK version is derived from the built app metadata and verified with SHA-256. This is debug-signed; a different signature may prevent in-place installation."
