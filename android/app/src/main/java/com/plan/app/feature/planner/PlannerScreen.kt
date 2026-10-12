@@ -61,6 +61,8 @@ import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,7 +70,6 @@ import androidx.compose.ui.unit.sp
 import com.plan.app.core.design.blocks.ArcCommandPalette
 import com.plan.app.core.design.blocks.ArcEmptyStatesBlock
 import com.plan.app.core.design.blocks.ArcNotificationCenter
-import com.plan.app.core.design.blocks.ArcPageHeader
 import com.plan.app.core.design.blocks.ArcStatsBand
 import com.plan.app.core.design.blocks.CommandItem
 import com.plan.app.core.design.components.advanced.ArcActivityHeatmap
@@ -106,8 +107,6 @@ import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
 import com.knigdelioglu.arc.compose.display.ArcProgress
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import java.util.Locale
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.NoteType
 import com.plan.app.core.model.PlanLesson
@@ -182,7 +181,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
             }
             .focusable()
     ) {
-        // An actual sidebar calendar needs at least ~350dp for usable touch targets.
+        // A narrow week strip and a toggleable monthly calendar allow smaller sidebars.
         val isTabletLandscape =
             PlannerWindowPolicy.modeFor(maxWidth.value) == PlannerWindowMode.TWO_PANE
 
@@ -347,13 +346,9 @@ private fun LeftSidebar(
                     } + Pair("+ Yeni Sınıf") { onOpenNewClassDialog() }
                 )
 
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = onOpenNewClassDialog, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.Add, contentDescription = "Sınıf Ekle", tint = colors.accent)
-                    }
-                    IconButton(onClick = onCollapse, modifier = Modifier.size(40.dp)) {
-                        Icon(Icons.Default.ChevronLeft, contentDescription = "Sol paneli gizle", tint = colors.textSecondary)
-                    }
+                // New class is already available in the user menu; no duplicate action.
+                IconButton(onClick = onCollapse, modifier = Modifier.size(40.dp)) {
+                    Icon(Icons.Default.ChevronLeft, contentDescription = "Sol paneli gizle", tint = colors.textSecondary)
                 }
             }
 
@@ -788,9 +783,15 @@ private fun WeeklyLessonPlanView(
                                     onCheckedChange = { next ->
                                         viewModel.setLessonProgress(activeWeek.weekNumber, lesson.lessonIndex, next)
                                     },
-                                    label = "${activeWeek.weekNumber}. hafta, ${lesson.lessonIndex}. bölüm işlendi"
+                                    modifier = Modifier.semantics {
+                                        contentDescription = "${activeWeek.weekNumber}. hafta, ${lesson.lessonIndex}. bölüm işlendi"
+                                    }
                                 )
-                                Column {
+                                Column(
+                                    modifier = Modifier.clickable {
+                                        lessonDetailsVisible = !lessonDetailsVisible
+                                    }
+                                ) {
                                     Text(
                                         text = "${lesson.lessonIndex}. Bölüm: ${lesson.learningArea ?: "Ders Alanı"}",
                                         style = ArcTheme.typography.titleMedium,
@@ -830,7 +831,7 @@ private fun WeeklyLessonPlanView(
                                 onClick = { lessonDetailsVisible = !lessonDetailsVisible },
                                 variant = ArcButtonVariant.SUBTLE
                             ) {
-                                Text(if (lessonDetailsVisible) "Ayrıntıları gizle" else "Kazanımlar ve materyaller")
+                                Text(if (lessonDetailsVisible) "Gizle" else "Ayrıntılar")
                             }
                         }
                         if (lessonDetailsVisible) {
@@ -925,11 +926,13 @@ private fun WeeklyLessonPlanView(
         }
 
         // Supporting context and note editor are available on demand, not always visible.
-        ArcExpandableCard(
-            title = "Öğretmen notları ve pedagojik açıklamalar",
-            subtitle = "Notlar, değerlendirme ve farklılaştırma"
-        ) {
-            TeacherNotesAndPedagogicalSection(viewModel = viewModel, activeWeek = activeWeek)
+        key(activeClassroomId, activeWeek.weekNumber) {
+            ArcExpandableCard(
+                title = "Öğretmen notları ve pedagojik açıklamalar",
+                subtitle = "Notlar, değerlendirme ve farklılaştırma"
+            ) {
+                TeacherNotesAndPedagogicalSection(viewModel = viewModel, activeWeek = activeWeek)
+            }
         }
     }
 }
