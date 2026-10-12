@@ -41,18 +41,18 @@ jobs:
       - name: Prepare verified release files
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/Plan-v1.0.0-debug.apk
-          test -s dist/Plan-v1.0.0-debug.apk
-          unzip -t dist/Plan-v1.0.0-debug.apk >/dev/null
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/Plan-v1.0.1-debug.apk
+          test -s dist/Plan-v1.0.1-debug.apk
+          unzip -t dist/Plan-v1.0.1-debug.apk >/dev/null
           cd dist
-          sha256sum Plan-v1.0.0-debug.apk > Plan-v1.0.0-debug.apk.sha256
+          sha256sum Plan-v1.0.1-debug.apk > Plan-v1.0.1-debug.apk.sha256
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v1.0.0 \
-            dist/Plan-v1.0.0-debug.apk \
-            dist/Plan-v1.0.0-debug.apk.sha256 \
+          gh release create v1.0.1 \
+            dist/Plan-v1.0.1-debug.apk \
+            dist/Plan-v1.0.1-debug.apk.sha256 \
             --target "$GITHUB_SHA" \
-            --title "Plan Android v1.0.0 (test APK)" \
-            --notes "Native Android Plan uygulamasının sadeleştirilmiş Jetpack Compose tablet/telefon arayüzü. Bu APK hata ayıklama anahtarıyla imzalanmıştır; üretim imzası değildir. Önceden farklı anahtarla imzalanmış sürümlerin üzerine kurulamayabilir."
+            --title "Plan Android v1.0.1 (test APK)" \
+            --notes "Öğrenme çıktıları ders kartında doğrudan gösterilir; materyaller ve süreç bileşenleri isteğe bağlı açılır. Bu APK hata ayıklama anahtarıyla imzalanmıştır; üretim imzası değildir. Önceden farklı anahtarla imzalanmış sürümlerin üzerine kurulamayabilir."
