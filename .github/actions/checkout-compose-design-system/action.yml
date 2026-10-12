@@ -1,0 +1,38 @@
+name: Checkout Compose Design System
+description: Resolve the single pinned library revision and configure the Plan Android build
+runs:
+  using: composite
+  steps:
+    - name: Read pinned Compose revision
+      id: revision
+      shell: bash
+      run: |
+        set -euo pipefail
+        revision="$(cat "$GITHUB_WORKSPACE/.github/compose-design-system.ref")"
+        if [[ ! "$revision" =~ ^[a-f0-9]{40}$ ]]; then
+          echo "::error::Invalid Compose Design System commit in .github/compose-design-system.ref"
+          exit 1
+        fi
+        echo "sha=$revision" >> "$GITHUB_OUTPUT"
+    - name: Checkout pinned Compose sources
+      uses: actions/checkout@v4
+      with:
+        repository: knigdelioglu/compose-design-system
+        ref: ${{ steps.revision.outputs.sha }}
+        path: compose-design-system
+        persist-credentials: false
+    - name: Verify sources and configure Gradle
+      shell: bash
+      env:
+        EXPECTED_SHA: ${{ steps.revision.outputs.sha }}
+      run: |
+        set -euo pipefail
+        actual="$(git -C "$GITHUB_WORKSPACE/compose-design-system" rev-parse HEAD)"
+        if [[ "$actual" != "$EXPECTED_SHA" ]]; then
+          echo "::error::Checked out $actual instead of pinned $EXPECTED_SHA"
+          exit 1
+        fi
+        sources="$GITHUB_WORKSPACE/compose-design-system/design-system/src/main/java"
+        test -d "$sources" || { echo "::error::Compose source directory not found: $sources"; exit 1; }
+        echo "ORG_GRADLE_PROJECT_composeDesignSystemSources=$sources" >> "$GITHUB_ENV"
+        echo "Compose Design System: $actual" >> "$GITHUB_STEP_SUMMARY"
