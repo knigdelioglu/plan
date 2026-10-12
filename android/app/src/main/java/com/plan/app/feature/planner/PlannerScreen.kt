@@ -500,12 +500,7 @@ private fun LeftSidebarHeader(
                 } + Pair("+ Yeni Sınıf") { onOpenNewClassDialog() }
             )
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ArcThemeSwitch(
-                    isDark = viewModel.isDarkMode.collectAsState().value,
-                    onToggle = { viewModel.toggleDarkMode() }
-                )
-            }
+            // Theme control is in the compact workspace toolbar; do not repeat it here.
         }
     }
 }
@@ -964,7 +959,7 @@ private fun WeekNavigationButtons(
     viewModel: PlannerViewModel,
     weekNumber: Int,
     lastWeekNumber: Int,
-    compact: Boolean
+    @Suppress("UNUSED_PARAMETER") compact: Boolean
 ) {
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         IconButton(
