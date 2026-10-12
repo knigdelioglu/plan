@@ -5,28 +5,26 @@ on:
       - 'android/**'
       - 'plans/**'
       - '.github/workflows/android-ci.yml'
+      - '.github/compose-design-system.ref'
+      - '.github/actions/checkout-compose-design-system/**'
   push:
     branches: [main]
     paths:
       - 'android/**'
       - 'plans/**'
       - '.github/workflows/android-ci.yml'
+      - '.github/compose-design-system.ref'
+      - '.github/actions/checkout-compose-design-system/**'
 permissions:
   contents: read
 jobs:
   build-and-unit-test:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      ORG_GRADLE_PROJECT_composeDesignSystemSources: ../compose-design-system/design-system/src/main/java
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout shared Compose design system
-        uses: actions/checkout@v4
-        with:
-          repository: knigdelioglu/compose-design-system
-          ref: 4c6d96ab1f91c2dae1bbe30b5dfb8f2f946c7b51
-          path: compose-design-system
+      - name: Checkout pinned Compose Design System
+        uses: ./.github/actions/checkout-compose-design-system
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
