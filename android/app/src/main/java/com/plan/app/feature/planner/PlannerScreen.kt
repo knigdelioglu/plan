@@ -106,7 +106,6 @@ import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
 import com.knigdelioglu.arc.compose.display.ArcProgress
-import java.time.LocalDate
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.NoteType
 import com.plan.app.core.model.PlanLesson
@@ -1209,6 +1208,7 @@ private fun AnalyticsAndChartsView(
             }
         }.sumOf { it.hours }
     }
+    val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), LocalDate.now())
     val verifiedHours = currentPlan?.metadata?.verifiedLessonHours
     val assumedHours = currentPlan?.metadata?.assumedLessonHours
     val annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
@@ -1255,6 +1255,22 @@ private fun AnalyticsAndChartsView(
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
+        Text(
+            text = "Takvime göre ilerleme · ${timeline.percent}% (${timeline.elapsedHours} / ${timeline.totalHours} saat)",
+            style = ArcTheme.typography.titleMedium,
+            color = ArcTheme.colors.foreground
+        )
+        ArcProgress(progress = timeline.fraction, height = 8.dp)
+        Text(
+            text = "Geçen öğretim haftaları otomatik sayılır. İşlendi olarak işaretlenen saatler aşağıda ayrı gösterilir.",
+            style = ArcTheme.typography.bodySmall,
+            color = ArcTheme.colors.textSecondary
+        )
+        Text(
+            text = "İşaretlenmiş dersler · $completedHours / $annualHours saat",
+            style = ArcTheme.typography.titleMedium,
+            color = ArcTheme.colors.foreground
+        )
         ArcUsageMeter(
             completedHours = completedHours,
             verifiedHours = verifiedHours,
