@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.safeDrawingPadding
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -76,8 +78,6 @@ import com.plan.app.core.design.components.advanced.ArcActivityHeatmap
 import com.plan.app.core.design.components.advanced.ArcInput
 import com.plan.app.core.design.components.advanced.ArcSwipeActions
 import com.plan.app.core.design.components.advanced.ArcThemeSwitch
-import com.plan.app.core.design.components.advanced.ArcTreeView
-import com.plan.app.core.design.components.advanced.TreeNode
 import com.plan.app.core.design.components.core.ArcActionButton
 import com.plan.app.core.design.components.core.ArcAlert
 import com.plan.app.core.design.components.core.ArcAlertVariant
@@ -111,6 +111,7 @@ import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.NoteType
 import com.plan.app.core.model.PlanLesson
 import com.plan.app.core.model.PlanWeek
+import java.time.LocalDate
 import com.plan.app.core.model.PlannerViewMode
 
 @Composable
@@ -170,7 +171,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     }
 
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize().background(colors.background)
+        modifier = Modifier.fillMaxSize().safeDrawingPadding().imePadding().background(colors.background)
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown &&
                     (event.isCtrlPressed || event.isMetaPressed) && event.key == Key.K
@@ -438,39 +439,66 @@ private fun LeftSidebar(
                 )
             }
 
-            // Tree View (Themes & Weeks)
-            val themes = currentPlan?.themes ?: emptyList()
-            if (themes.isNotEmpty()) {
+            // Weekly content replaces the expansive curriculum hierarchy.
+            SelectedWeekSidebarCard(selectedWeek)
+            WeekSpecialDaysNotice(selectedWeek)
+
+        }
+    }
+}
+
+@Composable
+private fun SelectedWeekSidebarCard(week: PlanWeek?) {
+    val colors = ArcTheme.colors
+    ArcCard(modifier = Modifier.fillMaxWidth().testTag("sidebar-week-card")) {
+        Column(
+            modifier = Modifier.padding(ArcSpacing.space3),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text("İlgili Hafta", style = ArcTheme.typography.labelSmall, color = colors.textSecondary)
+            if (week == null) {
+                Text("Yıllık plan bulunamadı", color = colors.textSecondary)
+            } else {
                 Text(
-                    text = "Müfredat Hiyerarşisi",
-                    style = ArcTheme.typography.labelSmall,
-                    color = colors.textMuted
+                    "${week.weekNumber}. Hafta · ${week.dateRangeRaw}",
+                    style = ArcTheme.typography.titleMedium,
+                    color = colors.foreground
                 )
-                val treeNodes = themes.map { theme ->
-                    TreeNode(
-                        id = "theme-${theme.themeNumber}",
-                        label = "${theme.themeCode}: ${theme.themeName}",
-                        badgeText = "${theme.totalHours} sa",
-                        children = run {
-                            val startW = theme.weekRange.firstOrNull() ?: 1
-                            val endW = theme.weekRange.lastOrNull() ?: 9
-                            (startW..endW).map { wNum ->
-                                TreeNode(
-                                    id = "week-$wNum",
-                                    label = "$wNum. Hafta",
-                                    onClick = {
-                                        viewModel.selectWeek(wNum)
-                                        viewModel.selectViewMode(PlannerViewMode.WEEK)
-                                    }
-                                )
-                            }
-                        }
+                week.theme?.let { theme ->
+                    Text(
+                        "${theme.themeCode}: ${theme.themeName}",
+                        style = ArcTheme.typography.bodyMedium,
+                        color = colors.foreground
                     )
                 }
-                ArcTreeView(nodes = treeNodes)
+                Text(
+                    "Toplam ${week.totalHours} ders saati · ${week.lessons.size} bölüm",
+                    style = ArcTheme.typography.labelSmall,
+                    color = colors.textSecondary
+                )
+                week.lessons.forEach { lesson ->
+                    Text(
+                        "${lesson.lessonIndex}. Bölüm: ${lesson.learningArea ?: lesson.topicTitle ?: "Ders"} (${lesson.hours} saat)",
+                        style = ArcTheme.typography.bodySmall,
+                        color = colors.foreground
+                    )
+                }
             }
         }
     }
+}
+
+@Composable
+private fun WeekSpecialDaysNotice(week: PlanWeek?) {
+    val specialDay = week?.specialDaysAndWeeks?.takeIf { it.present } ?: return
+    ArcAlert(
+        title = "Özel Gün ve Hafta: ${specialDay.raw ?: specialDay.text ?: specialDay.events.joinToString(", ") { it.name }}",
+        message = specialDay.schedulingNote
+            ?: specialDay.events.firstOrNull()?.calendarNote
+            ?: "Kaynak yıllık planda bu hafta için belirtilmiştir.",
+        variant = ArcAlertVariant.INFO,
+        modifier = Modifier.fillMaxWidth().testTag("week-special-days")
+    )
 }
 
 @Composable
@@ -535,8 +563,8 @@ private fun CenterWorkspace(
     var showSearch by rememberSaveable { mutableStateOf(false) }
     var showStats by rememberSaveable { mutableStateOf(false) }
     var showViews by rememberSaveable { mutableStateOf(false) }
-    val annualHours = currentPlan?.weeks?.sumOf { it.totalHours } ?: 0
-    val completion = if (annualHours > 0) completedHours.toFloat() / annualHours else 0f
+    val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), LocalDate.now())
+    val completion = timeline.fraction
 
     Column(
         modifier = Modifier
@@ -600,9 +628,9 @@ private fun CenterWorkspace(
         Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    Text("Yıllık ilerleme", style = ArcTheme.typography.labelSmall, color = colors.textSecondary)
+                    Text("Takvime göre ilerleme", style = ArcTheme.typography.labelSmall, color = colors.textSecondary)
                     Text(
-                        "${(completion * 100).toInt()}% · $completedHours / $annualHours saat",
+                        "${timeline.percent}% · ${timeline.elapsedHours} / ${timeline.totalHours} saat",
                         style = ArcTheme.typography.labelSmall, color = colors.textSecondary
                     )
                 }
@@ -614,6 +642,11 @@ private fun CenterWorkspace(
             }
         }
         if (showStats) {
+            Text(
+                "İşlendi olarak işaretlenen: $completedHours / ${timeline.totalHours} saat. Bu değer takvim ilerlemesinden ayrıdır.",
+                style = ArcTheme.typography.bodySmall,
+                color = colors.textSecondary
+            )
             ArcStatsBand(
                 totalWeeks = currentPlan?.metadata?.totalTeachingWeeks ?: 37,
                 totalLessons = currentPlan?.weeks?.sumOf { it.lessons.size } ?: 0,
@@ -621,7 +654,7 @@ private fun CenterWorkspace(
                 assumedHours = currentPlan?.metadata?.assumedLessonHours,
                 annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
                     ?: currentPlan?.metadata?.totalAnnualHours
-                    ?: annualHours,
+                    ?: timeline.totalHours,
                 completedHours = completedHours,
                 currentWeekNumber = activeWeekNumber
             )
@@ -653,7 +686,8 @@ private fun CenterWorkspace(
                 WeeklyLessonPlanView(
                     viewModel = viewModel,
                     activeWeek = activeWeek,
-                    activeWeekNumber = activeWeekNumber
+                    activeWeekNumber = activeWeekNumber,
+                    showWeekSummary = onToggleSidebar == null || !sidebarVisible
                 )
             }
             PlannerViewMode.MONTH -> {
@@ -669,9 +703,12 @@ private fun CenterWorkspace(
             else -> WeeklyLessonPlanView(
                 viewModel = viewModel,
                 activeWeek = activeWeek,
-                activeWeekNumber = activeWeekNumber
+                activeWeekNumber = activeWeekNumber,
+                showWeekSummary = onToggleSidebar == null || !sidebarVisible
             )
         }
+        // Leave a comfortable scroll destination above Android's bottom system bar.
+        Spacer(modifier = Modifier.height(ArcSpacing.space4))
     }
 }
 
@@ -679,7 +716,8 @@ private fun CenterWorkspace(
 private fun WeeklyLessonPlanView(
     viewModel: PlannerViewModel,
     activeWeek: PlanWeek?,
-    activeWeekNumber: Int
+    activeWeekNumber: Int,
+    showWeekSummary: Boolean
 ) {
     val colors = ArcTheme.colors
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
@@ -699,42 +737,21 @@ private fun WeeklyLessonPlanView(
     val totalWeeks = currentPlan?.weeks?.maxOfOrNull { it.weekNumber } ?: activeWeekNumber
 
     Column(verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)) {
-        // Week heading reflows instead of clipping the two navigation buttons on phones.
-        ArcCard(modifier = Modifier.fillMaxWidth()) {
-            BoxWithConstraints(
-                modifier = Modifier.fillMaxWidth().padding(ArcSpacing.space3)
-            ) {
-                val compactHeader = maxWidth < 650.dp
-                if (compactHeader) {
-                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (showWeekSummary) {
+            // On a phone or when the sidebar is hidden, keep the same navigation.
+            ArcCard(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(ArcSpacing.space3),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(modifier = Modifier.weight(1f)) {
                         WeekHeaderLabel(activeWeek, colors.foreground, colors.accent)
-                        WeekNavigationButtons(viewModel, activeWeekNumber, totalWeeks, compact = true)
                     }
-                } else {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = Modifier.weight(1f)) {
-                            WeekHeaderLabel(activeWeek, colors.foreground, colors.accent)
-                        }
-                        WeekNavigationButtons(viewModel, activeWeekNumber, totalWeeks, compact = false)
-                    }
+                    WeekNavigationButtons(viewModel, activeWeekNumber, totalWeeks, compact = false)
                 }
             }
-        }
-
-        // Special Days Notice (e.g. 15 Temmuz Demokrasi Günü in Week 1)
-        if (activeWeek.specialDaysAndWeeks?.present == true) {
-            val specialDay = activeWeek.specialDaysAndWeeks
-            ArcAlert(
-                title = "Özel Gün ve Hafta: ${specialDay.raw ?: specialDay.text ?: specialDay.events.joinToString(", ") { it.name }}",
-                message = specialDay.schedulingNote
-                    ?: specialDay.events.firstOrNull()?.calendarNote
-                    ?: "Kaynak yıllık planda bu hafta için belirtilmiştir.",
-                variant = ArcAlertVariant.INFO
-            )
+            WeekSpecialDaysNotice(activeWeek)
         }
 
         // Lesson Parts Breakdown (Supports 3+2 distribution)
