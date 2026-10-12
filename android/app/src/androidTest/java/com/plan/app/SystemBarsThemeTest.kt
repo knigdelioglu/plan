@@ -22,6 +22,8 @@ class SystemBarsThemeTest {
             assertEquals(initialLightIconsFlag, bars.isAppearanceLightNavigationBars)
         }
 
+        // The theme preference now lives in the dedicated Settings screen.
+        rule.onNodeWithContentDescription("Ayarlar").performClick()
         val originalLabel = if (initialLightIconsFlag) "Açık Tema" else "Koyu Tema"
         val toggledLabel = if (initialLightIconsFlag) "Koyu Tema" else "Açık Tema"
         rule.onNodeWithContentDescription(originalLabel).performClick()
