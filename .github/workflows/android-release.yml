@@ -41,18 +41,18 @@ jobs:
       - name: Prepare verified release files
         run: |
           mkdir -p dist
-          cp android/app/build/outputs/apk/debug/app-debug.apk dist/Plan-v1.0.2-debug.apk
-          test -s dist/Plan-v1.0.2-debug.apk
-          unzip -t dist/Plan-v1.0.2-debug.apk >/dev/null
+          cp android/app/build/outputs/apk/debug/app-debug.apk dist/Plan-v1.0.3-debug.apk
+          test -s dist/Plan-v1.0.3-debug.apk
+          unzip -t dist/Plan-v1.0.3-debug.apk >/dev/null
           cd dist
-          sha256sum Plan-v1.0.2-debug.apk > Plan-v1.0.2-debug.apk.sha256
+          sha256sum Plan-v1.0.3-debug.apk > Plan-v1.0.3-debug.apk.sha256
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create v1.0.2 \
-            dist/Plan-v1.0.2-debug.apk \
-            dist/Plan-v1.0.2-debug.apk.sha256 \
+          gh release create v1.0.3 \
+            dist/Plan-v1.0.3-debug.apk \
+            dist/Plan-v1.0.3-debug.apk.sha256 \
             --target "$GITHUB_SHA" \
-            --title "Plan Android v1.0.2 (test APK)" \
-            --notes "Haftalık kart ve özel günler sol panelde; açılış haftası takvime göre otomatik seçilir, takvim ilerlemesi otomatik hesaplanır, öğretmen notları sistem gezinti çubuğu üzerinde kaydırılabilir. Bu APK hata ayıklama anahtarıyla imzalanmıştır; üretim imzası değildir. Önceden farklı anahtarla imzalanmış sürümlerin üzerine kurulamayabilir."
+            --title "Plan Android v1.0.3 (test APK)" \
+            --notes "Koyu/açık tema geçişlerinde Android durum ve gezinme çubuğu simgeleri uygulama temasıyla eşitlenir; ekran arka planı sistem barlarının arkasında da çizilir. Bu APK hata ayıklama anahtarıyla imzalanmıştır; üretim imzası değildir. Önceden farklı anahtarla imzalanmış sürümlerin üzerine kurulamayabilir."
