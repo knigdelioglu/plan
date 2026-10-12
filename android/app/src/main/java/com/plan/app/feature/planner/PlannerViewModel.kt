@@ -43,6 +43,9 @@ class PlannerViewModel @JvmOverloads constructor(
     val progressList: StateFlow<List<LessonProgress>> = teacherRepository.progressList
     val notesList: StateFlow<List<TeacherNote>> = teacherRepository.notesList
 
+    private val _currentDate = MutableStateFlow(LocalDate.now())
+    val currentDate: StateFlow<LocalDate> = _currentDate.asStateFlow()
+
     private val noteDrafts = NoteDraftBuffer { key, text ->
         teacherRepository.saveNote(key.classroomId, key.weekNumber, null, text, NoteType.TEXT)
     }
@@ -154,6 +157,7 @@ class PlannerViewModel @JvmOverloads constructor(
     fun onAppResumed() {
         val today = LocalDate.now()
         if (today != lastAutoSelectedDate && flushPendingTeacherNotes()) {
+            _currentDate.value = today
             lastAutoSelectedDate = today
             loadActivePlan()
         }
@@ -281,6 +285,7 @@ class PlannerViewModel @JvmOverloads constructor(
         }.getOrNull()
         _currentPlan.value = plan
         val today = LocalDate.now()
+        _currentDate.value = today
         lastAutoSelectedDate = today
         val relevant = plan?.let { PlanTimeline.relevantWeek(it.weeks, today) }
         if (relevant != null && relevant != activeWeekNumber.value) {
