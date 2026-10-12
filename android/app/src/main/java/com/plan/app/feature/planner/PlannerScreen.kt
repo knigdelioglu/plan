@@ -104,6 +104,10 @@ import com.plan.app.core.design.components.extended.DonutSlice
 import com.plan.app.core.design.theme.ArcRadius
 import com.plan.app.core.design.theme.ArcSpacing
 import com.plan.app.core.design.theme.ArcTheme
+import com.knigdelioglu.arc.compose.display.ArcProgress
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.NoteType
 import com.plan.app.core.model.PlanLesson
@@ -130,7 +134,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
 
     var showNewClassDialog by rememberSaveable { mutableStateOf(false) }
     // Hoisted above the compact/two-pane branch: DeX resize does not reset it.
-    var sidebarRatio by rememberSaveable { mutableFloatStateOf(0.4f) }
+    var sidebarRatio by rememberSaveable { mutableFloatStateOf(0.29f) }
+    var sidebarCollapsed by rememberSaveable { mutableStateOf(false) }
     var newClassName by remember { mutableStateOf("") }
     val availablePlans = viewModel.availablePlans
     var selectedPlanPath by remember { mutableStateOf<String?>(null) }
@@ -181,11 +186,10 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
         val isTabletLandscape =
             PlannerWindowPolicy.modeFor(maxWidth.value) == PlannerWindowMode.TWO_PANE
 
-        if (isTabletLandscape) {
-            // Tablet-first Resizable Paneller
+        if (isTabletLandscape && !sidebarCollapsed) {
             ArcResizablePanels(
                 modifier = Modifier.testTag("planner-two-pane"),
-                initialSplitRatio = 0.40f,
+                initialSplitRatio = 0.29f,
                 controlledSplitRatio = sidebarRatio,
                 onSplitRatioChange = { sidebarRatio = it },
                 minFirstPanelWidth = PlannerWindowPolicy.MinSidebarDp.dp,
@@ -195,7 +199,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                         viewModel = viewModel,
                         currentClass = currentClass,
                         classrooms = classrooms,
-                        onOpenNewClassDialog = { showNewClassDialog = true }
+                        onOpenNewClassDialog = { showNewClassDialog = true },
+                        onCollapse = { sidebarCollapsed = true }
                     )
                 },
                 secondPanel = {
@@ -203,12 +208,24 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                         viewModel = viewModel,
                         activeWeek = activeWeek,
                         currentClass = currentClass,
-                        viewMode = viewMode
+                        viewMode = viewMode,
+                        onToggleSidebar = { sidebarCollapsed = !sidebarCollapsed },
+                        sidebarVisible = true
                     )
                 }
             )
+        } else if (isTabletLandscape) {
+            Box(modifier = Modifier.fillMaxSize().testTag("planner-two-pane")) {
+                CenterWorkspace(
+                    viewModel = viewModel,
+                    activeWeek = activeWeek,
+                    currentClass = currentClass,
+                    viewMode = viewMode,
+                    onToggleSidebar = { sidebarCollapsed = false },
+                    sidebarVisible = false
+                )
+            }
         } else {
-            // Compact / Phone layout
             Column(modifier = Modifier.fillMaxSize().testTag("planner-compact")) {
                 LeftSidebarHeader(
                     viewModel = viewModel,
@@ -295,11 +312,14 @@ private fun LeftSidebar(
     viewModel: PlannerViewModel,
     currentClass: Classroom?,
     classrooms: List<Classroom>,
-    onOpenNewClassDialog: () -> Unit
+    onOpenNewClassDialog: () -> Unit,
+    onCollapse: () -> Unit
 ) {
     val colors = ArcTheme.colors
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
+    var fullCalendarVisible by rememberSaveable { mutableStateOf(false) }
+    val selectedWeek = currentPlan?.weeks?.firstOrNull { it.weekNumber == activeWeekNumber }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -327,21 +347,101 @@ private fun LeftSidebar(
                     } + Pair("+ Yeni Sınıf") { onOpenNewClassDialog() }
                 )
 
-                IconButton(onClick = onOpenNewClassDialog, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Add, contentDescription = "Sınıf Ekle", tint = colors.accent)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onOpenNewClassDialog, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.Add, contentDescription = "Sınıf Ekle", tint = colors.accent)
+                    }
+                    IconButton(onClick = onCollapse, modifier = Modifier.size(40.dp)) {
+                        Icon(Icons.Default.ChevronLeft, contentDescription = "Sol paneli gizle", tint = colors.textSecondary)
+                    }
                 }
             }
 
-            // Mini Calendar
-            ArcCalendar(
-                selectedWeek = activeWeekNumber,
-                onSelectWeek = {
-                    viewModel.selectWeek(it)
-                    viewModel.selectViewMode(PlannerViewMode.WEEK)
-                },
-                planWeeks = currentPlan?.weeks ?: emptyList(),
-                academicBreaks = currentPlan?.academicCalendarBreaks ?: emptyList()
-            )
+            // The monthly library calendar is preserved, but opened only on demand.
+            ArcCard(modifier = Modifier.fillMaxWidth()) {
+                Column(
+                    modifier = Modifier.padding(ArcSpacing.space3),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            text = selectedWeek?.dateRangeRaw ?: "Hafta seçin",
+                            style = ArcTheme.typography.titleMedium,
+                            color = colors.foreground
+                        )
+                        IconButton(
+                            modifier = Modifier.size(40.dp),
+                            onClick = { fullCalendarVisible = !fullCalendarVisible }
+                        ) {
+                            Icon(
+                                Icons.Default.Event,
+                                contentDescription = if (fullCalendarVisible) "Takvimi daralt" else "Aylık takvimi aç",
+                                tint = colors.textSecondary
+                            )
+                        }
+                    }
+                    val startDate = remember(selectedWeek?.startDate) {
+                        selectedWeek?.startDate?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
+                    }
+                    if (startDate != null) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(2.dp)
+                        ) {
+                            val weekdayLabels = listOf("Pzt", "Sal", "Çar", "Per", "Cum")
+                            weekdayLabels.forEachIndexed { index, label ->
+                                val date = startDate.plusDays(index.toLong())
+                                Surface(
+                                    modifier = Modifier.weight(1f),
+                                    shape = com.plan.app.core.design.theme.ArcRadius.md,
+                                    color = if (date == LocalDate.now()) colors.surfaceMuted else colors.surface
+                                ) {
+                                    Column(
+                                        modifier = Modifier.padding(vertical = 6.dp),
+                                        horizontalAlignment = Alignment.CenterHorizontally
+                                    ) {
+                                        Text(label, style = ArcTheme.typography.labelSmall, color = colors.textMuted)
+                                        Text(date.dayOfMonth.toString(), style = ArcTheme.typography.bodyMedium, color = colors.foreground)
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        IconButton(
+                            onClick = { viewModel.selectWeek(activeWeekNumber - 1) },
+                            enabled = activeWeekNumber > 1,
+                            modifier = Modifier.size(40.dp)
+                        ) { Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki hafta") }
+                        Text(
+                            text = "${activeWeekNumber}. / ${currentPlan?.weeks?.size ?: 0} hafta",
+                            style = ArcTheme.typography.labelSmall,
+                            color = colors.textSecondary,
+                            modifier = Modifier.align(Alignment.CenterVertically)
+                        )
+                        IconButton(
+                            onClick = { viewModel.selectWeek(activeWeekNumber + 1) },
+                            enabled = activeWeekNumber < (currentPlan?.weeks?.maxOfOrNull { it.weekNumber } ?: 0),
+                            modifier = Modifier.size(40.dp)
+                        ) { Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki hafta") }
+                    }
+                }
+            }
+            if (fullCalendarVisible) {
+                ArcCalendar(
+                    selectedWeek = activeWeekNumber,
+                    onSelectWeek = {
+                        viewModel.selectWeek(it)
+                        viewModel.selectViewMode(PlannerViewMode.WEEK)
+                    },
+                    planWeeks = currentPlan?.weeks.orEmpty(),
+                    academicBreaks = currentPlan?.academicCalendarBreaks.orEmpty()
+                )
+            }
 
             // Tree View (Themes & Weeks)
             val themes = currentPlan?.themes ?: emptyList()
@@ -420,7 +520,9 @@ private fun CenterWorkspace(
     viewModel: PlannerViewModel,
     activeWeek: PlanWeek?,
     currentClass: Classroom?,
-    viewMode: PlannerViewMode
+    viewMode: PlannerViewMode,
+    onToggleSidebar: (() -> Unit)? = null,
+    sidebarVisible: Boolean = true
 ) {
     val colors = ArcTheme.colors
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
@@ -440,71 +542,120 @@ private fun CenterWorkspace(
         }.sumOf { it.hours }
     }
 
+    var showSearch by rememberSaveable { mutableStateOf(false) }
+    var showStats by rememberSaveable { mutableStateOf(false) }
+    var showViews by rememberSaveable { mutableStateOf(false) }
+    val annualHours = currentPlan?.weeks?.sumOf { it.totalHours } ?: 0
+    val completion = if (annualHours > 0) completedHours.toFloat() / annualHours else 0f
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(ArcSpacing.space4)
+            .padding(ArcSpacing.space3)
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(ArcSpacing.space4)
+        verticalArrangement = Arrangement.spacedBy(ArcSpacing.space3)
     ) {
-        PlanSearchPanel(
-            query = filter.query,
-            results = searchResults,
-            onQueryChange = viewModel::setFilterQuery,
-            onSelectWeek = viewModel::openSearchResult
-        )
-
-        // Top Page Header (Block 1)
-        ArcPageHeader(
-            title = currentClass?.name ?: "11. Sınıf TDE",
-            breadcrumb = "Yıllık Plan • ${currentPlan?.metadata?.academicYear ?: "2026-2027"}",
-            subtitle = currentPlan?.metadata?.documentTitle,
-            badgeText = "${activeWeekNumber}. Hafta",
-            badgeVariant = ArcBadgeVariant.ACCENT,
-            actions = {
-                ArcButton(
-                    onClick = { viewModel.setCommandPaletteOpen(true) },
-                    variant = ArcButtonVariant.SECONDARY
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                        Icon(Icons.Default.Keyboard, contentDescription = null, modifier = Modifier.size(16.dp))
-                        Text("Cmd+K")
-                    }
-                }
-                ArcActionButton(
-                    onClick = { viewModel.setNotificationCenterOpen(true) },
-                    variant = ArcButtonVariant.SECONDARY
-                ) {
-                    Icon(Icons.Default.Notifications, contentDescription = "Bildirimler", modifier = Modifier.size(18.dp))
-                }
-                ArcThemeSwitch(
-                    isDark = isDarkMode,
-                    onToggle = { viewModel.toggleDarkMode() }
+        // Compact product header: class identity lives in the selector, not a second banner.
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = if (onToggleSidebar != null && !sidebarVisible) currentClass?.name ?: viewMode.title
+                        else "${viewMode.title} plan",
+                    style = ArcTheme.typography.titleLarge,
+                    color = colors.foreground
+                )
+                Text(
+                    text = "${activeWeekNumber}. hafta · ${currentPlan?.metadata?.academicYear ?: "2026-2027"}",
+                    style = ArcTheme.typography.labelSmall,
+                    color = colors.textSecondary
                 )
             }
-        )
+            if (onToggleSidebar != null) {
+                IconButton(onClick = onToggleSidebar, modifier = Modifier.size(40.dp)) {
+                    Icon(
+                        Icons.Default.Tune,
+                        contentDescription = if (sidebarVisible) "Sol paneli gizle" else "Sol paneli aç",
+                        tint = colors.textSecondary
+                    )
+                }
+            }
+            IconButton(onClick = { showSearch = !showSearch }, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Default.Search, contentDescription = "Plan araması", tint = colors.textSecondary)
+            }
+            IconButton(onClick = { viewModel.setCommandPaletteOpen(true) }, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Default.Keyboard, contentDescription = "Komut paleti", tint = colors.textSecondary)
+            }
+            IconButton(onClick = { viewModel.setNotificationCenterOpen(true) }, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Default.Notifications, contentDescription = "Bildirimler", tint = colors.textSecondary)
+            }
+            ArcThemeSwitch(isDark = isDarkMode, onToggle = { viewModel.toggleDarkMode() })
+        }
 
-        // Stats Band (Block 8)
-        ArcStatsBand(
-            totalWeeks = currentPlan?.metadata?.totalTeachingWeeks ?: 37,
-            totalLessons = currentPlan?.weeks?.sumOf { it.lessons.size } ?: 0,
-            verifiedHours = currentPlan?.metadata?.verifiedLessonHours,
-            assumedHours = currentPlan?.metadata?.assumedLessonHours,
-            annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
-                ?: currentPlan?.metadata?.totalAnnualHours
-                ?: currentPlan?.weeks?.sumOf { it.totalHours } ?: 0,
-            completedHours = completedHours,
-            currentWeekNumber = activeWeekNumber
-        )
+        if (showSearch || filter.query.isNotBlank()) {
+            PlanSearchPanel(
+                query = filter.query,
+                results = searchResults,
+                onQueryChange = viewModel::setFilterQuery,
+                onSelectWeek = {
+                    viewModel.openSearchResult(it)
+                    showSearch = false
+                }
+            )
+        }
 
-        // View Mode Segmented Control (Component 19)
-        ArcSegmentedControl(
-            options = PlannerViewMode.visibleModes,
-            selected = viewMode,
-            onSelect = { viewModel.selectViewMode(it) },
-            title = { it.title },
-            modifier = Modifier.fillMaxWidth()
-        )
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("Yıllık ilerleme", style = ArcTheme.typography.labelSmall, color = colors.textSecondary)
+                    Text(
+                        "${(completion * 100).toInt()}% · $completedHours / $annualHours saat",
+                        style = ArcTheme.typography.labelSmall, color = colors.textSecondary
+                    )
+                }
+                ArcProgress(progress = completion.coerceIn(0f, 1f), height = 6.dp)
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            ArcButton(onClick = { showStats = !showStats }, variant = ArcButtonVariant.SUBTLE) {
+                Text(if (showStats) "Özeti gizle" else "Ayrıntılar")
+            }
+        }
+        if (showStats) {
+            ArcStatsBand(
+                totalWeeks = currentPlan?.metadata?.totalTeachingWeeks ?: 37,
+                totalLessons = currentPlan?.weeks?.sumOf { it.lessons.size } ?: 0,
+                verifiedHours = currentPlan?.metadata?.verifiedLessonHours,
+                assumedHours = currentPlan?.metadata?.assumedLessonHours,
+                annualHours = currentPlan?.metadata?.totalAnnualHoursAssumed
+                    ?: currentPlan?.metadata?.totalAnnualHours
+                    ?: annualHours,
+                completedHours = completedHours,
+                currentWeekNumber = activeWeekNumber
+            )
+        }
+
+        ArcButton(
+            onClick = { showViews = !showViews },
+            variant = ArcButtonVariant.SUBTLE,
+            modifier = Modifier.testTag("planner-view-toggle")
+        ) {
+            Text(if (showViews) "Görünümleri gizle" else "Görünümler: ${viewMode.title}")
+        }
+        if (showViews) {
+            ArcSegmentedControl(
+                options = PlannerViewMode.visibleModes,
+                selected = viewMode,
+                onSelect = {
+                    viewModel.selectViewMode(it)
+                    showViews = false
+                },
+                title = { it.title },
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         // Main View Router
         when (viewMode) {
@@ -561,7 +712,7 @@ private fun WeeklyLessonPlanView(
         // Week heading reflows instead of clipping the two navigation buttons on phones.
         ArcCard(modifier = Modifier.fillMaxWidth()) {
             BoxWithConstraints(
-                modifier = Modifier.fillMaxWidth().padding(ArcSpacing.space4)
+                modifier = Modifier.fillMaxWidth().padding(ArcSpacing.space3)
             ) {
                 val compactHeader = maxWidth < 650.dp
                 if (compactHeader) {
@@ -621,7 +772,8 @@ private fun WeeklyLessonPlanView(
                     modifier = Modifier.fillMaxWidth(),
                     borderColor = if (isCompleted) colors.success.copy(alpha = 0.5f) else colors.border
                 ) {
-                    Column(modifier = Modifier.padding(ArcSpacing.space4)) {
+                    var lessonDetailsVisible by rememberSaveable(activeClassroomId, activeWeek.weekNumber, lesson.lessonIndex) { mutableStateOf(false) }
+                    Column(modifier = Modifier.padding(ArcSpacing.space3)) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween,
@@ -663,7 +815,26 @@ private fun WeeklyLessonPlanView(
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(ArcSpacing.space3))
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = lesson.learningOutcomes.take(2).joinToString("  ·  ") { it.code },
+                                style = ArcTheme.typography.labelSmall,
+                                color = colors.textSecondary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            ArcButton(
+                                onClick = { lessonDetailsVisible = !lessonDetailsVisible },
+                                variant = ArcButtonVariant.SUBTLE
+                            ) {
+                                Text(if (lessonDetailsVisible) "Ayrıntıları gizle" else "Kazanımlar ve materyaller")
+                            }
+                        }
+                        if (lessonDetailsVisible) {
+                            Spacer(modifier = Modifier.height(ArcSpacing.space3))
 
                         // Topic and Texts
                         if (lesson.textsAndMaterials.isNotEmpty()) {
@@ -747,13 +918,19 @@ private fun WeeklyLessonPlanView(
                                 }
                             }
                         }
+                        } // lessonDetailsVisible
                     }
                 }
             }
         }
 
-        // Pedagogical Context & Teacher Notes Side-by-Side or Stacked
-        TeacherNotesAndPedagogicalSection(viewModel = viewModel, activeWeek = activeWeek)
+        // Supporting context and note editor are available on demand, not always visible.
+        ArcExpandableCard(
+            title = "Öğretmen notları ve pedagojik açıklamalar",
+            subtitle = "Notlar, değerlendirme ve farklılaştırma"
+        ) {
+            TeacherNotesAndPedagogicalSection(viewModel = viewModel, activeWeek = activeWeek)
+        }
     }
 }
 
@@ -765,11 +942,10 @@ private fun WeekHeaderLabel(
 ) {
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
-            text = "${week.weekNumber}. Hafta (${week.month})",
+            text = "${week.weekNumber}. Hafta · ${week.dateRangeRaw}",
             style = ArcTheme.typography.titleLarge,
             color = titleColor
         )
-        ArcBadge(text = week.dateRangeRaw, variant = ArcBadgeVariant.NEUTRAL)
         week.theme?.let { theme ->
             Text(
                 text = "${theme.themeCode}: ${theme.themeName}",
@@ -787,30 +963,17 @@ private fun WeekNavigationButtons(
     lastWeekNumber: Int,
     compact: Boolean
 ) {
-    Row(
-        modifier = if (compact) Modifier.fillMaxWidth() else Modifier,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Box(modifier = if (compact) Modifier.weight(1f) else Modifier) {
-            ArcButton(
-                onClick = { viewModel.selectWeek(weekNumber - 1) },
-                enabled = weekNumber > 1,
-                variant = ArcButtonVariant.SECONDARY,
-                modifier = if (compact) Modifier.fillMaxWidth() else Modifier
-            ) {
-                Text(if (compact) "← Önceki" else "← Önceki Hafta")
-            }
-        }
-        Box(modifier = if (compact) Modifier.weight(1f) else Modifier) {
-            ArcButton(
-                onClick = { viewModel.selectWeek(weekNumber + 1) },
-                enabled = weekNumber < lastWeekNumber,
-                variant = ArcButtonVariant.SECONDARY,
-                modifier = if (compact) Modifier.fillMaxWidth() else Modifier
-            ) {
-                Text(if (compact) "Sonraki →" else "Sonraki Hafta →")
-            }
-        }
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        IconButton(
+            onClick = { viewModel.selectWeek(weekNumber - 1) },
+            enabled = weekNumber > 1,
+            modifier = Modifier.size(40.dp)
+        ) { Icon(Icons.Default.ChevronLeft, contentDescription = "Önceki hafta") }
+        IconButton(
+            onClick = { viewModel.selectWeek(weekNumber + 1) },
+            enabled = weekNumber < lastWeekNumber,
+            modifier = Modifier.size(40.dp)
+        ) { Icon(Icons.Default.ChevronRight, contentDescription = "Sonraki hafta") }
     }
 }
 
