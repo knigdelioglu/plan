@@ -291,6 +291,7 @@ fun ArcSwitch(
         modifier = modifier
             .width(44.dp)
             .height(26.dp)
+            .clip(ArcRadius.pill)
             .clickable(enabled = enabled) { onCheckedChange(!checked) },
         shape = ArcRadius.pill,
         color = if (checked) colors.controlOn else colors.controlTrack
