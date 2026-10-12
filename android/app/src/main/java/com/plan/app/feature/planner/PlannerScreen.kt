@@ -170,7 +170,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     }
 
     BoxWithConstraints(
-        modifier = Modifier.fillMaxSize().safeDrawingPadding().imePadding().background(colors.background)
+        modifier = Modifier.fillMaxSize().background(colors.background).safeDrawingPadding().imePadding()
             .onPreviewKeyEvent { event ->
                 if (event.type == KeyEventType.KeyDown &&
                     (event.isCtrlPressed || event.isMetaPressed) && event.key == Key.K
