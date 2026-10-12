@@ -34,31 +34,7 @@ jobs:
         working-directory: android
         run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
       - name: Resolve APK version and verify asset
-        run: |
-          python3 - <<'PY'
-          import json, os, pathlib, re, shutil, subprocess
-
-          root = pathlib.Path(os.environ["GITHUB_WORKSPACE"])
-          output = root / "android/app/build/outputs/apk/debug"
-          metadata = json.loads((output / "output-metadata.json").read_text())
-          assert metadata["applicationId"] == "com.plan.app", "Unexpected APK package"
-          assert metadata["variantName"] == "debug", "Unexpected build variant"
-          elements = metadata["elements"]
-          assert len(elements) == 1, "Expected exactly one APK"
-          version = elements[0]["versionName"]
-          assert re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version), "Unexpected APK version"
-          name = f"Plan-v{version}-debug.apk"
-          source = output / elements[0]["outputFile"]
-          assert source.is_file() and source.stat().st_size > 0, "APK missing"
-          subprocess.run(["unzip", "-t", str(source)], check=True, stdout=subprocess.DEVNULL)
-          dist = root / "dist"
-          dist.mkdir(exist_ok=True)
-          shutil.copy2(source, dist / name)
-          subprocess.run(["sha256sum", name], cwd=dist, check=True, stdout=(dist / (name + ".sha256")).open("w"))
-          with pathlib.Path(os.environ["GITHUB_ENV"]).open("a") as env:
-              env.write(f"RELEASE_VERSION={version}\nRELEASE_APK={name}\n")
-          print(f"Verified {name} against Gradle APK output metadata")
-          PY
+        run: python3 android/scripts/prepare-release.py
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
