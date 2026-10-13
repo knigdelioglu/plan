@@ -62,7 +62,7 @@ internal fun PlannerBackupControls(
             runCatching {
                 withContext(Dispatchers.IO) {
                     context.contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)
-                        ?.use(::readLimitedBackup) ?: error("Yedek okunamadı")
+                        ?.use { readLimitedBackup(it) } ?: error("Yedek okunamadı")
                 }
             }.onSuccess { pendingRestore = it }
                 .onFailure { status = "Yedek okunamadı: " + (it.message ?: "Dosya hatası") }
