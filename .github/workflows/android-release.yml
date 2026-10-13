@@ -1,5 +1,4 @@
-name: Publish Android APK
-
+name: Publish Signed Android APK
 on:
   workflow_dispatch:
   push:
@@ -7,34 +6,58 @@ on:
     paths:
       - '.github/workflows/android-release.yml'
       - 'android/app/build.gradle.kts'
-
 permissions:
   contents: read
-
 jobs:
   publish:
-    name: Build and publish installable APK
+    # Never fall back to an ephemeral debug key. Enable only after storing stable signing secrets.
+    if: ${{ vars.PLAN_SIGNED_RELEASES_ENABLED == 'true' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout pinned Compose Design System
-        uses: ./.github/actions/checkout-compose-design-system
+      - uses: ./.github/actions/checkout-compose-design-system
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Install Android SDK platform
+      - name: Install Android SDK
         run: |
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36"
-      - name: Test and build debug-signed APK
+      - name: Install signing key for this build only
+        env:
+          KEYSTORE_B64: ${{ secrets.PLAN_SIGNING_KEYSTORE_BASE64 }}
+          KEY_ALIAS: ${{ secrets.PLAN_SIGNING_KEY_ALIAS }}
+          KEYSTORE_PASSWORD: ${{ secrets.PLAN_SIGNING_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.PLAN_SIGNING_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test -n "$KEYSTORE_B64" && test -n "$KEY_ALIAS" && test -n "$KEYSTORE_PASSWORD" && test -n "$KEY_PASSWORD" || {
+            echo "::error::Stable release signing secrets must be configured; never distribute unsigned/debug releases."
+            exit 1
+          }
+          keystore="$RUNNER_TEMP/plan-release.jks"
+          printf '%s' "$KEYSTORE_B64" | base64 --decode > "$keystore"
+          chmod 600 "$keystore"
+          echo "PLAN_SIGNING_STORE_FILE=$keystore" >> "$GITHUB_ENV"
+      - name: Test and build signed release
         working-directory: android
-        run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
-      - name: Resolve APK version and verify asset
-        run: python3 android/scripts/prepare-release.py
+        env:
+          PLAN_SIGNING_STORE_PASSWORD: ${{ secrets.PLAN_SIGNING_STORE_PASSWORD }}
+          PLAN_SIGNING_KEY_ALIAS: ${{ secrets.PLAN_SIGNING_KEY_ALIAS }}
+          PLAN_SIGNING_KEY_PASSWORD: ${{ secrets.PLAN_SIGNING_KEY_PASSWORD }}
+        run: ./gradlew :app:testDebugUnitTest :app:assembleRelease --no-daemon --stacktrace
+      - name: Validate release metadata and digest
+        run: python3 android/scripts/prepare-release.py --variant release
+      - name: Verify APK signature
+        run: |
+          set -euo pipefail
+          apksigner="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -name apksigner -type f | sort -V | tail -1)"
+          test -n "$apksigner"
+          "$apksigner" verify --verbose "dist/$RELEASE_APK"
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -42,7 +65,7 @@ jobs:
           set -euo pipefail
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "::error::Release $tag already exists. Increment app version before publishing again."
+            echo "::error::Release $tag already exists. Increment the app version before publishing again."
             exit 1
           fi
           sha="$(cat .github/compose-design-system.ref)"
@@ -50,5 +73,5 @@ jobs:
             "dist/$RELEASE_APK" \
             "dist/$RELEASE_APK.sha256" \
             --target "$GITHUB_SHA" \
-            --title "Plan Android $tag (test APK)" \
-            --notes "Compose Design System commit: $sha. APK version is derived from the built app metadata and verified with SHA-256. This is debug-signed; a different signature may prevent in-place installation."
+            --title "Plan Android $tag (signed)" \
+            --notes "Signed release with persistent keystore. Compose Design System: $sha. SHA-256 included. Previous debug-signed builds cannot be upgraded in place if their signer differs; first export teacher backup from Settings, uninstall debug build, install signed release, and restore the backup."
