@@ -352,8 +352,10 @@ class TeacherRepository(private val context: Context? = null) {
             // Do not use Trace in the context=null JVM test code path.
             Trace.beginSection("PlanTeacherAtomicWrite")
             try {
-                writeAtomic(file, bytes)
+                // Write the recovery copy first: a failed primary commit must not
+                // publish a new snapshot with a missing or stale safety copy.
                 writeAtomic(File(file.path + ".recovery.json"), bytes)
+                writeAtomic(file, bytes)
             } finally {
                 Trace.endSection()
             }
@@ -442,7 +444,10 @@ class TeacherRepository(private val context: Context? = null) {
             notes = notes,
             activeClassroomId = classrooms.firstOrNull()?.id ?: "cls-11a"
         )
-        if (context != null) persist(state)
+        // A malformed legacy input must not be replaced with apparently valid
+        // defaults. Keep the original files and require an explicit restore.
+        if (initialLoadWarning != null) initialRecoveryRequired = true
+        if (context != null && !initialRecoveryRequired) persist(state)
         return state
     }
 }
