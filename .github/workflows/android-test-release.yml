@@ -1,0 +1,71 @@
+name: Publish Android test APK (prerelease)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/android-test-release.yml'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: plan-test-apk-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish-test-apk:
+    name: Build and publish prerelease APK
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install Android SDK platform
+        run: |
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36"
+      - name: Unit tests and debug APK
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest :app:assembleDebug --no-daemon --stacktrace
+      - name: Validate APK and prepare checksum
+        run: python3 android/scripts/prepare-release.py --variant debug
+      - name: Verify APK has a signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          apksigner="$(find "$ANDROID_HOME/build-tools" -maxdepth 2 -name apksigner -type f | sort -V | tail -1)"
+          test -n "$apksigner"
+          "$apksigner" verify --verbose "dist/$RELEASE_APK"
+      - name: Publish test prerelease, not a production release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="v${RELEASE_VERSION}-test"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "::error::Test release $tag already exists. Never overwrite an existing build under the same tag."
+            exit 1
+          fi
+          cat > "$RUNNER_TEMP/test-release-notes.md" <<'EOF'
+          Android test build for installation and testing. **This is a prerelease, NOT a production-signed or upgrade-safe release.**
+
+          - Uses published Compose Design System **0.1.1**.
+          - Built directly from the tagged Plan GitHub commit; debug APK with Android's temporary CI debug signing key.
+          - **Before installing, export your teacher-data backup in Settings.** This APK may not install over an existing Plan application if it uses a different signing key. In that case, do not uninstall until you have verified a restorable backup.
+          - A stable production-signed release requires the separate signed-release workflow and its persistent signing secrets.
+          - SHA-256 digest is attached alongside the APK.
+          EOF
+          gh release create "$tag" "dist/$RELEASE_APK" "dist/$RELEASE_APK.sha256" \
+            --target "$GITHUB_SHA" \
+            --title "Plan Android v$RELEASE_VERSION (test APK)" \
+            --notes-file "$RUNNER_TEMP/test-release-notes.md" \
+            --prerelease
