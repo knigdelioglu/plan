@@ -1,6 +1,7 @@
 package com.plan.app.core.design.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import com.knigdelioglu.arc.compose.foundation.ArcTheme as SharedArcTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
@@ -269,55 +270,50 @@ object ArcTheme {
     val typography: ArcTypographyTokens = ArcTypographyTokens
 }
 
+/**
+ * Compatibility adapter for the application's older Arc API.
+ * The shared Compose Design System owns MaterialTheme and canonical color tokens.
+ * Existing app-specific components consume the mapped palette while they migrate.
+ */
 @Composable
 fun ArcTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     reducedMotionOverride: Boolean? = null,
     content: @Composable () -> Unit
 ) {
-    val systemReducedMotion = rememberSystemReducedMotion()
-    val reducedMotion = reducedMotionOverride ?: systemReducedMotion
-    val arcColors = if (darkTheme) ArcDarkColors else ArcLightColors
-    val m3ColorScheme = if (darkTheme) {
-        darkColorScheme(
-            primary = arcColors.accent,
-            onPrimary = arcColors.accentForeground,
-            surface = arcColors.surface,
-            onSurface = arcColors.foreground,
-            background = arcColors.background,
-            onBackground = arcColors.foreground,
-            outline = arcColors.border
+    val shared = SharedArcTheme.colors
+    val fallback = if (darkTheme) ArcDarkColors else ArcLightColors
+    val colors = if (shared.isDark == darkTheme) {
+        fallback.copy(
+            background = shared.background,
+            surface = shared.surface,
+            surfaceRaised = shared.surfaceRaised,
+            surfaceMuted = shared.surfaceMuted,
+            foreground = shared.foreground,
+            textSecondary = shared.textSecondary,
+            textMuted = shared.textMuted,
+            border = shared.border,
+            borderSubtle = shared.borderSubtle,
+            borderStrong = shared.borderStrong,
+            accent = shared.accent,
+            accentStrong = shared.accentStrong,
+            accentSubtle = shared.accentSubtle,
+            accentForeground = shared.accentForeground,
+            controlOn = shared.controlOn,
+            controlGlyph = shared.controlGlyph,
+            controlTrack = shared.controlTrack,
+            controlThumb = shared.controlThumb,
+            success = shared.success,
+            warning = shared.warning,
+            danger = shared.danger,
+            arcGradientFrom = shared.gradientFrom,
+            arcGradientTo = shared.gradientTo,
+            arcGradientForeground = shared.gradientForeground
         )
-    } else {
-        lightColorScheme(
-            primary = arcColors.accent,
-            onPrimary = arcColors.accentForeground,
-            surface = arcColors.surface,
-            onSurface = arcColors.foreground,
-            background = arcColors.background,
-            onBackground = arcColors.foreground,
-            outline = arcColors.border
-        )
-    }
-
-    val m3Typography = Typography(
-        displayLarge = ArcTypographyTokens.displayLarge,
-        titleLarge = ArcTypographyTokens.titleLarge,
-        titleMedium = ArcTypographyTokens.titleMedium,
-        bodyLarge = ArcTypographyTokens.bodyLarge,
-        bodyMedium = ArcTypographyTokens.bodyMedium,
-        bodySmall = ArcTypographyTokens.bodySmall,
-        labelMedium = ArcTypographyTokens.labelMedium
-    )
-
+    } else fallback
+    val reducedMotion = reducedMotionOverride ?: rememberSystemReducedMotion()
     CompositionLocalProvider(
-        LocalArcColors provides arcColors,
+        LocalArcColors provides colors,
         LocalReducedMotion provides reducedMotion
-    ) {
-        MaterialTheme(
-            colorScheme = m3ColorScheme,
-            typography = m3Typography,
-            content = content
-        )
-    }
+    ) { content() }
 }
