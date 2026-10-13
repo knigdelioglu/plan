@@ -9,7 +9,7 @@ cd android
 ./gradlew testDebugUnitTest assembleDebug assembleDebugAndroidTest -PcomposePublishedVersion=0.1.0
 ```
 
-This avoids `kotlin.directories.add(.../compose-design-system/src/main/java)` and instead resolves `com.knigdelioglu:compose-design-system:<version>` from the public Maven distribution branch. The repository is only included for these explicit artifact builds.
+This avoids `kotlin.directories.add(.../compose-design-system/src/main/java)` and instead resolves `com.knigdelioglu:compose-design-system:<version>` from the public Maven distribution branch. For pre-release tests, stage the Compose Maven publication locally and additionally pass -PcomposePublishedVersion=0.1.0-SNAPSHOT -PcomposePublishedRepositoryDir=/absolute/path/to/compose-design-system/build/p0-maven-repository. The repository is only included for these explicit artifact builds.
 
 The normal builds and release workflows continue to enforce the existing pinned SHA until the binary compatibility smoke test has passed under Plan's AGP 9.4.0 / Kotlin 2.4.20 toolchain. Source checkout and Maven dependency **must never be active simultaneously**, to avoid duplicate `com.knigdelioglu.arc.compose` classes.
 
