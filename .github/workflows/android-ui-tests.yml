@@ -4,6 +4,16 @@ on:
   pull_request:
     paths:
       - 'android/**'
+      - 'plans/**'
+      - '.github/workflows/android-ui-tests.yml'
+      - '.github/scripts/android-ui-display.sh'
+      - '.github/compose-design-system.ref'
+      - '.github/actions/checkout-compose-design-system/**'
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'plans/**'
       - '.github/workflows/android-ui-tests.yml'
       - '.github/scripts/android-ui-display.sh'
       - '.github/compose-design-system.ref'
@@ -50,7 +60,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: compose-ui-test-reports
+          name: compose-ui-test-reports-${{ matrix.display }}
           path: |
             android/app/build/reports/androidTests/**
             android/app/build/outputs/androidTest-results/**
