@@ -41,6 +41,8 @@ internal fun PlannerSettingsScreen(
     onFontScaleChange: (Int) -> Unit,
     isDarkMode: Boolean,
     onToggleDarkMode: () -> Unit,
+    onExportBackup: () -> String,
+    onImportBackup: suspend (String) -> Unit,
     onBack: () -> Unit
 ) {
     val colors = ArcTheme.colors
@@ -127,6 +129,12 @@ internal fun PlannerSettingsScreen(
                         Text("Koyu tema", style = ArcTheme.typography.bodyMedium, color = colors.foreground)
                         ArcThemeSwitch(isDark = isDarkMode, onToggle = onToggleDarkMode)
                     }
+                }
+            }
+
+            ArcCard(modifier = Modifier.fillMaxWidth()) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    PlannerBackupControls(onExport = onExportBackup, onImport = onImportBackup)
                 }
             }
 
