@@ -288,6 +288,7 @@ class TeacherRepository(private val context: Context? = null) {
         _viewMode.value = PlannerViewMode.WEEK
         _darkMode.value = false
         _fontScalePercent.value = FontScalePreference.DEFAULT_PERCENT
+        _storageError.value = null
         stateFile().delete()
         File(stateFile().path + ".bak").delete()
         File(stateFile().path + ".new").delete()
@@ -375,7 +376,11 @@ class TeacherRepository(private val context: Context? = null) {
         val base = file.parentFile
         fun <T> readLegacy(name: String, block: (String) -> T): T? {
             val legacy = File(base, name)
-            return if (legacy.isFile) block(legacy.readText(Charsets.UTF_8)) else null
+            return if (legacy.isFile) runCatching {
+                block(legacy.readText(Charsets.UTF_8))
+            }.onFailure {
+                initialLoadWarning = "Eski veri dosyası ($name) okunamadı; özgün dosya korundu."
+            }.getOrNull() else null
         }
         val classrooms = readLegacy("classrooms.json") {
             json.decodeFromString<List<Classroom>>(it)
