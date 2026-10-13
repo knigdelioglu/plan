@@ -3,6 +3,7 @@ package com.plan.app
 import android.os.Bundle
 import android.os.Build
 import android.graphics.Color as AndroidColor
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.compose.runtime.SideEffect
@@ -75,6 +76,13 @@ class MainActivity : ComponentActivity() {
         // "light" means DARK icons on a LIGHT background.
         controller.isAppearanceLightStatusBars = !dark
         controller.isAppearanceLightNavigationBars = !dark
+
+        // Keep the platform decor flags in sync on Android versions that may
+        // reapply legacy light-icon flags after edge-to-edge configuration.
+        val decor = window.decorView
+        val mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        decor.systemUiVisibility =
+            if (dark) decor.systemUiVisibility and mask.inv() else decor.systemUiVisibility or mask
 
         // Before Android 10, the navigation bar cannot rely on transparent
         // edge-to-edge rendering on all navigation modes.
