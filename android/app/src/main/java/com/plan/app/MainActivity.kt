@@ -7,6 +7,8 @@ import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
@@ -55,6 +57,12 @@ class MainActivity : ComponentActivity() {
             // The app's preference is independent of the device-wide night mode.
             // Re-apply platform icon appearance on every Compose theme change.
             SideEffect { syncSystemBars(isDark) }
+            // Android 15+ may re-apply edge-to-edge icon contrast during the next draw.
+            // Reassert the selected theme after that draw without waiting on the UI thread.
+            LaunchedEffect(isDark) {
+                withFrameNanos { }
+                syncSystemBars(isDark)
+            }
             // Keep the device's accessibility font scaling and scale sp, not dp.
             CompositionLocalProvider(
                 LocalDensity provides Density(
