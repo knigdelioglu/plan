@@ -11,7 +11,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        if (providers.gradleProperty("composePublishedVersion").isPresent) {
+        if (providers.gradleProperty("composeLegacySources").orNull != "true") {
             providers.gradleProperty("composePublishedRepositoryDir").orNull?.let { path ->
                 maven { url = uri(file(path)) }
             }

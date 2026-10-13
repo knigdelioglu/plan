@@ -1,39 +1,27 @@
-# Plan ↔ Compose Design System entegrasyonu
+# Compose Design System dependency policy
 
-Plan'ın Compose kaynakları `.github/compose-design-system.ref` dosyasındaki **tam commit SHA** ile sürümlenir. Bu revizyon Plan'ın Android CI, emülatör testleri ve APK yayımlamasında aynı olmalıdır.
+Plan pins a published Android AAR through `android/gradle.properties`:
 
-## CI ve GitHub Actions
-
-- `.github/actions/checkout-compose-design-system/action.yml` tek checkout işlemi olarak kullanılır; ref dosyasını okur, gerçek checkout commit'ini kontrol eder ve `ORG_GRADLE_PROJECT_composeDesignSystemSources` değişkenini ayarlar.
-- Android CI ve üç emülatör testi ref veya checkout action değişince çalışır.
-- Release iş akışı **APK'nın `output-metadata.json` dosyasından sürüm numarasını okur**. Artık tag, APK ismi ve SHA-256 dosya adı workflow'a ayrı ayrı yazılmaz.
-- Aynı sürüm etiketi daha önce yayımlandıysa yeniden yayımlama **hata vererek durur**. Yeni paket için `android/app/build.gradle.kts` içindeki `versionCode` ve `versionName` artırılır.
-- `main` dalındaki uygulama sürümü veya release workflow'u değişince yayımlama tetiklenir; elle çalıştırmak için `workflow_dispatch` de desteklenir.
-
-## Yerel geliştirme
-
-**Önerilen kullanım** (Plan deposunun kök klasöründen):
-
-```bash
-bash android/scripts/prepare-compose-design-system.sh
-cd android
-./gradlew testDebugUnitTest assembleDebug
+```properties
+composeDesignSystemVersion=0.1.0
 ```
 
-Hazırlama betiği ortak Compose deposunun **ayrı ve izole** kopyasını `android/.compose-deps/` altında hazırlar, kirli çalışma alanının üzerine yazmaz ve pin dosyasındaki SHA'yı doğrular. Bu klasör Git tarafından izlenmez.
+Gradle resolves `com.knigdelioglu:compose-design-system:<version>` from the public Maven branch and no longer compiles the library Kotlin sources inside `:app` by default. The app-specific Arc adapters remain in Plan.
 
-Gradle önce bu sabitlenmiş kopyayı bulur; yoksa eski kardeş `compose-design-system` deposunu kullanmayı dener. **Kaynak yolu ayrıca belirtilmemişse** Gradle git HEAD ile pin dosyasını karşılaştırır. Yanlış sürümle yerel APK üretilmesine izin verilmez.
+## Validation before accepting a new library version
+- Library publication is gated on Compose JVM, API, Gallery, Plan screen-matrix, and Puanla tablet connected emulator suites.
+- Raise the pinned version in a Plan PR after publication. Verify Android CI and compact, portrait-tablet, and landscape-tablet UI tests before merging.
+- Signing and distribution remain a separate app release process. A library update must not silently change existing Plan APK binaries.
 
-Başka bir kaynağı özellikle denemek için `-PcomposeDesignSystemSources=<tam-kaynak-yolu>` kullanılabilir. Bu açık tercih, git SHA kontrolünü devre dışı bırakır; deneysel derleme ile doğrulanmış sürümü karıştırmayın.
+## Emergency rollback
+The legacy pinned source revision in `.github/compose-design-system.ref` is retained for emergency recovery, not ordinary builds.
 
-## Güncelleme
+```sh
+bash android/scripts/prepare-compose-design-system.sh
+cd android
+./gradlew :app:assembleDebug -PcomposeLegacySources=true
+```
 
-1. `.github/compose-design-system.ref` dosyasına doğrulanmış yeni Compose commit SHA'sını yaz.
-2. Android CI ve telefon/dikey tablet/yatay tablet testlerini kontrol et.
-3. Dağıtılacak değişiklikler için Android sürüm numarasını artır; Release yeni sürümü APK'dan otomatik okuyacaktır.
+Alternatively set `-PcomposePublishedVersion=<previous verified Maven version>` to roll back the binary dependency without source injection. The emergency rollback must not rewrite Plan data or its domain models.
 
-**Otomatik yükseltme yoktur:** Compose deposuna yeni commit atılması Plan'ın pin dosyasını kendiliğinden değiştirmez. Bu yaklaşım, doğrulanmamış tasarım değişikliklerinin üretim APK'sına sessizce geçmesini önler.
-
-## 12 Ekim 2026
-
-`f43ef2d0302fee1d5cfa50bd089441f96fe21018`: yuvarlatılmış kontrollerin dokunma/ripple sınırları düzeltildi. Plan'ın ortak `ArcCheckbox`, `ArcSelect` ve diğer kaynak bileşenleri bu sürümden derlenir. Plan'ın kendi `ArcSwitch` uygulamasında da yuvarlatılmış etkileşim sınırı bulunur. Ripple görünümünün gerçek piksel sonucu emülatör/cihaz üzerinde ayrıca incelenebilir.
+Android CI and UI workflows expose `compose_legacy_sources` as an explicit manual override. Normal builds always use the pinned published version.

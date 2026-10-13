@@ -8,7 +8,13 @@ plugins {
 
 // GitHub Actions passes an explicitly verified checkout location. Local builds
 // default to an isolated, pinned cache rather than an arbitrary sibling checkout.
-val publishedComposeVersion = providers.gradleProperty("composePublishedVersion").orNull
+val publishedComposeVersion = if (providers.gradleProperty("composeLegacySources").orNull == "true") {
+    null
+} else {
+    providers.gradleProperty("composePublishedVersion")
+        .orElse(providers.gradleProperty("composeDesignSystemVersion"))
+        .get()
+}
 if (publishedComposeVersion != null) {
     require(Regex("[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?").matches(publishedComposeVersion)) {
         "Invalid published Compose version: $publishedComposeVersion"

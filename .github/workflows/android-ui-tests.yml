@@ -20,6 +20,11 @@ on:
       - '.github/actions/checkout-compose-design-system/**'
   workflow_dispatch:
     inputs:
+      compose_legacy_sources:
+        description: 'Emergency rollback to pinned Compose sources'
+        required: false
+        type: boolean
+        default: false
       compose_published_version:
         description: 'Optional published Compose version to smoke-test instead of pinned sources'
         required: false
@@ -40,10 +45,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Checkout pinned Compose Design System
-        if: ${{ inputs.compose_published_version == '' }}
+        if: ${{ inputs.compose_legacy_sources == true }}
         uses: ./.github/actions/checkout-compose-design-system
+      - name: Enable explicitly requested legacy source rollback
+        if: ${{ inputs.compose_legacy_sources == true }}
+        run: echo "ORG_GRADLE_PROJECT_composeLegacySources=true" >> "$GITHUB_ENV"
       - name: Select published binary for explicit UI compatibility run
-        if: ${{ inputs.compose_published_version != '' }}
+        if: ${{ inputs.compose_published_version != '' && inputs.compose_legacy_sources != true }}
         env:
           VERSION: ${{ inputs.compose_published_version }}
         shell: bash
