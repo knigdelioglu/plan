@@ -19,6 +19,11 @@ on:
       - '.github/compose-design-system.ref'
       - '.github/actions/checkout-compose-design-system/**'
   workflow_dispatch:
+    inputs:
+      compose_published_version:
+        description: 'Optional published Compose version to smoke-test instead of pinned sources'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -35,7 +40,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Checkout pinned Compose Design System
+        if: ${{ inputs.compose_published_version == '' }}
         uses: ./.github/actions/checkout-compose-design-system
+      - name: Select published binary for explicit UI compatibility run
+        if: ${{ inputs.compose_published_version != '' }}
+        env:
+          VERSION: ${{ inputs.compose_published_version }}
+        shell: bash
+        run: |
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.-]+)?$ ]] || exit 1
+          echo "ORG_GRADLE_PROJECT_composePublishedVersion=$VERSION" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
