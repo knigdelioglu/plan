@@ -111,18 +111,26 @@ class PlannerViewModel @JvmOverloads constructor(
     val isDarkMode: StateFlow<Boolean> = teacherRepository.darkMode
     val fontScalePercent: StateFlow<Int> = teacherRepository.fontScalePercent
     val storageError: StateFlow<String?> = teacherRepository.storageError
-    val availablePlans: List<PlanRepository.PlanRef> by lazy { planRepository.availablePlans() }
+    private val _availablePlans = MutableStateFlow<List<PlanRepository.PlanRef>>(emptyList())
+    val availablePlans: StateFlow<List<PlanRepository.PlanRef>> = _availablePlans.asStateFlow()
+    private val _planLoading = MutableStateFlow(true)
+    val planLoading: StateFlow<Boolean> = _planLoading.asStateFlow()
 
     private val _planError = MutableStateFlow<String?>(null)
     val planError: StateFlow<String?> = _planError.asStateFlow()
     private var loadJob: Job? = null
 
-    fun exportBackupJson(): String = teacherRepository.exportBackupJson()
-
-    fun importBackupJson(content: String) {
+    fun exportBackupJson(): String {
         check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
-        teacherRepository.importBackupJson(content)
-        check(teacherRepository.flushPendingWrites()) { "Yedek diske yazılamadı." }
+        return teacherRepository.exportBackupJson()
+    }
+
+    suspend fun importBackupJson(content: String) {
+        withContext(Dispatchers.IO) {
+            check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
+            teacherRepository.importBackupJson(content)
+            check(teacherRepository.flushPendingWrites()) { "Yedek diske yazılamadı." }
+        }
         loadActivePlan()
     }
 
@@ -162,6 +170,10 @@ class PlannerViewModel @JvmOverloads constructor(
     private var lastAutoSelectedDate: LocalDate = LocalDate.now()
 
     init {
+        viewModelScope.launch {
+            val plans = withContext(Dispatchers.IO) { planRepository.availablePlans() }
+            _availablePlans.value = plans
+        }
         loadActivePlan(autoSelectWeek = true)
     }
 
@@ -298,6 +310,7 @@ class PlannerViewModel @JvmOverloads constructor(
         val currentClass = classrooms.value.firstOrNull { it.id == activeClassroomId.value }
             ?: classrooms.value.firstOrNull()
         loadJob?.cancel()
+        _planLoading.value = true
         _planError.value = null
         _currentPlan.value = null
         loadJob = viewModelScope.launch {
@@ -305,6 +318,7 @@ class PlannerViewModel @JvmOverloads constructor(
             val result = withContext(Dispatchers.IO) {
                 runCatching { currentClass?.let(planRepository::loadAnnualPlan) }
             }
+            _planLoading.value = false
             result.onSuccess { plan ->
                 _currentPlan.value = plan
                 if (plan == null) {
