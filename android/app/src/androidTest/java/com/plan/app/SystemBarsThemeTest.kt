@@ -28,6 +28,13 @@ class SystemBarsThemeTest {
         val toggledLabel = if (initialLightIconsFlag) "Koyu Tema" else "Açık Tema"
         rule.onNodeWithContentDescription(originalLabel).performClick()
         rule.waitForIdle()
+        rule.onNodeWithContentDescription(toggledLabel).assertExists()
+        rule.waitUntil(timeoutMillis = 10_000) {
+            val activity = rule.activity
+            val bars = WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+            bars.isAppearanceLightStatusBars == !initialLightIconsFlag &&
+                bars.isAppearanceLightNavigationBars == !initialLightIconsFlag
+        }
 
         rule.runOnIdle {
             val activity = rule.activity
