@@ -139,7 +139,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     var sidebarRatio by rememberSaveable { mutableFloatStateOf(0.29f) }
     var sidebarCollapsed by rememberSaveable { mutableStateOf(false) }
     var newClassName by remember { mutableStateOf("") }
-    val availablePlans = viewModel.availablePlans
+    val availablePlans by viewModel.availablePlans.collectAsState()
     var selectedPlanPath by remember { mutableStateOf<String?>(null) }
     val selectedPlan = availablePlans.firstOrNull { it.pathSegment == selectedPlanPath }
         ?: availablePlans.firstOrNull()
@@ -190,6 +190,8 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                 onFontScaleChange = viewModel::setFontScalePercent,
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = viewModel::toggleDarkMode,
+                onExportBackup = viewModel::exportBackupJson,
+                onImportBackup = viewModel::importBackupJson,
                 onBack = { showSettings = false }
             )
         } else {
@@ -565,7 +567,7 @@ private fun CenterWorkspace(
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
     val progress by viewModel.progressList.collectAsState()
     val filter by viewModel.filter.collectAsState()
-    val searchResults = viewModel.searchResults()
+    val searchResults = remember(currentPlan, filter.query) { viewModel.searchResults() }
     val completedHours = currentPlan?.weeks.orEmpty().sumOf { week ->
         week.lessons.filter { lesson ->
             progress.any {
@@ -581,6 +583,7 @@ private fun CenterWorkspace(
     var showViews by rememberSaveable { mutableStateOf(false) }
     val timeline = PlanTimeline.progress(currentPlan?.weeks.orEmpty(), today)
     val completion = timeline.fraction
+    val storageError by viewModel.storageError.collectAsState()
 
     Column(
         modifier = Modifier
@@ -632,6 +635,14 @@ private fun CenterWorkspace(
             ) {
                 Icon(Icons.Default.Settings, contentDescription = "Ayarlar", tint = colors.textSecondary)
             }
+        }
+
+        if (storageError != null) {
+            Text(
+                text = storageError.orEmpty(),
+                style = ArcTheme.typography.bodyMedium,
+                color = colors.danger
+            )
         }
 
         if (showSearch || filter.query.isNotBlank()) {
@@ -745,6 +756,16 @@ private fun WeeklyLessonPlanView(
     val progress by viewModel.progressList.collectAsState()
 
     if (activeWeek == null) {
+        val loading by viewModel.planLoading.collectAsState()
+        val error by viewModel.planError.collectAsState()
+        if (loading) {
+            Text("Yıllık plan yükleniyor…", color = ArcTheme.colors.textSecondary)
+            return
+        }
+        if (error != null) {
+            Text(error.orEmpty(), color = ArcTheme.colors.danger)
+            return
+        }
         val plan = viewModel.classrooms.collectAsState().value
             .firstOrNull { it.id == activeClassroomId }
         ArcEmptyStatesBlock.PlanNotAvailable(
