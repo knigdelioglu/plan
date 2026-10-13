@@ -18,7 +18,6 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/checkout-compose-design-system
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -68,10 +67,11 @@ jobs:
             echo "::error::Release $tag already exists. Increment the app version before publishing again."
             exit 1
           fi
-          sha="$(cat .github/compose-design-system.ref)"
+          version="$(sed -n 's/^composeDesignSystemVersion=//p' android/gradle.properties)"
+          test -n "$version"
           gh release create "$tag" \
             "dist/$RELEASE_APK" \
             "dist/$RELEASE_APK.sha256" \
             --target "$GITHUB_SHA" \
             --title "Plan Android $tag (signed)" \
-            --notes "Signed release with persistent keystore. Compose Design System: $sha. SHA-256 included. Previous debug-signed builds cannot be upgraded in place if their signer differs; first export teacher backup from Settings, uninstall debug build, install signed release, and restore the backup."
+            --notes "Signed release with persistent keystore. Compose Design System Maven version: $version. SHA-256 included. Previous debug-signed builds cannot be upgraded in place if their signer differs; first export teacher backup from Settings, uninstall debug build, install signed release, and restore the backup."
