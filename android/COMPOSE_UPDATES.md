@@ -1,5 +1,26 @@
 # Plan ↔ Compose Design System entegrasyonu
 
+## Güncel durum — 13 Ekim 2026
+
+Plan, varsayılan olarak **`com.knigdelioglu:compose-design-system:0.1.1`** yayımlanmış Maven AAR paketini kullanır. Sürüm, `android/gradle.properties` içindeki `composePublishedVersion=0.1.1` özelliğiyle sabitlenmiştir. Paket deposu `android/settings.gradle.kts` içindeki `maven-repository` URL'sinden çözülür.
+
+```bash
+cd android
+./gradlew testDebugUnitTest assembleDebug
+```
+
+`android/app/build.gradle.kts`, yayımlanmış sürüm ayarlı olduğunda Compose kaynak klasörünü `sourceSets` içine **eklemez**: aynı sınıfların kaynak koddan ve AAR'dan birlikte derlenmesini engeller. Kaynak revizyonu `.github/compose-design-system.ref` içinde yalnızca geçmişteki kaynak-temelli iş akışı ve olası geri dönüş için tutulmaktadır; **0.1.1 paket sürümü bu SHA ile temsil edilmez.**
+
+Mevcut GitHub Actions kontrol iş akışları kaynak checkout adımını hâlâ çalıştırabilir, ancak Gradle 0.1.1 AAR'ı kullanır. Yayımlanmış paket için Android CI ve üç ekran profilli UI testlerinin sonuçları PR kontrollerinde ayrıca doğrulanmalıdır.
+
+**Geçici geri dönüş:** `android/gradle.properties` içindeki `composePublishedVersion` satırını kaldırıp `bash android/scripts/prepare-compose-design-system.sh` çalıştırın. Bundan sonra kaynak-temelli Gradle yolunun SHA kontrolü yeniden devreye girer. Kalıcı geri dönüş için ilgili değişiklik commit'i geri alınmalıdır.
+
+**Sürüm yükseltme:** Doğrulanmış yeni Maven sürümüne geçerken yalnızca `composePublishedVersion` değerini değiştirin, CI + UI testlerini çalıştırın. Uygulama için yeni bir APK yayımlanacaksa Android uygulama sürümünü ayrıca artırın. Compose deposuna yeni bir commit veya yeni sürüm gelmesi Plan'ı kendiliğinden yükseltmez.
+
+---
+
+## Önceki kaynak-temelli entegrasyon (tarihçe)
+
 Plan'ın Compose kaynakları `.github/compose-design-system.ref` dosyasındaki **tam commit SHA** ile sürümlenir. Bu revizyon Plan'ın Android CI, emülatör testleri ve APK yayımlamasında aynı olmalıdır.
 
 ## CI ve GitHub Actions

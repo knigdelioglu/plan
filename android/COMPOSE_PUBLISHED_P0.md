@@ -1,4 +1,10 @@
-# P0: versioned Compose artifact — Plan opt-in
+# P0: sürümlü Compose AAR — güncel karar
+
+**13 Ekim 2026:** Kaynak kodu varsayılan olarak derleyen önceki durum sona erdi. Plan'ın varsayılan Compose bağımlılığı `0.1.1` Maven AAR paketidir (`android/gradle.properties`). `-PcomposePublishedVersion=0.1.1` komut satırında artık isteğe bağlı bir test bayrağı değil, varsayılan yapılandırmayla aynı sonucu verir. Varsayılan kaynak-kod checkout'una ilişkin aşağıdaki bölüm tarihsel P0 hazırlık notudur; güncel yönergeler için `COMPOSE_UPDATES.md` dosyasına bakın.
+
+---
+
+## Tarihsel geçiş notu (P0)
 
 The default source checkout is intentionally unchanged. Plan currently pins `f43ef2d0302fee1d5cfa50bd089441f96fe21018` via `.github/compose-design-system.ref` and compiles Compose sources within the app.
 
