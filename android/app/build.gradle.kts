@@ -8,6 +8,12 @@ plugins {
 
 // GitHub Actions passes an explicitly verified checkout location. Local builds
 // default to an isolated, pinned cache rather than an arbitrary sibling checkout.
+val publishedComposeVersion = providers.gradleProperty("composePublishedVersion").orNull
+if (publishedComposeVersion != null) {
+    require(Regex("[0-9]+\\.[0-9]+\\.[0-9]+(-[A-Za-z0-9.-]+)?").matches(publishedComposeVersion)) {
+        "Invalid published Compose version: $publishedComposeVersion"
+    }
+}
 val explicitComposeSources = providers.gradleProperty("composeDesignSystemSources").orNull
 val preparedComposeSources = rootProject.file(".compose-deps/compose-design-system/design-system/src/main/java")
 val siblingComposeSources = rootProject.file("../../compose-design-system/design-system/src/main/java")
@@ -16,6 +22,7 @@ val composeDesignSystemSourceDir = when {
     preparedComposeSources.isDirectory -> preparedComposeSources
     else -> siblingComposeSources
 }
+if (publishedComposeVersion == null) {
 check(composeDesignSystemSourceDir.isDirectory) {
     "Compose design system sources missing at ${composeDesignSystemSourceDir.absolutePath}. " +
         "Run: bash android/scripts/prepare-compose-design-system.sh, or supply -PcomposeDesignSystemSources=<path>."
@@ -42,6 +49,8 @@ if (explicitComposeSources == null) {
             "Run: bash android/scripts/prepare-compose-design-system.sh " +
             "or explicitly provide -PcomposeDesignSystemSources=<path> for intentional local development."
     }
+}
+
 }
 
 android {
@@ -86,7 +95,9 @@ android {
     sourceSets {
         getByName("main") {
             assets.directories.add("../../plans")
-            kotlin.directories.add(composeDesignSystemSourceDir.absolutePath)
+            if (publishedComposeVersion == null) {
+                kotlin.directories.add(composeDesignSystemSourceDir.absolutePath)
+            }
         }
     }
 
@@ -102,6 +113,9 @@ kotlin {
 }
 
 dependencies {
+    if (publishedComposeVersion != null) {
+        implementation("com.knigdelioglu:compose-design-system:$publishedComposeVersion")
+    }
     val composeBom = platform("androidx.compose:compose-bom:2026.06.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)
