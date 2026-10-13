@@ -64,8 +64,8 @@ jobs:
           set -euo pipefail
           tag="v$RELEASE_VERSION"
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "::error::Release $tag already exists. Increment the app version before publishing again."
-            exit 1
+            echo "::notice::Release $tag already exists; skipping unchanged app version."
+            exit 0
           fi
           version="$(sed -n 's/^composeDesignSystemVersion=//p' android/gradle.properties)"
           test -n "$version"
