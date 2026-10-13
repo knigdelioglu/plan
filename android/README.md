@@ -57,7 +57,11 @@ python3 -m json.tool plan-ogretmen-yedegi.json > /dev/null
 
 ## Güvenli dağıtım
 
-GitHub Release artık yalnızca **kalıcı anahtarla imzalanmış release** APK için kullanılacaktır. Yeniden üretilebilir CI testleri için `assembleDebug` kullanılabilir; debug APK'ları kullanıcı güncelleme kanalı olarak yayımlanmaz.
+**Kararlı sürümler** yalnızca kalıcı anahtarla imzalanmış APK olarak yayımlanır. Kullanıcının test amacıyla APK alabilmesi için ayrı `.github/workflows/android-test-release.yml` iş akışı bulunur. Bu iş akışı yalnızca `v<version>-test` etiketli **ön sürüm (prerelease)** yayımlar; üretim yayını yerine geçmez.
+
+Test APK'sı geçici CI debug anahtarıyla imzalandığından önceki kurulumla imzası uyuşmayabilir. **Eski uygulamayı kaldırmadan önce Ayarlar'dan veri yedeğini alıp doğrulayın.** Aynı test sürümü etiketi ikinci kez yayımlanmaz ve mevcut release varlıkları üzerine yazılmaz. Yeni bir sürüm için `versionCode` ve `versionName` artırılmalıdır.
+
+GitHub Release kararlı kanalı yalnızca **kalıcı anahtarla imzalanmış release** APK için kullanılacaktır. Yeniden üretilebilir CI testleri için `assembleDebug` kullanılabilir; debug APK'ları kullanıcı güncelleme kanalı olarak yayımlanmaz.
 
 Depo yöneticisi GitHub Actions Secrets bölümünde şu gizli değerleri tanımlamalıdır:
 
