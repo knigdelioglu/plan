@@ -407,10 +407,14 @@ class TeacherRepository(private val context: Context? = null) {
             }.getOrNull()
             // Do not silently erase notes from a damaged file.
             if (file.exists()) {
-                val saved = runCatching {
+                // The original file is still present and never written in recovery mode.
+                // A full/read-only disk must not crash the app solely because an
+                // additional diagnostic copy could not be created.
+                runCatching {
                     file.copyTo(File(file.path + ".corrupt-" + System.currentTimeMillis()))
-                }.isSuccess
-                check(saved) { "Bozuk dosyanın güvenli kopyası alınamadı" }
+                }.onFailure {
+                    initialLoadWarning = "Bozuk dosya yerinde korundu; ek kopya oluşturulamadı."
+                }
             }
             if (recovered != null) {
                 initialLoadWarning = "Kayıt kurtarma yedeğinden açıldı; dışa aktararak yedekleyin."
