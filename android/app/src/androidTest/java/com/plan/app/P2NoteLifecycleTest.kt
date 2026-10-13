@@ -20,6 +20,8 @@ class P2NoteLifecycleTest {
     @Test
     fun fastTypingIsDurableWhenAppImmediatelyGoesToBackground() {
         val marker = "Yaşam döngüsü kayıt testi"
+        rule.onNodeWithTag("planner-view-toggle").performClick()
+        rule.onNodeWithText("Haftalık").performClick()
         rule.waitUntil(timeoutMillis = 20_000) {
             rule.onAllNodesWithText("Öğretmen notları ve pedagojik açıklamalar")
                 .fetchSemanticsNodes().isNotEmpty()
