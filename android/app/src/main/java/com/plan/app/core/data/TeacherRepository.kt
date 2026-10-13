@@ -53,7 +53,10 @@ class TeacherRepository(private val context: Context? = null) {
     private var scheduledRevision = 0L
     @Volatile private var persistedRevision = 0L
     private var initialLoadWarning: String? = null
-    private var snapshot = loadState()
+    // When all stored copies are unreadable, remain read-only until an explicit restore.
+    // Never let normal screen interactions overwrite the only damaged original.
+    private var initialRecoveryRequired = false
+    @Volatile private var snapshot = loadState()
     private val _classrooms = MutableStateFlow(snapshot.classrooms)
     val classrooms: StateFlow<List<Classroom>> = _classrooms.asStateFlow()
     private val _progressList = MutableStateFlow(snapshot.progress)
@@ -72,9 +75,15 @@ class TeacherRepository(private val context: Context? = null) {
     val fontScalePercent: StateFlow<Int> = _fontScalePercent.asStateFlow()
     private val _storageError = MutableStateFlow<String?>(initialLoadWarning)
     val storageError: StateFlow<String?> = _storageError.asStateFlow()
+    private val _recoveryRequired = MutableStateFlow(initialRecoveryRequired)
+    val recoveryRequired: StateFlow<Boolean> = _recoveryRequired.asStateFlow()
 
     @Synchronized
     private fun change(next: TeacherSnapshot) {
+        if (_recoveryRequired.value) {
+            _storageError.value = "Veri kurtarma gerekli: eski dosyalar korunuyor. Önce yedeği geri yükleyin."
+            return
+        }
         try {
             if (context == null) persist(next)
             snapshot = next
@@ -109,6 +118,7 @@ class TeacherRepository(private val context: Context? = null) {
 
     /** Durability barrier. Ordinary edits are always queued off the UI thread. */
     fun flushPendingWrites(): Boolean {
+        if (_recoveryRequired.value) return false
         val writer = diskWriter ?: return true
         val (revision, latest) = synchronized(this) { scheduledRevision to snapshot }
         if (persistedRevision >= revision) return true
@@ -132,6 +142,11 @@ class TeacherRepository(private val context: Context? = null) {
     fun exportBackupJson(): String =
         json.encodeToString(TeacherSnapshot.serializer(), snapshot)
 
+    /**
+     * Commit a validated restore to disk *before* publishing it to any StateFlow.
+     * The serialized writer drains older writes first, preventing stale revisions
+     * from overwriting a newer restore. Disk errors leave the visible state unchanged.
+     */
     @Synchronized
     fun importBackupJson(content: String) {
         val imported = json.decodeFromString(TeacherSnapshot.serializer(), content)
@@ -143,10 +158,35 @@ class TeacherRepository(private val context: Context? = null) {
         require(imported.classrooms.any { it.id == imported.activeClassroomId }) {
             "Etkin sınıf yedekte bulunamadı"
         }
-        change(imported.copy(
+        val restored = imported.copy(
             fontScalePercent = FontScalePreference.normalize(imported.fontScalePercent),
             viewMode = PlannerViewMode.fromSaved(imported.viewMode)
-        ))
+        )
+
+        try {
+            // Import is invoked from Dispatchers.IO; it may wait on disk durability.
+            val writer = diskWriter
+            if (writer != null) writer.submit { persist(restored) }.get()
+            else persist(restored)
+        } catch (error: Exception) {
+            _storageError.value = "Yedek diske kaydedilemedi: " +
+                (error.cause?.message ?: error.message ?: "Depolama hatası")
+            throw IllegalStateException(_storageError.value, error)
+        }
+
+        snapshot = restored
+        // Future normal writes start after the restore's successful disk commit.
+        persistedRevision = ++scheduledRevision
+        _recoveryRequired.value = false
+        _classrooms.value = restored.classrooms
+        _progressList.value = restored.progress
+        _notesList.value = restored.notes
+        _activeClassroomId.value = restored.activeClassroomId
+        _activeWeekNumber.value = restored.activeWeekNumber
+        _viewMode.value = restored.viewMode
+        _darkMode.value = restored.darkMode
+        _fontScalePercent.value = restored.fontScalePercent
+        _storageError.value = null
     }
 
     @Synchronized
@@ -280,6 +320,8 @@ class TeacherRepository(private val context: Context? = null) {
     fun clearAllForTesting() {
         check(flushPendingWrites()) { "Pending writes must complete before clearing tests" }
         snapshot = TeacherSnapshot(classrooms = defaults)
+        _recoveryRequired.value = false
+        initialRecoveryRequired = false
         _classrooms.value = defaults
         _progressList.value = emptyList()
         _notesList.value = emptyList()
@@ -353,7 +395,9 @@ class TeacherRepository(private val context: Context? = null) {
 
     private fun loadState(): TeacherSnapshot {
         val file = stateFile()
-        if (file.exists() || File(file.path + ".bak").exists()) {
+        if (file.exists() || File(file.path + ".bak").exists() ||
+            File(file.path + ".recovery.json").exists()
+        ) {
             runCatching { parseSnapshot(file) }.getOrNull()?.let { return it }
             val recovery = File(file.path + ".recovery.json")
             val recovered = runCatching {
@@ -371,6 +415,7 @@ class TeacherRepository(private val context: Context? = null) {
                 return recovered
             }
             initialLoadWarning = "Öğretmen verisi okunamadı. Hasarlı dosya korundu; yedekten geri yükleyin."
+            initialRecoveryRequired = true
             return TeacherSnapshot(classrooms = defaults)
         }
         val base = file.parentFile
