@@ -118,6 +118,8 @@ import com.plan.app.core.model.PlannerViewMode
 fun PlannerScreen(viewModel: PlannerViewModel) {
     val classrooms by viewModel.classrooms.collectAsState()
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val recoveryRequired by viewModel.recoveryRequired.collectAsState()
+    val storageError by viewModel.storageError.collectAsState()
     val activeWeekNumber by viewModel.activeWeekNumber.collectAsState()
     val viewMode by viewModel.viewMode.collectAsState()
     val isDarkMode by viewModel.isDarkMode.collectAsState()
@@ -131,6 +133,13 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     // Derive from collected Compose state so the lesson content follows week navigation.
     val activeWeek = currentPlan?.weeks?.firstOrNull { it.weekNumber == activeWeekNumber }
     val colors = ArcTheme.colors
+    if (recoveryRequired) {
+        PlannerRecoveryScreen(
+            message = storageError,
+            onImportBackup = viewModel::importBackupJson
+        )
+        return
+    }
 
     var showNewClassDialog by rememberSaveable { mutableStateOf(false) }
     var showSettings by rememberSaveable { mutableStateOf(false) }

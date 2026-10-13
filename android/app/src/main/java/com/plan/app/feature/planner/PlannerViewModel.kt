@@ -111,6 +111,9 @@ class PlannerViewModel @JvmOverloads constructor(
     val isDarkMode: StateFlow<Boolean> = teacherRepository.darkMode
     val fontScalePercent: StateFlow<Int> = teacherRepository.fontScalePercent
     val storageError: StateFlow<String?> = teacherRepository.storageError
+    val recoveryRequired: StateFlow<Boolean> = teacherRepository.recoveryRequired
+    private val _restoreGeneration = MutableStateFlow(0L)
+    val restoreGeneration: StateFlow<Long> = _restoreGeneration.asStateFlow()
     private val _availablePlans = MutableStateFlow<List<PlanRepository.PlanRef>>(emptyList())
     val availablePlans: StateFlow<List<PlanRepository.PlanRef>> = _availablePlans.asStateFlow()
     private val _planLoading = MutableStateFlow(true)
@@ -121,16 +124,19 @@ class PlannerViewModel @JvmOverloads constructor(
     private var loadJob: Job? = null
 
     fun exportBackupJson(): String {
+        check(!recoveryRequired.value) { "Eski veriler kurtarılmadan yeni yedek oluşturulamaz." }
         check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
         return teacherRepository.exportBackupJson()
     }
 
     suspend fun importBackupJson(content: String) {
         withContext(Dispatchers.IO) {
-            check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
+            if (!recoveryRequired.value) {
+                check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
+            }
             teacherRepository.importBackupJson(content)
-            check(teacherRepository.flushPendingWrites()) { "Yedek diske yazılamadı." }
         }
+        _restoreGeneration.value += 1
         loadActivePlan()
     }
 

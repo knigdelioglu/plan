@@ -121,12 +121,13 @@ internal fun TeacherNotesAndPedagogicalSection(
 ) {
     val colors = ArcTheme.colors
     val activeClassroomId by viewModel.activeClassroomId.collectAsState()
+    val restoreGeneration by viewModel.restoreGeneration.collectAsState()
     val notes by viewModel.notesList.collectAsState()
     val existingNote = notes.firstOrNull {
         it.classroomId == activeClassroomId && it.weekNumber == activeWeek.weekNumber && it.lessonIndex == null
     }
     // Never reuse a note editor state between two classrooms at the same week.
-    var noteText by remember(activeClassroomId, activeWeek.weekNumber) {
+    var noteText by remember(activeClassroomId, activeWeek.weekNumber, restoreGeneration) {
         mutableStateOf(viewModel.noteTextFor(
             activeClassroomId, activeWeek.weekNumber, existingNote?.text ?: ""
         ))
@@ -178,7 +179,7 @@ internal fun TeacherNotesAndPedagogicalSection(
         }
 
         // Rich Text Notes
-        key(activeClassroomId, activeWeek.weekNumber) {
+        key(activeClassroomId, activeWeek.weekNumber, restoreGeneration) {
             ArcRichTextEditor(
                 value = noteText,
                 onValueChange = {

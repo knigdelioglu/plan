@@ -39,6 +39,8 @@ Ayrıntılı bileşen listesi ve kullanım alanları için [`COMPONENTS_MATRIX.m
 
 - **Ayarlar → Yedeği dışa aktar:** Sınıflar, notlar, işlenen dersler ve tercihler kullanıcı tarafından seçilen konuma JSON dosyası olarak yazılır.
 - **Ayarlar → Yedekten geri yükle:** JSON dosyası seçilir; mevcut kayıtlar değiştirilmeden önce açık onay istenir. Desteklenmeyen sürüm ve geçersiz sınıf kimlikleri reddedilir.
+- Ana kayıt ve kurtarma kopyası birlikte okunamıyorsa uygulama **salt okunur kurtarma ekranı** açar: gezinme ve düzenleme eski dosyaların üzerine yazmaz. Yalnızca doğrulanan bir kişisel veri yedeği geri yüklendikten sonra normal kullanım devam eder. Geri yükleme önce diske kaydedilir, sonra ekrandaki notlar ve sınıf durumları değiştirilir.
+- Yedekten geri yükleme 10 MiB karakter sınırıyla okunur; aşırı büyük dosyalar belleğe bütünüyle alınmadan reddedilir.
 - Normal kaydetme işlemleri tek iş parçacıklı bir IO yazıcısında sıralanır. Her başarılı kayıttan sonra `teacher-state.json.recovery.json` adlı kurtarma kopyası da atomik olarak yenilenir. Okunamayan asıl kayıt üzerine yazmadan önce özgün dosyanın `.corrupt-...` kopyası korunur.
 - **Önemli:** v1.0.5 ve önceki test APK'ları debug anahtarıyla imzalanmış olabilir. Farklı imzalı APK mevcut uygulamanın üzerine kurulamaz. Önce yedek dışa aktarılmalı, ardından eski APK kaldırılıp imzalı sürüm kurulmalı ve yedek geri yüklenmelidir. Android uygulamayı kaldırırken yerel verileri silebilir.
 

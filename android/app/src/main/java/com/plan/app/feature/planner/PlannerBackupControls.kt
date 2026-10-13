@@ -5,6 +5,13 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.Alignment
+import java.io.Reader
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -28,7 +35,8 @@ import kotlinx.coroutines.withContext
 @Composable
 internal fun PlannerBackupControls(
     onExport: () -> String,
-    onImport: suspend (String) -> Unit
+    onImport: suspend (String) -> Unit,
+    allowExport: Boolean = true
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -56,7 +64,7 @@ internal fun PlannerBackupControls(
             runCatching {
                 withContext(Dispatchers.IO) {
                     context.contentResolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)
-                        ?.use { it.readText() } ?: error("Yedek okunamadı")
+                        ?.use { readLimitedBackup(it) } ?: error("Yedek okunamadı")
                 }
             }.onSuccess { pendingRestore = it }
                 .onFailure { status = "Yedek okunamadı: " + (it.message ?: "Dosya hatası") }
@@ -73,6 +81,7 @@ internal fun PlannerBackupControls(
         )
         ArcButton(
             onClick = { exportLauncher.launch("Plan-ogretmen-yedegi.json") },
+            enabled = allowExport,
             modifier = Modifier.fillMaxWidth()
         ) { Text("Yedeği dışa aktar") }
         ArcButton(
@@ -105,5 +114,46 @@ internal fun PlannerBackupControls(
                 TextButton(onClick = { pendingRestore = null }) { Text("İptal") }
             }
         )
+    }
+}
+
+/** Reject unexpectedly large or hostile documents without buffering all their bytes. */
+internal fun readLimitedBackup(reader: Reader, maxCharacters: Int = 10 * 1024 * 1024): String {
+    require(maxCharacters > 0)
+    val buffer = CharArray(8192)
+    val output = StringBuilder()
+    while (true) {
+        val count = reader.read(buffer)
+        if (count < 0) break
+        check(output.length + count <= maxCharacters) { "Yedek dosyası boyut sınırını aşıyor." }
+        output.append(buffer, 0, count)
+    }
+    return output.toString()
+}
+
+@Composable
+internal fun PlannerRecoveryScreen(
+    message: String?,
+    onImportBackup: suspend (String) -> Unit
+) {
+    Box(modifier = Modifier.fillMaxSize().padding(24.dp), contentAlignment = Alignment.Center) {
+        Column(
+            modifier = Modifier.fillMaxWidth().verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Text("Kişisel veri kurtarma gerekiyor", style = ArcTheme.typography.titleLarge,
+                color = ArcTheme.colors.danger)
+            Text(message ?: "Kişisel veri okunamadı. Eski kayıtların üzerine yazılmıyor.",
+                style = ArcTheme.typography.bodyMedium,
+                color = ArcTheme.colors.foreground)
+            Text("Veriler güvenlik için salt okunur korumaya alındı. Geçerli bir yedek seçerek devam edin. " +
+                "Mevcut bozuk dosya silinmedi.", style = ArcTheme.typography.bodyMedium,
+                color = ArcTheme.colors.textSecondary)
+            PlannerBackupControls(
+                onExport = { error("Kurtarma tamamlanmadan dışa aktarma kullanılamaz.") },
+                onImport = onImportBackup,
+                allowExport = false
+            )
+        }
     }
 }
