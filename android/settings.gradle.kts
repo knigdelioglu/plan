@@ -11,6 +11,9 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
+        if (providers.gradleProperty("composePublishedVersion").isPresent) {
+            maven { url = uri("https://raw.githubusercontent.com/knigdelioglu/compose-design-system/maven-repository/") }
+        }
     }
 }
 
