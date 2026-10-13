@@ -5,6 +5,7 @@ import android.util.AtomicFile
 import android.os.Trace
 import com.plan.app.core.model.Classroom
 import com.plan.app.core.model.DrawingStroke
+import com.plan.app.core.model.FontScalePreference
 import com.plan.app.core.model.LessonProgress
 import com.plan.app.core.model.NoteType
 import com.plan.app.core.model.PlanWeek
@@ -18,6 +19,7 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
+import java.util.concurrent.Executors
 
 /**
  * One atomic snapshot for classrooms, progress, notes and UI preferences.
@@ -33,6 +35,7 @@ private data class TeacherSnapshot(
     val activeWeekNumber: Int = 1,
     val viewMode: PlannerViewMode = PlannerViewMode.WEEK,
     val darkMode: Boolean = false,
+    val fontScalePercent: Int = FontScalePreference.DEFAULT_PERCENT,
     val weeksByClassroom: Map<String, Int> = emptyMap()
 )
 
@@ -44,6 +47,12 @@ class TeacherRepository(private val context: Context? = null) {
         Classroom("cls-11fen", "11-Fen (Fen Lisesi)", 11, "Fen Lisesi", "2026-2027", "Türk Dili ve Edebiyatı")
     )
 
+    private val diskWriter = if (context != null) Executors.newSingleThreadExecutor { task ->
+        Thread(task, "plan-personal-data-writer").apply { isDaemon = true }
+    } else null
+    private var scheduledRevision = 0L
+    @Volatile private var persistedRevision = 0L
+    private var initialLoadWarning: String? = null
     private var snapshot = loadState()
     private val _classrooms = MutableStateFlow(snapshot.classrooms)
     val classrooms: StateFlow<List<Classroom>> = _classrooms.asStateFlow()
@@ -59,13 +68,15 @@ class TeacherRepository(private val context: Context? = null) {
     val viewMode: StateFlow<PlannerViewMode> = _viewMode.asStateFlow()
     private val _darkMode = MutableStateFlow(snapshot.darkMode)
     val darkMode: StateFlow<Boolean> = _darkMode.asStateFlow()
-    private val _storageError = MutableStateFlow<String?>(null)
+    private val _fontScalePercent = MutableStateFlow(snapshot.fontScalePercent)
+    val fontScalePercent: StateFlow<Int> = _fontScalePercent.asStateFlow()
+    private val _storageError = MutableStateFlow<String?>(initialLoadWarning)
     val storageError: StateFlow<String?> = _storageError.asStateFlow()
 
     @Synchronized
     private fun change(next: TeacherSnapshot) {
         try {
-            persist(next)
+            if (context == null) persist(next)
             snapshot = next
             _classrooms.value = next.classrooms
             _progressList.value = next.progress
@@ -74,11 +85,68 @@ class TeacherRepository(private val context: Context? = null) {
             _activeWeekNumber.value = next.activeWeekNumber
             _viewMode.value = next.viewMode
             _darkMode.value = next.darkMode
-            _storageError.value = null
+            _fontScalePercent.value = next.fontScalePercent
+            if (diskWriter == null) {
+                _storageError.value = null
+            } else {
+                val revision = ++scheduledRevision
+                diskWriter.execute {
+                    try {
+                        persist(next)
+                        persistedRevision = revision
+                        _storageError.value = null
+                    } catch (error: Exception) {
+                        _storageError.value = "Kişisel veriler kaydedilemedi: " +
+                            (error.message ?: "Depolama hatası")
+                    }
+                }
+            }
         } catch (error: Exception) {
             _storageError.value = "Kişisel veriler kaydedilemedi: " + (error.message ?: "Depolama hatası")
             throw IllegalStateException(_storageError.value, error)
         }
+    }
+
+    /** Durability barrier. Ordinary edits are always queued off the UI thread. */
+    fun flushPendingWrites(): Boolean {
+        val writer = diskWriter ?: return true
+        val (revision, latest) = synchronized(this) { scheduledRevision to snapshot }
+        if (persistedRevision >= revision) return true
+        return try {
+            writer.submit {
+                if (persistedRevision < revision) {
+                    persist(latest)
+                    persistedRevision = revision
+                    _storageError.value = null
+                }
+            }.get()
+            persistedRevision >= revision
+        } catch (error: Exception) {
+            _storageError.value = "Kişisel veriler kaydedilemedi: " +
+                (error.cause?.message ?: error.message ?: "Depolama hatası")
+            false
+        }
+    }
+
+    @Synchronized
+    fun exportBackupJson(): String =
+        json.encodeToString(TeacherSnapshot.serializer(), snapshot)
+
+    @Synchronized
+    fun importBackupJson(content: String) {
+        val imported = json.decodeFromString(TeacherSnapshot.serializer(), content)
+        require(imported.version == 1) { "Desteklenmeyen yedek sürümü" }
+        require(imported.classrooms.isNotEmpty()) { "Yedekte sınıf kaydı bulunamadı" }
+        require(imported.classrooms.map { it.id }.distinct().size == imported.classrooms.size) {
+            "Yedekte yinelenen sınıf kimlikleri var"
+        }
+        require(imported.classrooms.any { it.id == imported.activeClassroomId }) {
+            "Etkin sınıf yedekte bulunamadı"
+        }
+        change(imported.copy(
+            fontScalePercent = FontScalePreference.normalize(imported.fontScalePercent),
+            viewMode = PlannerViewMode.fromSaved(imported.viewMode)
+        ))
     }
 
     @Synchronized
@@ -104,6 +172,12 @@ class TeacherRepository(private val context: Context? = null) {
         change(snapshot.copy(viewMode = PlannerViewMode.fromSaved(mode)))
     @Synchronized
     fun setDarkMode(enabled: Boolean) = change(snapshot.copy(darkMode = enabled))
+
+    @Synchronized
+    fun setFontScalePercent(percent: Int) {
+        require(FontScalePreference.isValid(percent)) { "Geçersiz yazı boyutu: $percent" }
+        if (snapshot.fontScalePercent != percent) change(snapshot.copy(fontScalePercent = percent))
+    }
 
     @Synchronized
     fun addClassroom(
@@ -204,6 +278,7 @@ class TeacherRepository(private val context: Context? = null) {
         }
 
     fun clearAllForTesting() {
+        check(flushPendingWrites()) { "Pending writes must complete before clearing tests" }
         snapshot = TeacherSnapshot(classrooms = defaults)
         _classrooms.value = defaults
         _progressList.value = emptyList()
@@ -212,9 +287,12 @@ class TeacherRepository(private val context: Context? = null) {
         _activeWeekNumber.value = 1
         _viewMode.value = PlannerViewMode.WEEK
         _darkMode.value = false
+        _fontScalePercent.value = FontScalePreference.DEFAULT_PERCENT
+        _storageError.value = null
         stateFile().delete()
         File(stateFile().path + ".bak").delete()
         File(stateFile().path + ".new").delete()
+        File(stateFile().path + ".recovery.json").delete()
         listOf("progress.json", "notes.json").forEach { File(stateFile().parentFile, it).delete() }
     }
 
@@ -232,15 +310,8 @@ class TeacherRepository(private val context: Context? = null) {
             // Do not use Trace in the context=null JVM test code path.
             Trace.beginSection("PlanTeacherAtomicWrite")
             try {
-                val atomic = AtomicFile(file)
-                val stream = atomic.startWrite()
-                try {
-                    stream.write(bytes)
-                    atomic.finishWrite(stream)
-                } catch (error: Exception) {
-                    atomic.failWrite(stream)
-                    throw error
-                }
+                writeAtomic(file, bytes)
+                writeAtomic(File(file.path + ".recovery.json"), bytes)
             } finally {
                 Trace.endSection()
             }
@@ -256,22 +327,60 @@ class TeacherRepository(private val context: Context? = null) {
         }
     }
 
+    private fun writeAtomic(file: File, bytes: ByteArray) {
+        val atomic = AtomicFile(file)
+        val stream = atomic.startWrite()
+        try {
+            stream.write(bytes)
+            atomic.finishWrite(stream)
+        } catch (error: Exception) {
+            atomic.failWrite(stream)
+            throw error
+        }
+    }
+
+    private fun parseSnapshot(file: File): TeacherSnapshot {
+        val raw = if (context != null) AtomicFile(file).openRead().bufferedReader().use { it.readText() }
+            else file.readText()
+        val parsed = json.decodeFromString(TeacherSnapshot.serializer(), raw)
+        require(parsed.version == 1) { "Bilinmeyen öğretmen veri sürümü" }
+        return parsed.copy(
+            classrooms = parsed.classrooms.ifEmpty { defaults },
+            fontScalePercent = FontScalePreference.normalize(parsed.fontScalePercent),
+            viewMode = PlannerViewMode.fromSaved(parsed.viewMode)
+        )
+    }
+
     private fun loadState(): TeacherSnapshot {
         val file = stateFile()
-        if (file.exists()) {
-            val raw = if (context != null) AtomicFile(file).openRead().bufferedReader().use { it.readText() }
-                else file.readText()
-            val parsed = json.decodeFromString(TeacherSnapshot.serializer(), raw)
-            require(parsed.version == 1) { "Bilinmeyen öğretmen veri sürümü" }
-            return parsed.copy(
-                classrooms = parsed.classrooms.ifEmpty { defaults },
-                viewMode = PlannerViewMode.fromSaved(parsed.viewMode)
-            )
+        if (file.exists() || File(file.path + ".bak").exists()) {
+            runCatching { parseSnapshot(file) }.getOrNull()?.let { return it }
+            val recovery = File(file.path + ".recovery.json")
+            val recovered = runCatching {
+                if (recovery.isFile) parseSnapshot(recovery) else null
+            }.getOrNull()
+            // Do not silently erase notes from a damaged file.
+            if (file.exists()) {
+                val saved = runCatching {
+                    file.copyTo(File(file.path + ".corrupt-" + System.currentTimeMillis()))
+                }.isSuccess
+                check(saved) { "Bozuk dosyanın güvenli kopyası alınamadı" }
+            }
+            if (recovered != null) {
+                initialLoadWarning = "Kayıt kurtarma yedeğinden açıldı; dışa aktararak yedekleyin."
+                return recovered
+            }
+            initialLoadWarning = "Öğretmen verisi okunamadı. Hasarlı dosya korundu; yedekten geri yükleyin."
+            return TeacherSnapshot(classrooms = defaults)
         }
         val base = file.parentFile
         fun <T> readLegacy(name: String, block: (String) -> T): T? {
             val legacy = File(base, name)
-            return if (legacy.isFile) block(legacy.readText(Charsets.UTF_8)) else null
+            return if (legacy.isFile) runCatching {
+                block(legacy.readText(Charsets.UTF_8))
+            }.onFailure {
+                initialLoadWarning = "Eski veri dosyası ($name) okunamadı; özgün dosya korundu."
+            }.getOrNull() else null
         }
         val classrooms = readLegacy("classrooms.json") {
             json.decodeFromString<List<Classroom>>(it)

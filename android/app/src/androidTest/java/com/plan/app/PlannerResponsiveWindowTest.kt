@@ -5,6 +5,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import com.plan.app.feature.planner.PlannerWindowMode
 import com.plan.app.feature.planner.PlannerWindowPolicy
@@ -39,7 +40,12 @@ class PlannerResponsiveWindowTest {
         rule.onNodeWithText("İlerleme").assertExists()
         rule.onNodeWithText("Rehber & SSS").assertDoesNotExist()
         rule.onNodeWithText("Karşılaştırma").assertDoesNotExist()
+        rule.onNodeWithText("Haftalık").performClick()
         // The note card must be reachable above system navigation bars.
+        rule.waitUntil(timeoutMillis = 20_000) {
+            rule.onAllNodesWithText("Öğretmen notları ve pedagojik açıklamalar")
+                .fetchSemanticsNodes().isNotEmpty()
+        }
         rule.onNodeWithText("Öğretmen notları ve pedagojik açıklamalar")
             .performScrollTo()
             .assertIsDisplayed()

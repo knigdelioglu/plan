@@ -52,9 +52,25 @@ android {
         applicationId = "com.plan.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.0.5"
+        versionCode = 7
+        versionName = "1.0.6"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("signedRelease") {
+            System.getenv("PLAN_SIGNING_STORE_FILE")?.takeIf(String::isNotBlank)?.let { fileName ->
+                storeFile = file(fileName)
+                storePassword = System.getenv("PLAN_SIGNING_STORE_PASSWORD")
+                keyAlias = System.getenv("PLAN_SIGNING_KEY_ALIAS")
+                keyPassword = System.getenv("PLAN_SIGNING_KEY_PASSWORD")
+            }
+        }
+    }
+    buildTypes {
+        getByName("release") {
+            signingConfig = signingConfigs.getByName("signedRelease")
+        }
     }
 
     buildFeatures {

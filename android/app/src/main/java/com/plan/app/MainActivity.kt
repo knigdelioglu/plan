@@ -3,9 +3,15 @@ package com.plan.app
 import android.os.Bundle
 import android.os.Build
 import android.graphics.Color as AndroidColor
+import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.core.view.WindowCompat
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
@@ -46,12 +52,28 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             val isDark by viewModel.isDarkMode.collectAsState()
+            val fontScalePercent by viewModel.fontScalePercent.collectAsState()
+            val systemDensity = LocalDensity.current
             // The app's preference is independent of the device-wide night mode.
             // Re-apply platform icon appearance on every Compose theme change.
             SideEffect { syncSystemBars(isDark) }
-            DesignSystemTheme(darkTheme = isDark, accent = ArcAccent.Neutral) {
-                ArcTheme(darkTheme = isDark) {
-                    PlannerScreen(viewModel = viewModel)
+            // Android 15+ may re-apply edge-to-edge icon contrast during the next draw.
+            // Reassert the selected theme after that draw without waiting on the UI thread.
+            LaunchedEffect(isDark) {
+                withFrameNanos { }
+                syncSystemBars(isDark)
+            }
+            // Keep the device's accessibility font scaling and scale sp, not dp.
+            CompositionLocalProvider(
+                LocalDensity provides Density(
+                    systemDensity.density,
+                    systemDensity.fontScale * (fontScalePercent / 100f)
+                )
+            ) {
+                DesignSystemTheme(darkTheme = isDark, accent = ArcAccent.Neutral) {
+                    ArcTheme(darkTheme = isDark) {
+                        PlannerScreen(viewModel = viewModel)
+                    }
                 }
             }
         }
@@ -62,6 +84,13 @@ class MainActivity : ComponentActivity() {
         // "light" means DARK icons on a LIGHT background.
         controller.isAppearanceLightStatusBars = !dark
         controller.isAppearanceLightNavigationBars = !dark
+
+        // Keep the platform decor flags in sync on Android versions that may
+        // reapply legacy light-icon flags after edge-to-edge configuration.
+        val decor = window.decorView
+        val mask = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+        decor.systemUiVisibility =
+            if (dark) decor.systemUiVisibility and mask.inv() else decor.systemUiVisibility or mask
 
         // Before Android 10, the navigation bar cannot rely on transparent
         // edge-to-edge rendering on all navigation modes.

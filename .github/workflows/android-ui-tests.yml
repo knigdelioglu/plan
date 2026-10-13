@@ -4,6 +4,16 @@ on:
   pull_request:
     paths:
       - 'android/**'
+      - 'plans/**'
+      - '.github/workflows/android-ui-tests.yml'
+      - '.github/scripts/android-ui-display.sh'
+      - '.github/compose-design-system.ref'
+      - '.github/actions/checkout-compose-design-system/**'
+  push:
+    branches: [main]
+    paths:
+      - 'android/**'
+      - 'plans/**'
       - '.github/workflows/android-ui-tests.yml'
       - '.github/scripts/android-ui-display.sh'
       - '.github/compose-design-system.ref'
@@ -46,11 +56,31 @@ jobs:
           disable-animations: true
           emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: bash .github/scripts/android-ui-display.sh ${{ matrix.display }}
+      - name: Print Android instrumentation test failures
+        if: failure()
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          paths = list(pathlib.Path("android/app/build/outputs/androidTest-results").rglob("*.xml"))
+          print(f"Instrumentation report XML files: {len(paths)}")
+          for path in paths:
+              try:
+                  root = ET.parse(path).getroot()
+                  for case in root.iter("testcase"):
+                      failures = list(case.findall("failure")) + list(case.findall("error"))
+                      for fail in failures:
+                          print("FAILED:", case.get("classname"), case.get("name"), str(fail.get("message") or ""))
+                          print((fail.text or "")[:2000])
+              except Exception as exc:
+                  print("Could not parse", path, exc)
+          PY
       - name: Upload UI test reports on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: compose-ui-test-reports
+          name: compose-ui-test-reports-${{ matrix.display }}
           path: |
             android/app/build/reports/androidTests/**
             android/app/build/outputs/androidTest-results/**

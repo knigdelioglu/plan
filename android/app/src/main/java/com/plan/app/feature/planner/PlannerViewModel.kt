@@ -48,6 +48,7 @@ class PlannerViewModel @JvmOverloads constructor(
 
     private val noteDrafts = NoteDraftBuffer { key, text ->
         teacherRepository.saveNote(key.classroomId, key.weekNumber, null, text, NoteType.TEXT)
+        check(teacherRepository.flushPendingWrites()) { "Not kaydı diske yazılamadı" }
     }
     private var pendingNoteJob: Job? = null
     private val _noteSaveState = MutableStateFlow(NoteSaveState.SAVED)
@@ -98,7 +99,8 @@ class PlannerViewModel @JvmOverloads constructor(
      */
     fun flushPendingTeacherNotes(): Boolean {
         pendingNoteJob?.cancel()
-        return persistPendingNotesSafely(drainAll = true)
+        val notesSaved = persistPendingNotesSafely(drainAll = true)
+        return notesSaved && teacherRepository.flushPendingWrites()
     }
 
     override fun onCleared() {
@@ -107,9 +109,30 @@ class PlannerViewModel @JvmOverloads constructor(
     }
 
     val isDarkMode: StateFlow<Boolean> = teacherRepository.darkMode
+    val fontScalePercent: StateFlow<Int> = teacherRepository.fontScalePercent
     val storageError: StateFlow<String?> = teacherRepository.storageError
-    val availablePlans: List<PlanRepository.PlanRef>
-        get() = planRepository.availablePlans()
+    private val _availablePlans = MutableStateFlow<List<PlanRepository.PlanRef>>(emptyList())
+    val availablePlans: StateFlow<List<PlanRepository.PlanRef>> = _availablePlans.asStateFlow()
+    private val _planLoading = MutableStateFlow(true)
+    val planLoading: StateFlow<Boolean> = _planLoading.asStateFlow()
+
+    private val _planError = MutableStateFlow<String?>(null)
+    val planError: StateFlow<String?> = _planError.asStateFlow()
+    private var loadJob: Job? = null
+
+    fun exportBackupJson(): String {
+        check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
+        return teacherRepository.exportBackupJson()
+    }
+
+    suspend fun importBackupJson(content: String) {
+        withContext(Dispatchers.IO) {
+            check(flushPendingTeacherNotes()) { "Önce kaydedilmemiş notlar güvenle yazılmalıdır." }
+            teacherRepository.importBackupJson(content)
+            check(teacherRepository.flushPendingWrites()) { "Yedek diske yazılamadı." }
+        }
+        loadActivePlan()
+    }
 
     private val _filter = MutableStateFlow(PlanFilter())
     val filter: StateFlow<PlanFilter> = _filter.asStateFlow()
@@ -147,7 +170,11 @@ class PlannerViewModel @JvmOverloads constructor(
     private var lastAutoSelectedDate: LocalDate = LocalDate.now()
 
     init {
-        loadActivePlan()
+        viewModelScope.launch {
+            val plans = withContext(Dispatchers.IO) { planRepository.availablePlans() }
+            _availablePlans.value = plans
+        }
+        loadActivePlan(autoSelectWeek = true)
     }
 
     /**
@@ -159,12 +186,16 @@ class PlannerViewModel @JvmOverloads constructor(
         if (today != lastAutoSelectedDate && flushPendingTeacherNotes()) {
             _currentDate.value = today
             lastAutoSelectedDate = today
-            loadActivePlan()
+            loadActivePlan(autoSelectWeek = true)
         }
     }
 
     fun toggleDarkMode() {
         teacherRepository.setDarkMode(!isDarkMode.value)
+    }
+
+    fun setFontScalePercent(percent: Int) {
+        teacherRepository.setFontScalePercent(percent)
     }
 
     fun setCommandPaletteOpen(open: Boolean) {
@@ -275,21 +306,35 @@ class PlannerViewModel @JvmOverloads constructor(
         return newClass
     }
 
-    private fun loadActivePlan() {
+    private fun loadActivePlan(autoSelectWeek: Boolean = false) {
         val currentClass = classrooms.value.firstOrNull { it.id == activeClassroomId.value }
             ?: classrooms.value.firstOrNull()
-        // Only the active classroom's plan is loaded: no hidden comparisons,
-        // raw JSON inspection, or validation reports on every classroom change.
-        val plan = runCatching {
-            currentClass?.let(planRepository::loadAnnualPlan)
-        }.getOrNull()
-        _currentPlan.value = plan
-        val today = LocalDate.now()
-        _currentDate.value = today
-        lastAutoSelectedDate = today
-        val relevant = plan?.let { PlanTimeline.relevantWeek(it.weeks, today) }
-        if (relevant != null && relevant != activeWeekNumber.value) {
-            teacherRepository.selectWeek(relevant)
+        loadJob?.cancel()
+        _planLoading.value = true
+        _planError.value = null
+        _currentPlan.value = null
+        loadJob = viewModelScope.launch {
+            // Loading 600KB of JSON cannot block Android's rendering thread.
+            val result = withContext(Dispatchers.IO) {
+                runCatching { currentClass?.let(planRepository::loadAnnualPlan) }
+            }
+            _planLoading.value = false
+            result.onSuccess { plan ->
+                _currentPlan.value = plan
+                if (plan == null) {
+                    _planError.value = "Bu sınıf için yıllık plan bulunamadı."
+                } else if (autoSelectWeek) {
+                    val relevant = PlanTimeline.relevantWeek(plan.weeks, LocalDate.now())
+                    if (relevant != null && relevant != activeWeekNumber.value) {
+                        teacherRepository.selectWeek(relevant)
+                    }
+                } else if (plan.weeks.none { it.weekNumber == activeWeekNumber.value }) {
+                    plan.weeks.firstOrNull()?.let { teacherRepository.selectWeek(it.weekNumber) }
+                }
+            }.onFailure { error ->
+                _currentPlan.value = null
+                _planError.value = "Yıllık plan yüklenemedi: " + (error.message ?: "JSON veya dosya hatası")
+            }
         }
     }
 }

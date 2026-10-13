@@ -2,6 +2,7 @@
 """Validate the built APK and derive GitHub Release assets from Gradle output."""
 from __future__ import annotations
 
+import argparse
 import hashlib
 import json
 import os
@@ -15,18 +16,22 @@ OUTPUT = REPO / "android/app/build/outputs/apk/debug"
 METADATA = OUTPUT / "output-metadata.json"
 
 
-def prepare() -> tuple[str, str]:
-    metadata = json.loads(METADATA.read_text(encoding="utf-8"))
-    if metadata.get("applicationId") != "com.plan.app" or metadata.get("variantName") != "debug":
+def prepare(variant: str = "debug") -> tuple[str, str]:
+    if variant not in ("debug", "release"):
+        raise ValueError(f"Invalid build variant: {variant}")
+    output = REPO / "android/app/build/outputs/apk" / variant
+    metadata_path = output / "output-metadata.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    if metadata.get("applicationId") != "com.plan.app" or metadata.get("variantName") != variant:
         raise ValueError("Unexpected Android APK application/variant")
     elements = metadata.get("elements", [])
     if len(elements) != 1:
-        raise ValueError("Expected exactly one debug APK")
+        raise ValueError(f"Expected exactly one {variant} APK")
     version = elements[0].get("versionName", "")
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
         raise ValueError(f"Invalid release version: {version!r}")
 
-    source = OUTPUT / elements[0]["outputFile"]
+    source = output / elements[0]["outputFile"]
     if not source.is_file() or source.stat().st_size == 0:
         raise ValueError(f"Missing or empty APK: {source}")
     with zipfile.ZipFile(source) as archive:
@@ -34,7 +39,7 @@ def prepare() -> tuple[str, str]:
         if broken is not None:
             raise ValueError(f"Corrupt APK entry: {broken}")
 
-    asset = f"Plan-v{version}-debug.apk"
+    asset = f"Plan-v{version}-{variant}.apk"
     dist = REPO / "dist"
     dist.mkdir(exist_ok=True)
     target = dist / asset
@@ -51,4 +56,7 @@ def prepare() -> tuple[str, str]:
 
 
 if __name__ == "__main__":
-    prepare()
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--variant", choices=("debug", "release"), default="debug")
+    args = parser.parse_args()
+    prepare(args.variant)

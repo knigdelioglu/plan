@@ -3,6 +3,7 @@ package com.plan.app
 import com.plan.app.core.data.PlanRepository
 import com.plan.app.core.data.TeacherRepository
 import com.plan.app.core.model.Classroom
+import com.plan.app.core.model.FontScalePreference
 import com.plan.app.core.model.PlannerViewMode
 import org.junit.Assert.*
 import org.junit.Test
@@ -46,6 +47,7 @@ class P1RepositoryRegressionTest {
             teacher.selectWeek(5)
             teacher.selectViewMode(PlannerViewMode.MONTH)
             teacher.setDarkMode(true)
+            teacher.setFontScalePercent(130)
             teacher.selectClassroom("cls-11b")
             teacher.selectWeek(7)
 
@@ -54,12 +56,33 @@ class P1RepositoryRegressionTest {
             assertEquals(7, restored.activeWeekNumber.value)
             assertEquals(PlannerViewMode.MONTH, restored.viewMode.value)
             assertTrue(restored.darkMode.value)
+            assertEquals(130, restored.fontScalePercent.value)
             assertEquals("Ödev verildi", restored.getNote("cls-11a", 3, null)?.text)
             assertEquals("Farklı sınıf", restored.getNote("cls-11b", 3, null)?.text)
             assertTrue(restored.isLessonCompleted("cls-11a", 3, 1))
             assertFalse(restored.isLessonCompleted("cls-11b", 3, 1))
             restored.selectClassroom("cls-11a")
             assertEquals(5, restored.activeWeekNumber.value)
+        } finally {
+            teacher.clearAllForTesting()
+        }
+    }
+
+    @Test
+    fun oldTeacherSnapshotsReceiveRecommendedFontSizeAndInvalidValuesAreRejected() {
+        val teacher = TeacherRepository(context = null)
+        teacher.clearAllForTesting()
+        try {
+            val stateFile = File("build/tmp/test_storage/teacher-state.json")
+            stateFile.writeText("""{"version":1,"darkMode":true}""")
+            val restored = TeacherRepository(context = null)
+            assertEquals(FontScalePreference.DEFAULT_PERCENT, restored.fontScalePercent.value)
+            assertTrue(restored.darkMode.value)
+            assertThrows(IllegalArgumentException::class.java) {
+                restored.setFontScalePercent(141)
+            }
+            restored.setFontScalePercent(90)
+            assertEquals(90, TeacherRepository(context = null).fontScalePercent.value)
         } finally {
             teacher.clearAllForTesting()
         }

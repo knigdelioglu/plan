@@ -25,17 +25,20 @@ class PlanRepository(
         val isAvailable: Boolean = true
     )
 
-    val supportedPlansCatalog: List<PlanRef>
-        get() = availablePlans()
-
-    fun availablePlans(): List<PlanRef> = discoverPaths()
-        .mapNotNull { path -> runCatching {
+    // A plan catalog is immutable within a running application; discover bundled assets once.
+    private val paths by lazy(LazyThreadSafetyMode.SYNCHRONIZED) { discoverPaths() }
+    private val catalog by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        paths.mapNotNull { path -> runCatching {
             val meta = decode(path).metadata
             PlanRef(meta.academicYear, meta.courseName, meta.gradeLevel,
                 meta.schoolType, path.removeSuffix("/annual-plan.json"))
         }.getOrNull() }
         .distinctBy { it.pathSegment }
         .sortedWith(compareBy<PlanRef> { it.academicYear }.thenBy { it.gradeLevel }.thenBy { it.schoolType })
+    }
+
+    val supportedPlansCatalog: List<PlanRef> get() = availablePlans()
+    fun availablePlans(): List<PlanRef> = catalog
 
     fun loadAnnualPlan(classroom: Classroom): AnnualPlan =
         loadAnnualPlan(classroom.schoolType, classroom.gradeLevel, classroom.academicYear, classroom.courseName)
@@ -74,6 +77,7 @@ class PlanRepository(
                 it.courseName.equals(course, ignoreCase = true)
         } ?: throw IllegalStateException("Plan bulunamadı: $year / $course / $grade / $schoolType")
 
+    @Synchronized
     private fun decode(path: String): AnnualPlan {
         cache[path]?.let { return it }
         val raw = readContent(path)
