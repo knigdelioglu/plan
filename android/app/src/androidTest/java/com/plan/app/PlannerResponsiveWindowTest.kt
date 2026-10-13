@@ -40,6 +40,7 @@ class PlannerResponsiveWindowTest {
         rule.onNodeWithText("İlerleme").assertExists()
         rule.onNodeWithText("Rehber & SSS").assertDoesNotExist()
         rule.onNodeWithText("Karşılaştırma").assertDoesNotExist()
+        rule.onNodeWithText("Haftalık").performClick()
         // The note card must be reachable above system navigation bars.
         rule.waitUntil(timeoutMillis = 20_000) {
             rule.onAllNodesWithText("Öğretmen notları ve pedagojik açıklamalar")
