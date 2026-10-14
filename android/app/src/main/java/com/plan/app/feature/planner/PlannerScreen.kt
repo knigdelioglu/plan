@@ -46,6 +46,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -64,11 +65,13 @@ import androidx.compose.ui.input.key.isCtrlPressed
 import androidx.compose.ui.input.key.isMetaPressed
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.plan.app.core.design.blocks.ArcCommandPalette
@@ -125,6 +128,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     val isDarkMode by viewModel.isDarkMode.collectAsState()
     val isCommandPaletteOpen by viewModel.isCommandPaletteOpen.collectAsState()
     val isNotificationCenterOpen by viewModel.isNotificationCenterOpen.collectAsState()
+    val fontScalePercent by viewModel.fontScalePercent.collectAsState()
     val currentPlan by viewModel.currentPlan.collectAsState()
     val notifications by viewModel.notifications.collectAsState()
     val filter by viewModel.filter.collectAsState()
@@ -195,7 +199,7 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
     ) {
         if (showSettings) {
             PlannerSettingsScreen(
-                fontScalePercent = viewModel.fontScalePercent.collectAsState().value,
+                fontScalePercent = fontScalePercent,
                 onFontScaleChange = viewModel::setFontScalePercent,
                 isDarkMode = isDarkMode,
                 onToggleDarkMode = viewModel::toggleDarkMode,
@@ -226,28 +230,32 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                     )
                 },
                 secondPanel = {
+                    ScaledPlannerWorkspace(fontScalePercent) {
+                        CenterWorkspace(
+                            viewModel = viewModel,
+                            activeWeek = activeWeek,
+                            currentClass = currentClass,
+                            viewMode = viewMode,
+                            onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true },
+                            onToggleSidebar = { sidebarCollapsed = !sidebarCollapsed },
+                            sidebarVisible = true
+                        )
+                    }
+                }
+            )
+        } else if (isTabletLandscape) {
+            Box(modifier = Modifier.fillMaxSize().testTag("planner-two-pane")) {
+                ScaledPlannerWorkspace(fontScalePercent) {
                     CenterWorkspace(
                         viewModel = viewModel,
                         activeWeek = activeWeek,
                         currentClass = currentClass,
                         viewMode = viewMode,
                         onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true },
-                        onToggleSidebar = { sidebarCollapsed = !sidebarCollapsed },
-                        sidebarVisible = true
+                        onToggleSidebar = { sidebarCollapsed = false },
+                        sidebarVisible = false
                     )
                 }
-            )
-        } else if (isTabletLandscape) {
-            Box(modifier = Modifier.fillMaxSize().testTag("planner-two-pane")) {
-                CenterWorkspace(
-                    viewModel = viewModel,
-                    activeWeek = activeWeek,
-                    currentClass = currentClass,
-                    viewMode = viewMode,
-                    onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true },
-                    onToggleSidebar = { sidebarCollapsed = false },
-                    sidebarVisible = false
-                )
             }
         } else {
             Column(modifier = Modifier.fillMaxSize().testTag("planner-compact")) {
@@ -258,13 +266,15 @@ fun PlannerScreen(viewModel: PlannerViewModel) {
                     onOpenNewClassDialog = { showNewClassDialog = true }
                 )
                 Box(modifier = Modifier.weight(1f)) {
-                    CenterWorkspace(
-                        viewModel = viewModel,
-                        activeWeek = activeWeek,
-                        currentClass = currentClass,
-                        viewMode = viewMode,
-                        onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true }
-                    )
+                    ScaledPlannerWorkspace(fontScalePercent) {
+                        CenterWorkspace(
+                            viewModel = viewModel,
+                            activeWeek = activeWeek,
+                            currentClass = currentClass,
+                            viewMode = viewMode,
+                            onOpenSettings = { if (viewModel.flushPendingTeacherNotes()) showSettings = true }
+                        )
+                    }
                 }
             }
         }
@@ -557,6 +567,21 @@ private fun LeftSidebarHeader(
             // Theme control is in the compact workspace toolbar; do not repeat it here.
         }
     }
+}
+
+@Composable
+private fun ScaledPlannerWorkspace(
+    fontScalePercent: Int,
+    content: @Composable () -> Unit
+) {
+    val systemDensity = LocalDensity.current
+    val workspaceDensity = remember(systemDensity, fontScalePercent) {
+        Density(
+            density = systemDensity.density,
+            fontScale = systemDensity.fontScale * (fontScalePercent / 100f)
+        )
+    }
+    CompositionLocalProvider(LocalDensity provides workspaceDensity, content = content)
 }
 
 @Composable

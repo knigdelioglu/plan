@@ -58,7 +58,7 @@ jobs:
           cat > "$RUNNER_TEMP/test-release-notes.md" <<'EOF'
           Android test build for installation and testing. **This is a prerelease, NOT a production-signed or upgrade-safe release.**
 
-          - Uses published Compose Design System **0.1.1**.
+          - Uses published Compose Design System **0.1.2**.
           - Built directly from the tagged Plan GitHub commit; debug APK with Android's temporary CI debug signing key.
           - **Before installing, export your teacher-data backup in Settings.** This APK may not install over an existing Plan application if it uses a different signing key. In that case, do not uninstall until you have verified a restorable backup.
           - A stable production-signed release requires the separate signed-release workflow and its persistent signing secrets.
