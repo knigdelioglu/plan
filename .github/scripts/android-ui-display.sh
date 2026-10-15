@@ -23,4 +23,4 @@ esac
 adb shell wm size
 adb shell wm density
 cd android
-./gradlew connectedDebugAndroidTest --no-daemon --stacktrace
+./gradlew connectedDebugAndroidTest --stacktrace
