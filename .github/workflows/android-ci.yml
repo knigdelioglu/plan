@@ -23,6 +23,11 @@ on:
       - '.github/actions/checkout-compose-design-system/**'
 permissions:
   contents: read
+
+concurrency:
+  group: plan-android-ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   build-and-unit-test:
     runs-on: ubuntu-latest
@@ -45,12 +50,18 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
-      - name: Install Android SDK platform
+      - name: Install Android SDK platform only if missing
+        shell: bash
         run: |
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36"
+          set -euo pipefail
+          if [[ -f "$ANDROID_HOME/platforms/android-36/android.jar" ]]; then
+            echo "Android SDK platform 36 is already available."
+          else
+            "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --install "platforms;android-36"
+          fi
       - name: Unit tests and debug APK
         working-directory: android
-        run: ./gradlew testDebugUnitTest assembleDebug --no-daemon --stacktrace
+        run: ./gradlew testDebugUnitTest assembleDebug --stacktrace
       - name: Verify release APK metadata and checksum
         run: python3 android/scripts/prepare-release.py
       - name: Smoke-test local pinned Compose source resolution
@@ -60,4 +71,4 @@ jobs:
         run: |
           mkdir -p .compose-deps
           ln -s "$GITHUB_WORKSPACE/compose-design-system" .compose-deps/compose-design-system
-          env -u ORG_GRADLE_PROJECT_composeDesignSystemSources ./gradlew :app:help --no-daemon --stacktrace
+          env -u ORG_GRADLE_PROJECT_composeDesignSystemSources ./gradlew :app:help --stacktrace

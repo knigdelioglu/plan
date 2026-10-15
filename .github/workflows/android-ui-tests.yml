@@ -28,6 +28,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: plan-android-ui-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   compose-ui-tests:
     name: Compose UI (${{ matrix.display }})
@@ -39,9 +43,6 @@ jobs:
         display: [compact, tablet-portrait, tablet-landscape]
     steps:
       - uses: actions/checkout@v4
-      - name: Checkout pinned Compose Design System
-        if: ${{ inputs.compose_published_version == '' }}
-        uses: ./.github/actions/checkout-compose-design-system
       - name: Select published binary for explicit UI compatibility run
         if: ${{ inputs.compose_published_version != '' }}
         env:
@@ -60,6 +61,27 @@ jobs:
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
+      # One clean AVD is shared by all three display sizes. The per-matrix
+      # resize is applied only after boot, so the cached image stays pristine.
+      - name: Restore clean Android emulator snapshot
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: plan-avd-${{ runner.os }}-api35-googleapis-x86_64-pixel5-v1
+      - name: Prepare clean Android emulator snapshot on cache miss
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: echo "Cached a clean emulator snapshot."
       - name: Run native Compose UI tests on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -67,8 +89,9 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: pixel_5
+          force-avd-creation: false
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: bash .github/scripts/android-ui-display.sh ${{ matrix.display }}
       - name: Print Android instrumentation test failures
         if: failure()
