@@ -109,6 +109,8 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
+        // Measured faster on the 10-core M4; reserve capacity for concurrent AGP work.
+        freeCompilerArgs.add("-Xbackend-threads=4")
     }
 }
 
